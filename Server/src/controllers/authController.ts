@@ -1,37 +1,34 @@
-import { Request, Response } from "express"
-import { AuthServices } from "../services/authService";
+import { NextFunction, Request, Response } from "express"
+import AuthServices from "../services/authService";
 import { MongoAuthRepository } from "../repositories/authRepository";
-import { HttpStatusCode } from "../enum/httpStatus";
-import { MESSAGES } from "../constants/resMessages";
+import { API_RESPONSES } from "../constants/status_messages";
 
-const authService = new AuthServices(new MongoAuthRepository())
+const authService = new AuthServices(new MongoAuthRepository()) // creating an obj from the class
 
-export const registerUser = async function (req: Request, res: Response) {
+export const registerUserController = async function (req: Request, res: Response) {
     try {
         const { name, email, password } = req.body
-        const result = await authService.UserRegister({ name, email, password });
 
-        res.cookie("accessToken", result.accessToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",  
-            sameSite: "strict",
-            maxAge: 15 * 60 * 1000 // 15 min
-        });
+        const result = await authService.UserRegister({ name, email, password });
 
         res.cookie("refreshToken", result.refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000 
+            maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
-        res.status(201).json(result);
+        // res.cookie("accessToken", result.accessToken, {
+        //     httpOnly: false,
+        //     secure: process.env.NODE_ENV === "production",
+        //     sameSite: "strict",
+        //     maxAge: 7 * 24 * 60 * 60 * 1000
+        // });
+
+        res.status(201).json({user: result.user,accessToken : result.accessToken,});
+
     } catch (err) {
-        if (err instanceof Error) {
-            res.status(401).json({ message: err.message });
-        } else {
-            res.status(500).json({ message: "Unknown error occurred" });
-        }
+        throw err
     }
 }
 
@@ -40,9 +37,9 @@ export const registerProvider = async function (req: Request, res: Response) {
     try {
         const result = await authService.ProviderRegister(req.body);
 
-res.cookie("accessToken", result.accessToken, {
+        res.cookie("accessToken", result.accessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",         
+            secure: process.env.NODE_ENV === "production",
             sameSite: "strict",
             maxAge: 15 * 60 * 1000 // 15 min
         });
@@ -51,52 +48,57 @@ res.cookie("accessToken", result.accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000 
+            maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
         res.status(201).json(result);
     } catch (err) {
-        if (err instanceof Error) {
-            res.status(401).json({ message: err.message });
-        } else {
-            res.status(500).json({ message: "Unknown error occurred" });
-        }
+        throw err
     }
 }
 
 
-export const login = async function (req: Request, res: Response): Promise<void> {
+export const login = async function (req: Request, res: Response,next:NextFunction): Promise<void> {
     try {
         const { email, password } = req.body
 
         if (!email || !password) {
-            res.status(HttpStatusCode.BAD_REQUEST).json({ message: MESSAGES.LOGIN_FAILED });
+            res.status(API_RESPONSES.LOGIN_FAILED.status).json({ message: API_RESPONSES.LOGIN_FAILED.message });
             return
         }
 
-        const result = await authService.login(email, password)
+        const {user,accessToken,refreshToken} = await authService.login(email, password)
 
-        res.cookie("accessToken", result.accessToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",         
-            sameSite: "strict",
-            maxAge: 15 * 60 * 1000 // 15 min
-        });
+        // res.cookie("accessToken", accessToken, {
+        //     httpOnly: true,
+        //     secure: process.env.NODE_ENV === "production",
+        //     sameSite: "strict",
+        //     maxAge: 15 * 60 * 1000 // 15 min
+        // });
 
-        res.cookie("refreshToken", result.refreshToken, {
+        res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000 
+            maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
-        res.status(200).json(result)
+        const {status, message} = API_RESPONSES.SUCCESS
+        res.status(status).json({message,user,accessToken,refreshToken})
     } catch (err) {
-        if (err instanceof Error) {
-            res.status(401).json({ message: err.message });
-        } else {
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: MESSAGES.SERVER_ERROR });
-        }
+        next(err)
+    }
+}
+
+export const refresh = async function (req: Request, res: Response,next:NextFunction) {
+    try{
+        const refreshToken = req.cookies.refreshToken;
+        const {accessToken} = await authService.refresh(refreshToken);
+
+        const {status,message} = API_RESPONSES.CREATED
+        res.status(status).json({message,accessToken})
+    }catch(err){
+        next(err)
     }
 }
 

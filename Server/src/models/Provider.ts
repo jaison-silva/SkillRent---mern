@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
+import { ProviderStatus } from "../enum/ProviderStatus";
 
 const providerModel = new mongoose.Schema({
-     userId: {
+  userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
@@ -13,7 +14,7 @@ const providerModel = new mongoose.Schema({
   location: {
     lat: Number,
     lng: Number,
-    address: String,
+    address: String, 
   },
   rating: { type: Number, default: 0 },
   jobCount: { type: Number, default: 0 },
@@ -23,6 +24,12 @@ const providerModel = new mongoose.Schema({
       slots: [String], // e.g. ["09:00-11:00", "14:00-16:00"]
     },
   ],
+  validationStatus: {
+    type: String,                       
+    enum: Object.values(ProviderStatus), // returns a n array os same as [vlaues,vale]
+    default: ProviderStatus.PENDING      
+  },
+  isBanned: { type: Boolean, default: false }
 })
 
-export default mongoose.model("Provicer",providerModel)
+export default mongoose.model("Provider", providerModel)

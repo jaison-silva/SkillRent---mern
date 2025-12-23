@@ -1,11 +1,18 @@
-import bcrypt from "bcryptjs";
-import userRepository from "../repositories/authRepository";
-import jwtToken from "../utils/generateToken";
+import MongoUserRepository from "../repositories/userRepository";
 
+export default class UserService { 
+    constructor(private userRepo: MongoUserRepository){}
 
+    userProfileService(id:string){
+       return this.userRepo.findUserById(id)
+    } 
 
+    updateUserProfileService(id:string){
+        return this.userRepo.updateUserById(id) 
+    }
 
-
-export default {
+    listUserService(){
+        return this.userRepo.findUsers()
+    }
     
 }
