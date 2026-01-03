@@ -43,16 +43,16 @@ export const updateUserProfile = async (req: jwtRequest, res: Response, next: Ne
     }
 }
 
-// export const listProviders = async (req: jwtRequest, res: Response, next: NextFunction): Promise<void> => {
-//     try {
-//         const providers = await providerService.listProviderService()
+export const listProviders = async (req: jwtRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const providers = await providerService.listProviderService()
 
-//         const { status, message } = API_RESPONSES.SUCCESS
-//         res.status(status).json({ message, providers })
-//     } catch (err) {
-//         next(err)
-//     }
-// }
+        const { status, message } = API_RESPONSES.SUCCESS
+        res.status(status).json({ message, providers })
+    } catch (err) {
+        next(err)
+    }
+}
 
 // export const listProviderDetails = async (req: jwtRequest, res: Response, next: NextFunction): Promise<void> => {
 //     try {
