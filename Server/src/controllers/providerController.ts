@@ -1,18 +1,11 @@
 import { NextFunction, Request, Response } from "express";
 import ProviderRepository from "../repositories/providerRepository";
 import ProviderService from "../services/providerService";
-import { API_RESPONSES } from "../constants/status_messages";
-
-interface jwtRequest extends Request {
-    jwtTokenVerified?: {
-        id: string,
-        role: string
-    }
-}
+import { API_RESPONSES } from "../constants/statusMessages";
 
 const providerService = new ProviderService(new ProviderRepository());
 
-export const providerProfile = async (req: jwtRequest, res: Response, next: NextFunction): Promise<void> => {
+export const providerProfileController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const providerId = req.jwtTokenVerified?.id;
 
@@ -27,7 +20,7 @@ export const providerProfile = async (req: jwtRequest, res: Response, next: Next
     }
 };
 
-export const updateProviderProfile = async (req: jwtRequest, res: Response, next: NextFunction): Promise<void> => {
+export const updateProviderProfileController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const providerId = req.jwtTokenVerified?.id;
         const updateData = req.body;
@@ -43,18 +36,44 @@ export const updateProviderProfile = async (req: jwtRequest, res: Response, next
     }
 };
 
-export const providerDashboard = async (req: jwtRequest, res: Response, next: NextFunction): Promise<void> => {
+// export const providerDashboard = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+//     try {
+//         const providerId = req.jwtTokenVerified?.id;
+
+//         if (!providerId) throw new ApiError(API_RESPONSES.NOT_FOUND);
+
+//         // Logic for dashboard stats could go here
+//         // const dashboardData = await providerService.providerDashboardService(providerId);
+
+//         const { status, message } = API_RESPONSES.SUCCESS;
+//         // res.status(status).json({ message, dashboardData });
+//     } catch (err) {
+//         next(err);
+//     }
+// };
+
+export const listProvidersController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const providerId = req.jwtTokenVerified?.id;
+        const providers = await providerService.listProviderService()
 
-        if (!providerId) throw new Error("Invalid Provider ID");
-
-        // Logic for dashboard stats could go here
-        // const dashboardData = await providerService.providerDashboardService(providerId);
-
-        const { status, message } = API_RESPONSES.SUCCESS;
-        // res.status(status).json({ message, dashboardData });
+        const { status, message } = API_RESPONSES.SUCCESS
+        res.status(status).json({ message, providers })
     } catch (err) {
-        next(err);
+        next(err)
     }
-};
+}
+
+export const ProviderDetailsController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+
+        const providerId = req.params.id
+
+        const provider = await  providerService.providerDetailService(providerId)
+
+        const { status, message } = API_RESPONSES.SUCCESS
+        res.status(status).json({ message, provider })
+    } catch (err) {
+        next(err)
+    }
+}
+

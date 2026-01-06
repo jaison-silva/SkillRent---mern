@@ -4,16 +4,15 @@ import MongoProviderRepository from "../repositories/providerRepository"
 // import UserService from "../services/userService";
 // import ProviderService from "../services/providerService";
 import AdminService from "../services/adminServices"
+import { API_RESPONSES } from "../constants/statusMessages";
 
-import { API_RESPONSES } from "../constants/status_messages";
+// interface Request extends Request {
+//     jwtTokenVerified?: {
+//         id: string,
+//         role: string
+//     }
+// } 
 
-interface jwtRequest extends Request {
-    jwtTokenVerified?: {
-        id: string,
-        role: string
-    }
-}
- 
 // const userService = new UserService(new UserRepository)
 // const providerService = new ProviderService(new ProviderRepository)
 
@@ -22,7 +21,7 @@ const adminService = new AdminService(
     new MongoProviderRepository()
 );
 
-export const adminDashboard = async (req: jwtRequest, res: Response, next: NextFunction): Promise<void> => {
+export const adminDashboard = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const adminId = req.jwtTokenVerified?.id
         if (!adminId) throw new Error()
@@ -43,7 +42,8 @@ export const blockUser = async (req: Request, res: Response, next: NextFunction)
 
         const user = await adminService.blockUserService(id, isBanned);
         
-        res.status(200).json({ message: "User status updated", user });
+         const { status, message } = API_RESPONSES.SUCCESS
+        res.status(status).json({message,user})
     } catch (err) {
         next(err);
     }
@@ -56,7 +56,8 @@ export const blockProvider = async (req: Request, res: Response, next: NextFunct
 
         const provider = await adminService.blockProviderService(id, isBanned);
 
-        res.status(200).json({ message: "Provider status updated", provider });
+         const { status, message } = API_RESPONSES.SUCCESS
+        res.status(status).json({message,provider})
     } catch (err) {
         next(err);
     }

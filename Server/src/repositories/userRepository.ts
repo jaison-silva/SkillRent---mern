@@ -1,21 +1,29 @@
-import User from "../models/User";
-import IUserhRepository from "../interfaces/IUserInterface";
+import User from "../models/userModel";
+import IUserhRepository from "../interfaces/IUserRepo";
 
 export default class MongoUserRepository implements IUserhRepository {
-  findUsers() {
-    return User.find()
-  }
 
-  findUserById(id: string) {
-    return User.findById({ id });
+  async findUsers() {
+    return await User.find() // should exclude pass
+  }
+  
+  async findUserById(id: string) {
+    return await User.findById(id);
   };
 
-  updateUserById(id: String) {
-    return User.findById(id)
+  async updateUserById(id: string, updateData: any) {
+    return await User.findByIdAndUpdate(
+      id,
+      { $set: updateData }
+    )
   }
-
-   blockUserById(id: string, isBanned: boolean) {
-    return User.findById(id)
+ 
+  async blockUserById(id: string, isBanned: boolean) {
+    return await User.findByIdAndUpdate(
+      id,
+      { $set: {isBanned} },
+      { new: true } // ithu full docu update akkum 
+    )
   }
 
 }

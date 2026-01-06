@@ -1,10 +1,10 @@
 import { Request,Response, NextFunction } from "express";
-import { API_RESPONSES } from "../constants/status_messages";
+import { API_RESPONSES } from "../constants/statusMessages";
 import { JwtPayload } from "jsonwebtoken";
 
 interface myJwtDecoded extends JwtPayload {
-            id: String,
-        role:String
+            id: string,
+        role:string
 }
 
 interface AuthRequest extends Request { // good to export for controllers
@@ -12,7 +12,7 @@ interface AuthRequest extends Request { // good to export for controllers
 }
 
 export default function (req : AuthRequest,res: Response,next:NextFunction){
-    if(req.jwtTokenVerified?.role == "user"){
+    if(req.jwtTokenVerified?.role == "admin"){
         next()
     }else{
         const {status,message} = API_RESPONSES.FORBIDDEN

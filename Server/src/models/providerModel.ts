@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { ProviderStatus } from "../enum/ProviderStatus";
+import { ProviderStatus } from "../enum/providerStatusEnum";
 
 const providerModel = new mongoose.Schema({
   userId: {

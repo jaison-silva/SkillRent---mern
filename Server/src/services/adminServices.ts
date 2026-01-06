@@ -1,6 +1,9 @@
-import IProviderRepository from "../interfaces/IProviderInterface";
-import IUserRepository from "../interfaces/IUserInterface";
-// import { ProviderStatus } from "../enum/ProviderStatus";
+import IProviderRepository from "../interfaces/IProviderRepo";
+import IUserRepository from "../interfaces/IUserRepo";
+import { ProviderStatus } from "../enum/providerStatusEnum";
+import ApiError from "../utils/apiError";
+import { API_RESPONSES } from "../constants/statusMessages";
+
 
 export default class adminService {
     constructor(
@@ -9,26 +12,34 @@ export default class adminService {
     ) { }
 
     async blockUserService(id: string, isBanned: boolean) {
-        return this.userRepo.blockUserById(id,isBanned);
+        return this.userRepo.blockUserById(id, isBanned);
     }
-    
+
     async blockProviderService(id: string, isBanned: boolean) {
-        return this.providerRepo.blockProviderById(id,isBanned);
+        return this.providerRepo.blockProviderById(id, isBanned);
     }
-    
-        // async listPendingProvidersService(){
-        //     return this.userRepo.
-        // }
 
-        async listUsersAndProviders(){
-            const users = this.userRepo.findUsers()
-            const providers = this.providerRepo.findProviders()
+    // async listPendingProvidersService(){
+    //     return this.userRepo.
+    // }
 
-            return {users, providers}
+    async listUsersAndProviders() {
+        const users = this.userRepo.findUsers()
+        const providers = this.providerRepo.listProviders()
+
+        return { users, providers }
+    }
+
+    async verifyProviderService(id: string, status: ProviderStatus) {
+
+        const provider = await this.providerRepo.findProviderById(id)
+        if(provider.isBanned){
+            throw new ApiError(API_RESPONSES.ACCOUNT_DISABLED)
         }
 
-    async verifyProviderService(id: string, status: string) {
-        // have to check if blocked or not
-        return this.providerRepo.verifyProviderById(id, status);
+        await this.providerRepo.verifyProviderById(id, status);
+
+        
     }
 }
+

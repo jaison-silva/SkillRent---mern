@@ -2,27 +2,22 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import ApiError from "../utils/apiError";
 import { JwtPayload } from "jsonwebtoken";
-
-interface myJwtDecoded extends JwtPayload {
-            id: String,
-        role:String
-}
-
-interface AuthRequest extends Request { // good to export for controllers
-    jwtTokenVerified?: myJwtDecoded
-}
+import { API_RESPONSES } from "../constants/statusMessages";
 
 
-export const authenticate = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const HeaderAuth = (req: Request, res: Response, next: NextFunction) => {
     try {
         const authHeader = req.headers.authorization;
         const JwtToken = authHeader && authHeader.split(" ")[1];
 
-        if (!JwtToken) throw new ApiError(401, "Access JwtToken missing");
+        if (!JwtToken) throw new ApiError(API_RESPONSES.TOKEN_MISSING);
 
-        if (!process.env.JWT_ACCESS_SECRET) throw new Error("Missing JWT_ACCESS_SECRET");
+        if (!process.env.JWT_ACCESS_SECRET) throw new ApiError(API_RESPONSES.TOKEN_MISSING);
 
-        const decoded = jwt.verify(JwtToken, process.env.JWT_ACCESS_SECRET) as myJwtDecoded
+        const decoded = jwt.verify(JwtToken, process.env.JWT_ACCESS_SECRET) as JwtPayload & {
+            id: string;
+            role: string;
+        }
         req.jwtTokenVerified = decoded;
         next();
 
@@ -32,3 +27,4 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
     }
 };
 
+  

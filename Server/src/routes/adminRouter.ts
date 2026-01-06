@@ -1,13 +1,13 @@
 import { Router } from "express";
-import isAdmin from "../middlewares/isAdmin";
-import { authenticate } from "../middlewares/authMiddleware";
-import { adminDashboard } from "../controllers/adminController";
+import isAdmin from "../middlewares/isAdminMiddleware";
+import { HeaderAuth } from "../middlewares/authMiddleware";
+import { adminDashboard, blockUser,blockProvider,verifyProvider} from "../controllers/adminController";
 
 const router = Router()
-
-router.get('/dashboard',authenticate,isAdmin,adminDashboard)
-router.patch('/user/:id/block',authenticate,isAdmin,)
-router.patch('/provider/:id/verification',authenticate,isAdmin,)
-router.patch('/provider/:id/block',authenticate,isAdmin,)
+ 
+router.get('/dashboard',HeaderAuth,isAdmin,adminDashboard)
+router.patch('/provider/:id/block',HeaderAuth,isAdmin,blockProvider)
+router.patch('/user/:id/block',HeaderAuth,isAdmin,blockUser)
+router.patch('/provider/:id/verification',HeaderAuth,isAdmin,verifyProvider)
 
 export default router

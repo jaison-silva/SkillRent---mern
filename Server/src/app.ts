@@ -2,7 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import loggerMiddleware from './utils/reqLogger'
 import corsOptions from './config/cors'
-import router from './routes/index'
+import router from './routes/indexRouter'
 import cookieParser from 'cookie-parser'
 import globalErrorHandler from './middlewares/globalErrorMiddleware'
 

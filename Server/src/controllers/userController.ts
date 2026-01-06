@@ -1,22 +1,32 @@
 import { NextFunction, Request, Response } from "express"
 import UserRepository from "../repositories/userRepository";
 import UserService from "../services/userService";
-import { API_RESPONSES } from "../constants/status_messages";
+import { API_RESPONSES } from "../constants/statusMessages";
+import ApiError from "../utils/apiError";
 
-interface jwtRequest extends Request {
-    jwtTokenVerified?: {
-        id: string,
-        role: string
+const userService = new UserService(new UserRepository())
+
+export const userHomeController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const userId = req.jwtTokenVerified?.id;
+        if (!userId) throw new Error("Unauthorized");
+
+        const homeData = await userService.getHomeData(userId);
+
+        const { status, message } = API_RESPONSES.SUCCESS;
+        res.status(status).json({ message, data: homeData });
+    } catch (err) {
+        next(err);
     }
-}
- 
-const userService = new UserService(new UserRepository)
+};
 
-export const userProfile = async (req: jwtRequest, res: Response, next: NextFunction): Promise<void> => {
+export const userProfileController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const userId = req.jwtTokenVerified?.id
 
-        if (!userId) throw new Error()
+        if (!userId) {
+            throw new ApiError(API_RESPONSES.UNAUTHORIZED);
+        }
 
         const user = await userService.userProfileService(userId);
 
@@ -27,13 +37,17 @@ export const userProfile = async (req: jwtRequest, res: Response, next: NextFunc
     }
 }
 
-export const updateUserProfile = async (req: jwtRequest, res: Response, next: NextFunction): Promise<void> => {
+export const updateUserProfileController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const userId = req.jwtTokenVerified?.id
 
-        if (!userId) throw new Error()
+           if (!userId) {
+      throw new ApiError(API_RESPONSES.UNAUTHORIZED);
+    }
 
-        const user = await userService.updateUserProfileService(userId)
+        const updateData = req.body;
+
+        const user = await userService.updateUserProfileService(userId, updateData)
 
         const { status, message } = API_RESPONSES.SUCCESS
         res.status(status).json({ message, user })
@@ -43,28 +57,36 @@ export const updateUserProfile = async (req: jwtRequest, res: Response, next: Ne
     }
 }
 
-export const listProviders = async (req: jwtRequest, res: Response, next: NextFunction): Promise<void> => {
+export const userDetailedController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const providers = await providerService.listProviderService()
+        const { id } = req.params;
 
-        const { status, message } = API_RESPONSES.SUCCESS
-        res.status(status).json({ message, providers })
+        const userDetails = await userService.getUserDetailsService(id);
+
+        if (!userDetails) {
+            res.status(404).json({ message: "User details not found" });
+            return;
+        }
+
+        const { status, message } = API_RESPONSES.SUCCESS;
+        res.status(status).json({ message, user: userDetails });
     } catch (err) {
-        next(err)
+        next(err);
     }
-}
+};
 
-// export const listProviderDetails = async (req: jwtRequest, res: Response, next: NextFunction): Promise<void> => {
-//     try {
- 
-//         const providerId = req.params.id
+export const listUsersController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        // You can extract query params here for pagination: const { page, limit } = req.query;
+        const users = await userService.listAllUsersService();
 
-//         const provider = await userService.providerDetailService(providerId)
-
-//         const { status, message } = API_RESPONSES.SUCCESS
-//         res.status(status).json({ message, provider })
-//     } catch (err) {
-//         next(err)
-//     }
-// }
-
+        const { status, message } = API_RESPONSES.SUCCESS;
+        res.status(status).json({
+            message,
+            count: users.length,
+            users
+        });
+    } catch (err) {
+        next(err);
+    }
+};

@@ -1,18 +1,48 @@
-import MongoUserRepository from "../repositories/userRepository";
+import IUserRepository from "../interfaces/IUserRepo";
+import ApiError from "../utils/apiError";
+import { API_RESPONSES } from "../constants/statusMessages";
 
-export default class UserService { 
-    constructor(private userRepo: MongoUserRepository){}
+class UserService {
+    private userRepository: IUserRepository;
 
-    userProfileService(id:string){
-       return this.userRepo.findUserById(id)
-    } 
-
-    updateUserProfileService(id:string){
-        return this.userRepo.updateUserById(id) 
+    constructor(userRepository: IUserRepository) {
+        this.userRepository = userRepository;
     }
 
-    listUserService(){
-        return this.userRepo.findUsers()
+    async getHomeData(userId: string) {
+        const user = await this.userRepository.findUserById(userId);
+        if (!user) throw new ApiError(API_RESPONSES.NOT_FOUND);
+        
+        return {
+            name: user.name,
+            welcomeMessage: `Welcome back, ${user.name}!`,
+            lastLogin: new Date()
+        };
+    }
+
+    async userProfileService(userId: string) {
+        const user = await this.userRepository.findUserById(userId);
+        if (!user) throw new ApiError(API_RESPONSES.NOT_FOUND);
+        return user;
+    }
+
+    async updateUserProfileService(userId: string, updateData: any) {
+        const updatedUser = await this.userRepository.updateUserById(userId, updateData);
+        if (!updatedUser) throw new ApiError(API_RESPONSES.NOT_FOUND);
+        return updatedUser;
+    }
+
+    async getUserDetailsService(id: string) {
+        const userDetails = await this.userRepository.findUserById(id);
+        if (!userDetails) throw new ApiError(API_RESPONSES.NOT_FOUND);
+        return userDetails;
+    }
+
+    async listAllUsersService() {
+        const users = await this.userRepository.findUsers();
+        return users;
     }
     
 }
+
+export default UserService;

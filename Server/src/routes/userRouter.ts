@@ -1,16 +1,14 @@
 import { Router } from "express";
-import { authenticate } from "../middlewares/authMiddleware";
-import isUser from "../middlewares/isUser";
-// import { updateUserProfile, userProfile, listProviders } from "../controllers/userController";
-import { updateUserProfile, userProfile } from "../controllers/userController";
-
+import { HeaderAuth } from "../middlewares/authMiddleware";
+import isUser from "../middlewares/isUserMiddleware";
+import { userHomeController, userProfileController, updateUserProfileController,userDetailedController,listUsersController } from "../controllers/userController";
 
 const router = Router()
+ 
+router.get('/home', HeaderAuth, isUser, userHomeController)
+router.get('/profile', HeaderAuth, isUser, userProfileController)
+router.patch('/updateProfile', HeaderAuth, isUser, updateUserProfileController)
+router.get('/userDetailed/:id', HeaderAuth, userDetailedController)
+router.get('/listUsers', HeaderAuth, listUsersController)
 
-router.get('/profile',authenticate,isUser,userProfile)
-router.patch('/profile',authenticate,isUser,updateUserProfile)
-// router.get('/providers',authenticate,isUser,listProviders)
-router.get('/providers/:id',authenticate,isUser,)
-
-
-export default router
+export default router 

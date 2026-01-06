@@ -1,7 +1,18 @@
 import mongoose from "mongoose";
-import { UserRoleStatus } from "../enum/userRoleStatus";
+import { UserRoleStatus } from "../enum/userRoleStatusEnum";
 
-const userSchema = new mongoose.Schema({
+export interface IUser extends Document {
+    name: string;
+    email: string;
+    password?: string;
+    role: UserRoleStatus;
+    lastLogin: Date | null;
+    isBanned: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+const userSchema = new mongoose.Schema<IUser>({
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true },
     password: { type: String, required: true },
