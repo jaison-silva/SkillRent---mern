@@ -7,4 +7,4 @@ export default interface loginResponse{
   }
   accessToken: string
   refreshToken: string
-}
+} 

@@ -6,12 +6,14 @@
 // POST /auth/refresh
 
 import api from "./axios";
-
+// agentic at. co piolet
 export const loginApi = async (data: {
   email: string;
   password: string;
 }) => {
-  const reault = await api.post("/auth/login", data);
+  const reault = await api.post("/auth/login", data); // acios global error handling 
+  // optimazition tecqniques
+  // lazy , memu 
   console.log(reault)
   return reault
 };
@@ -23,7 +25,7 @@ export const registerUserApi = (data: {
 }) => {
   return api.post("/auth/register/user", data);
 };
- 
+  // use dto for this 
 export const registerProviderApi = (data: {
   name: string;
   email: string;

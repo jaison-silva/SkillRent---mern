@@ -3,7 +3,7 @@ import AuthServices from "../services/authService";
 import { MongoAuthRepository } from "../repositories/authRepository";
 import Otp from "../repositories/otpRepository";
 import { API_RESPONSES } from "../constants/statusMessages";
-import OtpRepository from "../repositories/otpRepository"
+// import OtpRepository from "../repositories/otpRepository"
 
 // import otpService from "../services/otpService";
 // const otp = new otpService(new OtpRepository) // DI
@@ -23,10 +23,10 @@ export const registerUserController = async function (req: Request, res: Respons
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
-        res.cookie("accessToken", result.accessToken, {
+        res.cookie("accessToken", result.accessToken, { //  implement balck listeing tokens
             httpOnly: false,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
+            sameSite: "strict", // prefer lax
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 

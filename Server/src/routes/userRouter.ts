@@ -9,6 +9,6 @@ router.get('/home', HeaderAuth, isUser, userHomeController)
 router.get('/profile', HeaderAuth, isUser, userProfileController)
 router.patch('/updateProfile', HeaderAuth, isUser, updateUserProfileController)
 router.get('/userDetailed/:id', HeaderAuth, userDetailedController)
-router.get('/listUsers', HeaderAuth, listUsersController)
+router.get('/listUsers', HeaderAuth, listUsersController) // get/users  and get/users/:id
 
 export default router 

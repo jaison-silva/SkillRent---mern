@@ -30,4 +30,6 @@ SkillRent is a full-stack MERN application that allows users to hire skills and 
 **Authentication**
 - JWT (JSON Web Tokens)
 
-## 📁 Project Structure
+## 📁 Stuff to learn 
+
+- Inversify is a DI framework that automatically injects dependencies using a container.
