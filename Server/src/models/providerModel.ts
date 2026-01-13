@@ -1,7 +1,33 @@
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { ProviderStatus } from "../enum/providerStatusEnum";
+import { IUser } from "./userModel";
 
-const providerModel = new mongoose.Schema({
+interface IProviderLocation {
+  lat: number;
+  lng: number;
+  address: string;
+}
+
+interface IProvider extends Omit<Document, "location"> {
+  userId: Types.ObjectId | IUser;
+  bio?: string;
+  skills: string[];
+  language: string[];
+  hasTransport: boolean;
+  location: IProviderLocation;
+  rating: number;
+  jobCount: number;
+  availability: {
+    day: string;
+    slots: string[];
+  }[]; // ithu means an array of obj of {day : asdasdf , slots: a;sdlkjfa}
+  validationStatus: ProviderStatus;
+  isBanned: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const providerModel = new mongoose.Schema<IProvider>({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -14,7 +40,7 @@ const providerModel = new mongoose.Schema({
   location: {
     lat: Number,
     lng: Number,
-    address: String, 
+    address: String,
   },
   rating: { type: Number, default: 0 },
   jobCount: { type: Number, default: 0 },
@@ -25,11 +51,13 @@ const providerModel = new mongoose.Schema({
     },
   ],
   validationStatus: {
-    type: String,                       
+    type: String,
     enum: Object.values(ProviderStatus), // returns a n array os same as [vlaues,vale]
-    default: ProviderStatus.PENDING      
+    default: ProviderStatus.PENDING
   },
-  isBanned: { type: Boolean, default: false }
-})
+  isBanned: { type: Boolean, default: false },
+},
+  { timestamps: true }
+)
 
 export default mongoose.model("Provider", providerModel)

@@ -1,4 +1,4 @@
-import IOtpInterface from "../interfaces/IOtpInterface";
+import IOtpInterface from "../interfaces/IOtpService";
 import User from "../models/userModel";
 import OtpModel from "../models/otpModel"
 

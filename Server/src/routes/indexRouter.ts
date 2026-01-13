@@ -1,16 +1,17 @@
-// route aggregator 
-import {rateLimiter} from '../middlewares/rateLimiterMiddleware'
-import userRouter from './userRouter'
-import providerRouter from './providerRouter'
-import authRouter from './authRouter'
-import adminRouter from './adminRouter'
-
 import { Router } from "express";
-const router = Router()
+import { rateLimiter } from '../middlewares/rateLimiterMiddleware';
+import authRouter from './authRouter';
+import userRouter from './userRouter';
+import providerRouter from './providerRouter';
+import adminRouter from './adminRouter';
 
-router.use('/auth',rateLimiter,authRouter)
-router.use('/users',rateLimiter,userRouter)
-router.use('/providers',rateLimiter,providerRouter)
-router.use('/admin',rateLimiter,adminRouter)
+const router = Router();
 
-export default router
+router.use(rateLimiter);
+
+router.use('/auth', authRouter);      
+router.use('/users', userRouter);       
+router.use('/providers', providerRouter);
+router.use('/admin', adminRouter);
+
+export default router;

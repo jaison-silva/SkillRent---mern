@@ -1,8 +1,8 @@
-import IProviderRepository from "../interfaces/IProviderRepo";
-import IUserRepository from "../interfaces/IUserRepo";
+import IProviderRepository from "../interfaces/IProviderRepository";
+import IUserRepository from "../interfaces/IUserRepository";
 import { ProviderStatus } from "../enum/providerStatusEnum";
 import ApiError from "../utils/apiError";
-import { API_RESPONSES } from "../constants/statusMessages";
+import { API_RESPONSES } from "../constants/statusMessageConstant";
 
 
 export default class adminService {

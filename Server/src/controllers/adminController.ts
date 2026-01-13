@@ -4,7 +4,7 @@ import MongoProviderRepository from "../repositories/providerRepository"
 // import UserService from "../services/userService";
 // import ProviderService from "../services/providerService";
 import AdminService from "../services/adminServices"
-import { API_RESPONSES } from "../constants/statusMessages";
+import { API_RESPONSES } from "../constants/statusMessageConstant";
 
 // interface Request extends Request {
 //     jwtTokenVerified?: {

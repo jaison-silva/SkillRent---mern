@@ -33,3 +33,4 @@ SkillRent is a full-stack MERN application that allows users to hire skills and 
 ## 📁 Stuff to learn 
 
 - Inversify is a DI framework that automatically injects dependencies using a container.
+- later store otp cookie in redis 

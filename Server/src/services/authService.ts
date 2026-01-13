@@ -3,13 +3,13 @@ import jwtToken from "../utils/generateToken";
 // import userRepository from "../repositories/authRepository";
 // import authRepository from "../repositories/authRepository";
 import { IAuthRepository } from "../interfaces/IAuthRepo";
-import IOtpInterface from "../interfaces/IOtpInterface";
+import IOtpInterface from "../interfaces/IOtpService";
 import { ProviderRegisterInput, UserRegisterInput } from "../types/authTypes";
 import ApiError from "../utils/apiError";
 import mongoose from "mongoose";
 import crypto from "crypto"
 import { otpStatus } from "../enum/otpEnum"
-import { API_RESPONSES } from "../constants/statusMessages";
+import { API_RESPONSES } from "../constants/statusMessageConstant";
 import jwt from "jsonwebtoken";
 import loginResponse from "../dto/loginResponseDTO";
 

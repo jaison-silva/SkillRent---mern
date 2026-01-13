@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import ProviderRepository from "../repositories/providerRepository";
 import ProviderService from "../services/providerService";
-import { API_RESPONSES } from "../constants/statusMessages";
+import { API_RESPONSES } from "../constants/statusMessageConstant";
 
 const providerService = new ProviderService(new ProviderRepository());
 

@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express"
 import AuthServices from "../services/authService";
 import { MongoAuthRepository } from "../repositories/authRepository";
 import Otp from "../repositories/otpRepository";
-import { API_RESPONSES } from "../constants/statusMessages";
+import { API_RESPONSES } from "../constants/statusMessageConstant";
 // import OtpRepository from "../repositories/otpRepository"
 
 // import otpService from "../services/otpService";

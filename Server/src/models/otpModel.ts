@@ -1,6 +1,16 @@
 import mongoose from "mongoose";
-import IOtp from "../interfaces/IOtpModel";
 import { otpStatus } from "../enum/otpEnum";
+
+interface IOtp extends Document {
+    email: string;
+    otp: string;          // hashed OTP
+    purpose: otpStatus;
+
+    isVerified: boolean;
+    verifiedAt?: Date;
+
+    createdAt: Date;
+}
 
 const Otpschema = new mongoose.Schema<IOtp>({
     email: { type: String, required: true },
@@ -16,6 +26,8 @@ const Otpschema = new mongoose.Schema<IOtp>({
         default: Date.now,
         expires: 600
     }
-})
+},
+    { timestamps: true }
+)
 
 export default mongoose.model("Otp", Otpschema)

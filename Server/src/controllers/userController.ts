@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express"
 import UserRepository from "../repositories/userRepository";
 import UserService from "../services/userService";
-import { API_RESPONSES } from "../constants/statusMessages";
+import { API_RESPONSES } from "../constants/statusMessageConstant";
 import ApiError from "../utils/apiError";
 
 const userService = new UserService(new UserRepository())

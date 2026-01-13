@@ -1,6 +1,6 @@
-import IUserRepository from "../interfaces/IUserRepo";
+import IUserRepository from "../interfaces/IUserRepository";
 import ApiError from "../utils/apiError";
-import { API_RESPONSES } from "../constants/statusMessages";
+import { API_RESPONSES } from "../constants/statusMessageConstant";
 
 class UserService {
     private userRepository: IUserRepository;

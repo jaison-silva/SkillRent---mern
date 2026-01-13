@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 import ApiError from "../utils/apiError";
-import { API_RESPONSES } from "../constants/statusMessages";
+import { API_RESPONSES } from "../constants/statusMessageConstant";
 // import ApiError from "../utils/apiError";
 // import { API_RESPONSES } from "../constants/status_messages";
 

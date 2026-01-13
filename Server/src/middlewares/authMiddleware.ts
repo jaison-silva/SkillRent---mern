@@ -2,10 +2,9 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import ApiError from "../utils/apiError";
 import { JwtPayload } from "jsonwebtoken";
-import { API_RESPONSES } from "../constants/statusMessages";
+import { API_RESPONSES } from "../constants/statusMessageConstant";
 
-
-export const HeaderAuth = (req: Request, res: Response, next: NextFunction) => {
+export const protect = (req: Request, res: Response, next: NextFunction) => {
     try {
         const authHeader = req.headers.authorization;
         const JwtToken = authHeader && authHeader.split(" ")[1];

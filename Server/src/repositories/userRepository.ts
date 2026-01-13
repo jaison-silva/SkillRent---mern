@@ -1,5 +1,5 @@
 import User from "../models/userModel";
-import IUserhRepository from "../interfaces/IUserRepo";
+import IUserhRepository from "../interfaces/IUserRepository";
 
 export default class MongoUserRepository implements IUserhRepository {
 

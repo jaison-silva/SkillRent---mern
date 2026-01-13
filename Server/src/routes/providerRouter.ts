@@ -1,14 +1,24 @@
 import { Router } from "express";
-import { HeaderAuth } from "../middlewares/authMiddleware";
-import isProvider from "../middlewares/isProviderMiddleware";
-import { providerProfileController, updateProviderProfileController, listProvidersController,ProviderDetailsController } from "../controllers/providerController";
+import { protect } from "../middlewares/authMiddleware";
+import { authorize } from "../middlewares/roleAuthoriseMiddleware";
+import { ROLES } from "../constants/rolesConstants";
+import { 
+    getProviderProfile, 
+    updateProviderProfile, 
+    getAllProviders, 
+    getProviderById 
+} from "../controllers/providerController";
 
 const router = Router();
 
-// router.patch('/dashboard', HeaderAuth, isProvider, providerDashboard);
-router.get('/profile', HeaderAuth, isProvider, providerProfileController);
-router.patch('/updateProfile', HeaderAuth, isProvider, updateProviderProfileController);
-router.get('/listProviders', HeaderAuth, listProvidersController)
-router.get('/providerDetailed/:id', HeaderAuth,ProviderDetailsController)
+router.use(protect);
 
-export default router;   
+// --- Me (The Current Provider) ---
+router.get('/profile', authorize(ROLES.PROVIDER), getProviderProfile);
+router.patch('/profile', authorize(ROLES.PROVIDER), updateProviderProfile);
+
+// --- General Provider Resources ---
+router.get('/', getAllProviders);       // /providers (List all)
+router.get('/:id', getProviderById);    // /providers/123 (Details)
+
+export default router;

@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { UserRoleStatus } from "../enum/userRoleStatusEnum";
 
-export interface IUser extends Document {
+export interface IUser extends Document { //Rule of "Colocation" (Keep related things together)
     name: string;
     email: string;
     password?: string;

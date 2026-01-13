@@ -1,9 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import { ZodObject } from "zod";
-import { API_RESPONSES } from "../constants/statusMessages";
+import { API_RESPONSES } from "../constants/statusMessageConstant";
 
-  export const validate =
-  (schema: ZodObject) =>
+  export const validate = (schema: ZodObject) =>
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const parsed = await schema.parseAsync(req.body);

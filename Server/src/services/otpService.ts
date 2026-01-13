@@ -1,9 +1,9 @@
 import ApiError from "../utils/apiError";
-import { API_RESPONSES } from "../constants/statusMessages";
+import { API_RESPONSES } from "../constants/statusMessageConstant";
 import crypto from "crypto"
 import { otpStatus } from "../enum/otpEnum"
 import bcrypt from "bcryptjs"
-import IOtpInterface from "../interfaces/IOtpInterface";
+import IOtpInterface from "../interfaces/IOtpService";
 import EmailService from "../services/emailService"
 
 

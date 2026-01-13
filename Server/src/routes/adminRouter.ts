@@ -1,13 +1,26 @@
 import { Router } from "express";
-import isAdmin from "../middlewares/isAdminMiddleware";
-import { HeaderAuth } from "../middlewares/authMiddleware";
-import { adminDashboard, blockUser,blockProvider,verifyProvider} from "../controllers/adminController";
+import { protect } from "../middlewares/authMiddleware";
+import { authorize } from "../middlewares/roleAuthoriseMiddleware";
+import { ROLES } from "../constants/rolesConstants";
+import { 
+    getDashboardStats, 
+    changeUserStatus, 
+    changeProviderStatus, 
+    verifyProvider 
+} from "../controllers/adminController";
 
-const router = Router()
- 
-router.get('/dashboard',HeaderAuth,isAdmin,adminDashboard)
-router.patch('/provider/:id/block',HeaderAuth,isAdmin,blockProvider)
-router.patch('/user/:id/block',HeaderAuth,isAdmin,blockUser)
-router.patch('/provider/:id/verification',HeaderAuth,isAdmin,verifyProvider)
+const router = Router();
 
-export default router
+router.use(protect, authorize(ROLES.PROVIDER));
+
+router.get('/dashboard', getDashboardStats);
+
+// --- User Management ---
+// We use /users here to indicate we are acting on users, but under the admin namespace
+router.patch('/users/:id/status', changeUserStatus); // Body: { status: 'blocked' } or { isBlocked: true }
+
+// --- Provider Management ---
+router.patch('/providers/:id/status', changeProviderStatus);
+router.patch('/providers/:id/verification', verifyProvider);
+
+export default router;

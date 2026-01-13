@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express"
-import { API_RESPONSES } from "../constants/statusMessages";
+import { API_RESPONSES } from "../constants/statusMessageConstant";
 import OtpService from "../services/otpService";
 import OtpRepository from "../repositories/otpRepository"
 

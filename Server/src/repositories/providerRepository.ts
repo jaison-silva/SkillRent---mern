@@ -1,5 +1,5 @@
 import Provider from "../models/providerModel";
-import IProviderhRepository from "../interfaces/IProviderRepo";
+import IProviderhRepository from "../interfaces/IProviderRepository";
 
 export default class MongoProviderRepository implements IProviderhRepository {
    
