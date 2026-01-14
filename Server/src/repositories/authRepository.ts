@@ -1,11 +1,13 @@
 import User from "../models/userModel";
 import Provider from "../models/providerModel";
-import { IAuthRepository } from "../interfaces/IAuthRepo";
+import { IAuthRepository } from "../interfaces/IAuthRepository";
 import { UserRegisterInput, ProviderCreateInput } from "../types/authTypes";
 import { SaveOptions } from "mongoose";
 
 
 export class MongoAuthRepository implements IAuthRepository {
+  constructor() { }
+
   findByEmail(email: string) {
     return User.findOne({ email });
   };

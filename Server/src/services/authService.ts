@@ -1,9 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwtToken from "../utils/generateToken";
-// import userRepository from "../repositories/authRepository";
-// import authRepository from "../repositories/authRepository";
-import { IAuthRepository } from "../interfaces/IAuthRepo";
-import IOtpInterface from "../interfaces/IOtpService";
+import { IAuthRepository } from "../interfaces/IAuthRepository";
+import { IOtpRepository } from "../interfaces/IOtpRepository";
 import { ProviderRegisterInput, UserRegisterInput } from "../types/authTypes";
 import ApiError from "../utils/apiError";
 import mongoose from "mongoose";
@@ -11,15 +9,16 @@ import crypto from "crypto"
 import { otpStatus } from "../enum/otpEnum"
 import { API_RESPONSES } from "../constants/statusMessageConstant";
 import jwt from "jsonwebtoken";
-import loginResponse from "../dto/loginResponseDTO";
+import loginResponseDTO from "../dto/loginResponseDTO";
+import IAuthService from "../interfaces/IAuthService"
 
-export default class AuthServices {
+export default class AuthServices implements IAuthService {
     constructor(
         private authRepo: IAuthRepository,
-        private otpRepo: IOtpInterface
+        private otpRepo: IOtpRepository
     ) { }
 
-    async login(email: string, password: string): Promise<loginResponse> {
+    async login(email: string, password: string): Promise<loginResponseDTO> {
 
         if (!email || !password) {
             throw new ApiError(API_RESPONSES.VALIDATION_ERROR)
@@ -30,7 +29,7 @@ export default class AuthServices {
         if (!user || !user.password) {
             throw new ApiError(API_RESPONSES.ALREADY_EXISTS)
         }
-        
+
         const isPasswordValid = await bcrypt.compare(password, user.password)
         if (!isPasswordValid) throw new ApiError(API_RESPONSES.LOGIN_FAILED)
 
@@ -49,7 +48,7 @@ export default class AuthServices {
         }
     }
 
-    async UserRegister({ name, email, password }: UserRegisterInput) {
+    async UserRegister({ name, email, password }: UserRegisterInput): Promise<any> {
 
         const otpVerified = await this.otpRepo.findOtp(
             email,
@@ -68,13 +67,13 @@ export default class AuthServices {
         const newUser = await this.authRepo.createUser({ name, email, password: hashedPassword, role: "user" });
 
         if (!newUser || !newUser._id) {
-           throw new ApiError(API_RESPONSES.INTERNAL_SERVER_ERROR);
+            throw new ApiError(API_RESPONSES.INTERNAL_SERVER_ERROR);
         }
 
         const accessToken = jwtToken.accessToken(newUser._id.toString(), newUser.role)
         const refreshToken = jwtToken.refreshToken(newUser._id.toString())
 
-        await this.otpRepo.deleteOldOtps(email,  otpStatus.VERIFICATOIN);
+        await this.otpRepo.deleteOldOtps(email, otpStatus.VERIFICATOIN);
 
         return {
             user: {
@@ -139,22 +138,6 @@ export default class AuthServices {
 
     }
 
-
-    async forgotPassword(email: string, purpose: otpStatus) {
-        const user = await this.authRepo.findByEmail(email);
-        if (!user) {
-            throw new ApiError(API_RESPONSES.NOT_FOUND);
-        }
-
-        const otp = crypto.randomInt(100000, 999999).toString();
-        
-        const hashedOtp = await bcrypt.hash(otp, 10);
-
-        await this.otpRepo.saveOtp({email, otp : hashedOtp ,purpose});
-
-        return { message: "OTP sent to email" };
-    }
-
     async refresh(refreshToken: string) {
         const { status, message } = API_RESPONSES.VALIDATION_ERROR
         if (!refreshToken) throw new ApiError(API_RESPONSES.TOKEN_INVALID);
@@ -172,6 +155,35 @@ export default class AuthServices {
         } catch (err) {
             throw err
         }
+    }
+
+
+    async forgotPassword(email: string, purpose: otpStatus) {
+        const user = await this.authRepo.findByEmail(email);
+        if (!user) {
+            throw new ApiError(API_RESPONSES.NOT_FOUND);
+        }
+
+        const otp = crypto.randomInt(100000, 999999).toString();
+
+        const hashedOtp = await bcrypt.hash(otp, 10);
+
+        await this.otpRepo.saveOtp({ email, otp: hashedOtp, purpose });
+
+        return { message: "OTP sent to email" };
+    }
+
+    async resetPassword(email: string, otp: string, newPassword: string) {
+
+        await this.otpRepo.verifyOTP(email, otp, otpStatus.FORGOT_PASSWORD);
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        const updatedUser = await this.otpRepo.updatePasswordByEmail(email, hashedPassword);
+
+        if (!updatedUser) throw new ApiError(API_RESPONSES.USER_NOT_FOUND);
+
+        return API_RESPONSES.OTP_SENT;
     }
 
 }

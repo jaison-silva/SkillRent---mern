@@ -1,8 +1,8 @@
-import IOtpInterface from "../interfaces/IOtpService";
+import {IOtpRepository} from "../interfaces/IOtpRepository";
 import User from "../models/userModel";
 import OtpModel from "../models/otpModel"
 
-export default class Otp implements IOtpInterface {
+export class OtpRepository implements IOtpRepository {
     constructor() { }
 
     async updatePasswordByEmail(email: string, hashedPass: string): Promise<any> {

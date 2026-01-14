@@ -1,67 +1,40 @@
 import { NextFunction, Request, Response } from "express"
 import { API_RESPONSES } from "../constants/statusMessageConstant";
-import OtpService from "../services/otpService";
-import OtpRepository from "../repositories/otpRepository"
+import { IOtpService } from "../interfaces/IOtpService";
 
-const Otp = new OtpService(new OtpRepository) // dependency injection
+// const Otp = new OtpService(new OtpRepository) // dependency injection // this is direct injection
 
-export const sendOtpController = async (req: Request, res: Response, next: NextFunction) => {
+export class OtpController {
+    constructor(private OtpService: IOtpService) { }
 
-    try {
-        const { email, purpose } = req.body;
-        await Otp.sendOTP(email, purpose);
+    async sendOTP(req: Request, res: Response, next: NextFunction) {
 
-        res.status(API_RESPONSES.OTP_SENT.status).json({
-            success: true,
-            message: API_RESPONSES.OTP_SENT.message,
-        });
+        try {
+            const { email, purpose } = req.body;
+            await this.OtpService.sendOTP(email, purpose);
 
-    } catch (err) {
-        next(err);
-    }
-};
+            res.status(API_RESPONSES.OTP_SENT.status).json({
+                success: true,
+                message: API_RESPONSES.OTP_SENT.message,
+            });
 
-export const verifyOtpController = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { email, otp, purpose } = req.body;
+        } catch (err) {
+            next(err);
+        }
+    };
 
-        await Otp.verifyOTP(email, otp, purpose);
+    async verifyOTP(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { email, otp, purpose } = req.body;
 
-        res.status(API_RESPONSES.OTP_VERIFIED.status).json({
-            success: true,
-            message: API_RESPONSES.OTP_VERIFIED.message,
-        });
-    } catch (err) {
-        next(err);
-    }
-};
+            await this.OtpService.verifyOTP(email, otp, purpose);
 
-export const forgotPasswordController = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { email } = req.body;
-
-        await Otp.forgotPassword(email);
-
-        res.status(API_RESPONSES.SUCCESS.status).json({
-            success: true,
-            message: API_RESPONSES.OTP_SENT.message,
-        });
-    } catch (err) {
-        next(err);
-    }
+            res.status(API_RESPONSES.OTP_VERIFIED.status).json({
+                success: true,
+                message: API_RESPONSES.OTP_VERIFIED.message,
+            });
+        } catch (err) {
+            next(err);
+        }
+    };
 }
-
-export const resetPasswordController = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { email, otp, newPassword } = req.body;
-
-        await Otp.resetPassword(email, otp, newPassword);
-
-        res.status(API_RESPONSES.SUCCESS.status).json({
-            success: true,
-            message: API_RESPONSES.SUCCESS.message,
-        });
-    } catch (err) {
-        next(err);
-    }
-};

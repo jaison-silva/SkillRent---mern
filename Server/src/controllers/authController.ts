@@ -1,103 +1,134 @@
 import { NextFunction, Request, Response } from "express"
-import AuthServices from "../services/authService";
-import { MongoAuthRepository } from "../repositories/authRepository";
-import Otp from "../repositories/otpRepository";
 import { API_RESPONSES } from "../constants/statusMessageConstant";
-// import OtpRepository from "../repositories/otpRepository"
+import IAuthService from "../interfaces/IAuthService"
+import { otpStatus } from "../enum/otpEnum";
 
-// import otpService from "../services/otpService";
-// const otp = new otpService(new OtpRepository) // DI
+// const authService = new AuthServices(new MongoAuthRepository(), new Otp()) // creating an obj from the classss
 
-const authService = new AuthServices(new MongoAuthRepository(), new Otp()) // creating an obj from the classss
+export class AuthController {
+    constructor(private authService: IAuthService
+    ) { }
 
-export const registerUserController = async function (req: Request, res: Response, next: NextFunction) {
-    try {
-        const { name, email, password } = req.body
+    async registerUser(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { name, email, password } = req.body
 
-        const result = await authService.UserRegister({ name, email, password });
+            const result = await this.authService.UserRegister({ name, email, password });
 
-        res.cookie("refreshToken", result.refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        });
+            res.cookie("refreshToken", result.refreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "strict",
+                maxAge: 7 * 24 * 60 * 60 * 1000
+            });
 
-        res.cookie("accessToken", result.accessToken, { //  implement balck listeing tokens
-            httpOnly: false,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict", // prefer lax
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        });
+            res.cookie("accessToken", result.accessToken, { //  implement balck listeing tokens
+                httpOnly: false,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "strict", // prefer lax
+                maxAge: 7 * 24 * 60 * 60 * 1000
+            });
 
-        res.status(201).json({ user: result.user, accessToken: result.accessToken, });
+            res.status(201).json({ user: result.user, accessToken: result.accessToken, });
 
-    } catch (err) {
-        next(err)
+        } catch (err) {
+            next(err)
+        }
     }
-}
 
 
-export const registerProvider = async function (req: Request, res: Response, next: NextFunction) {
-    try {
-        const result = await authService.ProviderRegister(req.body);
+    async registerProvider(req: Request, res: Response, next: NextFunction) {
+        try {
+            const result = await this.authService.ProviderRegister(req.body);
 
-        res.cookie("accessToken", result.accessToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
-            maxAge: 15 * 60 * 1000 // 15 min
-        });
+            res.cookie("accessToken", result.accessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "strict",
+                maxAge: 15 * 60 * 1000 // 15 min
+            });
 
-        res.cookie("refreshToken", result.refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        });
+            res.cookie("refreshToken", result.refreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "strict",
+                maxAge: 7 * 24 * 60 * 60 * 1000
+            });
 
-        res.status(201).json(result);
-    } catch (err) {
-        next(err)
+            res.status(201).json(result);
+        } catch (err) {
+            next(err)
+        }
     }
-}
 
 
-export const login = async function (req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-        const { email, password } = req.body
+    async login(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { email, password } = req.body
 
-        const { user, accessToken, refreshToken } = await authService.login(email, password)
+            const { user, accessToken, refreshToken } = await this.authService.login(email, password)
 
-        res.cookie("accessToken", accessToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
-            maxAge: 15 * 60 * 1000 // 15 min
-        });
+            res.cookie("accessToken", accessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "strict",
+                maxAge: 15 * 60 * 1000 // 15 min
+            });
 
-        res.cookie("refreshToken", refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        }); 
+            res.cookie("refreshToken", refreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "strict",
+                maxAge: 7 * 24 * 60 * 60 * 1000
+            });
 
-        const { status, message } = API_RESPONSES.SUCCESS
-        res.status(status).json({ message, user, accessToken, refreshToken })
-    } catch (err) {
-        next(err)
+            const { status, message } = API_RESPONSES.SUCCESS
+            res.status(status).json({ message, user, accessToken, refreshToken })
+        } catch (err) {
+            next(err)
+        }
     }
-}
 
-export const refresh = async function (req: Request, res: Response, next: NextFunction) {
-    try {
-        const refreshToken = req.cookies.refreshToken;
-        const { accessToken } = await authService.refresh(refreshToken);
+    async refresh(req: Request, res: Response, next: NextFunction) {
+        try {
+            const refreshToken = req.cookies.refreshToken;
+            const { accessToken } = await this.authService.refresh(refreshToken);
 
-        const { status, message } = API_RESPONSES.CREATED
-        res.status(status).json({ message, accessToken })
-    } catch (err) {
-        next(err)
+            const { status, message } = API_RESPONSES.CREATED
+            res.status(status).json({ message, accessToken })
+        } catch (err) {
+            next(err)
+        }
     }
+
+    async forgotPassword(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { email } = req.body;
+
+            await this.authService.forgotPassword(email,otpStatus.FORGOT_PASSWORD);
+
+            res.status(API_RESPONSES.SUCCESS.status).json({
+                success: true,
+                message: API_RESPONSES.OTP_SENT.message,
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async resetPassword(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { email, otp, newPassword } = req.body;
+
+            await this.authService.resetPassword(email, otp, newPassword);
+
+            res.status(API_RESPONSES.SUCCESS.status).json({
+                success: true,
+                message: API_RESPONSES.SUCCESS.message,
+            });
+        } catch (err) {
+            next(err);
+        }
+    };
+
 }

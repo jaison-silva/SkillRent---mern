@@ -4,7 +4,7 @@ import ApiError from "../utils/apiError";
 import { JwtPayload } from "jsonwebtoken";
 import { API_RESPONSES } from "../constants/statusMessageConstant";
 
-export const protect = (req: Request, res: Response, next: NextFunction) => {
+export default function protect (req: Request, res: Response, next: NextFunction) {
     try {
         const authHeader = req.headers.authorization;
         const JwtToken = authHeader && authHeader.split(" ")[1];
