@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { otpStatus } from "../enum/otpEnum";
 
-interface IOtp extends Document {
+export interface IOtp extends Document {
     email: string;
     otp: string;          // hashed OTP
     purpose: otpStatus;
@@ -19,7 +19,8 @@ const Otpschema = new mongoose.Schema<IOtp>({
         type: String,
         enum: otpStatus,
         required: true
-    }, isVerified: { type: Boolean, default: false },
+    },
+    isVerified: { type: Boolean, default: false },
     verifiedAt: { type: Date },
     createdAt: {
         type: Date,

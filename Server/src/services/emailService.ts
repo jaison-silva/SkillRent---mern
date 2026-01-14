@@ -5,10 +5,10 @@ import { API_RESPONSES } from "../constants/statusMessageConstant";
 // import { API_RESPONSES } from "../constants/status_messages";
 
 class EmailService {
-  private transporter;
+  private _transporter;
 
   constructor() {
-    this.transporter = nodemailer.createTransport({
+    this._transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: Number(process.env.SMTP_PORT),
       secure: false, // true for 465, false for others
@@ -21,7 +21,7 @@ class EmailService {
 
   async sendOtpEmail(email: string, otp: string) {
     try {
-      await this.transporter.sendMail({
+      await this._transporter.sendMail({
         from: `"Your App" <${process.env.SMTP_USER}>`,
         to: email,
         subject: "Your OTP Code",

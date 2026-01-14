@@ -5,19 +5,11 @@ import OtpModel from "../models/otpModel"
 export class OtpRepository implements IOtpRepository {
     constructor() { }
 
-    async updatePasswordByEmail(email: string, hashedPass: string): Promise<any> {
-        return await User.findOneAndUpdate(
-            { email },
-            { $set: { password: hashedPass } },
-            { new: true }
-        );
+    async saveOtp(email: string, otp: number ,purpose: string) {
+        return await OtpModel.create({email,otp,purpose});
     }
 
-    async saveOtp(otpData: object) {
-        return await OtpModel.create(otpData);
-    }
-
-    async deleteOldOtps(email: string, purpose: string) {
+    async deleteOtps(email: string, purpose: string) {
         return await OtpModel.deleteMany({ email, purpose });
     }
     

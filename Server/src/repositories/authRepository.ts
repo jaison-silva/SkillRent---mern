@@ -12,6 +12,14 @@ export class MongoAuthRepository implements IAuthRepository {
     return User.findOne({ email });
   };
 
+  async updatePasswordByEmail(email: string, hashedPass: string): Promise<any> {
+    return await User.findOneAndUpdate(
+      { email },
+      { $set: { password: hashedPass } },
+      { new: true }
+    );
+  }
+
   findById(id: string) {
     return User.findById(id)
   }
@@ -23,7 +31,8 @@ export class MongoAuthRepository implements IAuthRepository {
     return user;
   };
 
-  async createProvider(data: ProviderCreateInput | ProviderCreateInput[], options?: SaveOptions) {
+  // async createProvider(data: ProviderCreateInput | ProviderCreateInput[], options?: SaveOptions) {
+  async createProvider(data: ProviderCreateInput, options?: SaveOptions) {
     // return Provider.create(Array.isArray(data) ? data : [data],options)
     const provider = new Provider(data);
     await provider.save(options);

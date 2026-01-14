@@ -2,6 +2,8 @@ import { NextFunction, Request, Response } from "express"
 import { API_RESPONSES } from "../constants/statusMessageConstant";
 import IAuthService from "../interfaces/IAuthService"
 import { otpStatus } from "../enum/otpEnum";
+import { ProviderRegisterInput } from "../types/authTypes";
+import { setAuthCookies } from "../utils/setAuthCookies";
 
 // const authService = new AuthServices(new MongoAuthRepository(), new Otp()) // creating an obj from the classss
 
@@ -11,26 +13,14 @@ export class AuthController {
 
     async registerUser(req: Request, res: Response, next: NextFunction) {
         try {
-            const { name, email, password } = req.body
+            const { name, email, password, otp, role } = req.body
 
-            const result = await this.authService.UserRegister({ name, email, password });
+            const result = await this.authService.UserRegister({ name, email, password, otp, role });
 
-            res.cookie("refreshToken", result.refreshToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
-                sameSite: "strict",
-                maxAge: 7 * 24 * 60 * 60 * 1000
-            });
-
-            res.cookie("accessToken", result.accessToken, { //  implement balck listeing tokens
-                httpOnly: false,
-                secure: process.env.NODE_ENV === "production",
-                sameSite: "strict", // prefer lax
-                maxAge: 7 * 24 * 60 * 60 * 1000
-            });
+            setAuthCookies(res, result.refreshToken, result.accessToken)
 
             res.status(201).json({ user: result.user, accessToken: result.accessToken, });
-
+            return
         } catch (err) {
             next(err)
         }
@@ -39,23 +29,14 @@ export class AuthController {
 
     async registerProvider(req: Request, res: Response, next: NextFunction) {
         try {
-            const result = await this.authService.ProviderRegister(req.body);
 
-            res.cookie("accessToken", result.accessToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
-                sameSite: "strict",
-                maxAge: 15 * 60 * 1000 // 15 min
-            });
+            const data: ProviderRegisterInput = req.body
 
-            res.cookie("refreshToken", result.refreshToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
-                sameSite: "strict",
-                maxAge: 7 * 24 * 60 * 60 * 1000
-            });
+            const result = await this.authService.ProviderRegister(data);
 
-            res.status(201).json(result);
+            setAuthCookies(res, result.refreshToken, result.accessToken)
+
+            res.status(201).json({ user: result.user, accessToken: result.accessToken, });
         } catch (err) {
             next(err)
         }
@@ -105,7 +86,7 @@ export class AuthController {
         try {
             const { email } = req.body;
 
-            await this.authService.forgotPassword(email,otpStatus.FORGOT_PASSWORD);
+            await this.authService.forgotPassword(email, otpStatus.FORGOT_PASSWORD);
 
             res.status(API_RESPONSES.SUCCESS.status).json({
                 success: true,

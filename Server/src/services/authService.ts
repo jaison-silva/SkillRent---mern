@@ -5,17 +5,19 @@ import { IOtpRepository } from "../interfaces/IOtpRepository";
 import { ProviderRegisterInput, UserRegisterInput } from "../types/authTypes";
 import ApiError from "../utils/apiError";
 import mongoose from "mongoose";
-import crypto from "crypto"
+import { UserRoleStatus } from "../enum/userRoleStatusEnum";
 import { otpStatus } from "../enum/otpEnum"
 import { API_RESPONSES } from "../constants/statusMessageConstant";
 import jwt from "jsonwebtoken";
 import loginResponseDTO from "../dto/loginResponseDTO";
 import IAuthService from "../interfaces/IAuthService"
+import { IOtpService } from "../interfaces/IOtpService";
 
 export default class AuthServices implements IAuthService {
     constructor(
         private authRepo: IAuthRepository,
-        private otpRepo: IOtpRepository
+        // private otpRepo: IOtpRepository,
+        private otpService: IOtpService
     ) { }
 
     async login(email: string, password: string): Promise<loginResponseDTO> {
@@ -48,69 +50,102 @@ export default class AuthServices implements IAuthService {
         }
     }
 
-    async UserRegister({ name, email, password }: UserRegisterInput): Promise<any> {
+    // async UserRegister({ name, email, password }: UserRegisterInput): Promise<any> {
 
-        const otpVerified = await this.otpRepo.findOtp(
+    //     const otpVerified = await this.otpRepo.findOtp(
+    //         email,
+    //         otpStatus.VERIFICATOIN
+    //     );
+
+    //     if (!otpVerified || otpVerified.isVerified !== true) {
+    //         throw new ApiError(API_RESPONSES.OTP_NOT_VERIFIED)
+    //     }
+
+    //     const existingUser = await this.authRepo.findByEmail(email);
+    //     if (existingUser) throw new ApiError(API_RESPONSES.ALREADY_EXISTS)
+
+    //     const hashedPassword = await bcrypt.hash(password, 10);
+
+    //     const newUser = await this.authRepo.createUser({ name, email, password: hashedPassword, role: "user" });
+
+    //     if (!newUser || !newUser._id) {
+    //         throw new ApiError(API_RESPONSES.INTERNAL_SERVER_ERROR);
+    //     }
+
+    //     const accessToken = jwtToken.accessToken(newUser._id.toString(), newUser.role)
+    //     const refreshToken = jwtToken.refreshToken(newUser._id.toString())
+
+    //     await this.otpRepo.deleteOldOtps(email, otpStatus.VERIFICATOIN);
+
+    //     return {
+    //         user: {
+    //             id: newUser._id,
+    //             name: newUser.name,
+    //             email: newUser.email,
+    //             role: newUser?.role,
+    //         },
+    //         accessToken,
+    //         refreshToken
+    //     }
+    // }
+
+    async UserRegister(data: UserRegisterInput) {
+
+        const { name, email, otp, role, password } = data
+
+        await this.otpService.ensureVerified(email, otp, otpStatus.VERIFICATOIN)
+
+        const existingUser = await this.authRepo.findByEmail(email)
+        if (existingUser) throw new ApiError(API_RESPONSES.ALREADY_EXISTS)
+
+        const hashedPassword = await bcrypt.hash(password, 10)
+
+        const newUser = await this.authRepo.createUser({
+            ...data,
+            password: hashedPassword,
+            role: UserRoleStatus.USER
+        })
+
+        await this.otpService.deleteOtp(email, otpStatus.VERIFICATOIN)
+
+        return newUser
+    }
+
+    async ProviderRegister(data: ProviderRegisterInput) {
+        const {
+            name,
             email,
-            otpStatus.VERIFICATOIN
-        );
-
-        if (!otpVerified || otpVerified.isVerified !== true) {
-            throw new ApiError(API_RESPONSES.OTP_NOT_VERIFIED)
-        }
+            bio,
+            skills,
+            password,
+            otp,
+            language,
+            hasTransport,
+            location,
+        } = data;
 
         const existingUser = await this.authRepo.findByEmail(email);
         if (existingUser) throw new ApiError(API_RESPONSES.ALREADY_EXISTS)
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const newUser = await this.authRepo.createUser({ name, email, password: hashedPassword, role: "user" });
-
-        if (!newUser || !newUser._id) {
-            throw new ApiError(API_RESPONSES.INTERNAL_SERVER_ERROR);
-        }
-
-        const accessToken = jwtToken.accessToken(newUser._id.toString(), newUser.role)
-        const refreshToken = jwtToken.refreshToken(newUser._id.toString())
-
-        await this.otpRepo.deleteOldOtps(email, otpStatus.VERIFICATOIN);
-
-        return {
-            user: {
-                id: newUser._id,
-                name: newUser.name,
-                email: newUser.email,
-                role: newUser?.role,
-            },
-            accessToken,
-            refreshToken
-        }
-    }
-
-    async ProviderRegister(data: ProviderRegisterInput) {
-
-        const existingUser = await this.authRepo.findByEmail(data.email);
-        if (existingUser) throw new ApiError(API_RESPONSES.ALREADY_EXISTS)
-
-        const hashedPassword = await bcrypt.hash(data.password, 10);
-
         const session = await mongoose.startSession();
         session.startTransaction()
 
         try {
 
-            const newUser = await this.authRepo.createUser({ name: data.name, email: data.email, password: hashedPassword, role: "provider" }, { session });
-            // const newProvider = await this.authRepo.createUser({ name: data.name, email: data.email, password: hashedPassword, role: "provider" });
+            const newUser = await this.authRepo.createUser({ name, email, password: hashedPassword, otp, role: UserRoleStatus.PROVIDER }, { session });
+            // const newProvider = await this.authRepo.createUser({ name: name, email: email, password: hashedPassword, role: "provider" });
             // console.log("New User ID:", newUser?._id)
 
 
             await this.authRepo.createProvider({
                 userId: newUser._id,
-                bio: data.bio,
-                skills: data.skills,
-                language: data.language,
-                hasTransport: data.hasTransport,
-                location: data.location,
+                bio: bio,
+                skills: skills,
+                language: language,
+                hasTransport: hasTransport,
+                location: location,
             }, { session });
 
             await session.commitTransaction()
@@ -139,7 +174,6 @@ export default class AuthServices implements IAuthService {
     }
 
     async refresh(refreshToken: string) {
-        const { status, message } = API_RESPONSES.VALIDATION_ERROR
         if (!refreshToken) throw new ApiError(API_RESPONSES.TOKEN_INVALID);
 
         try {
@@ -159,27 +193,28 @@ export default class AuthServices implements IAuthService {
 
 
     async forgotPassword(email: string, purpose: otpStatus) {
+
         const user = await this.authRepo.findByEmail(email);
+
         if (!user) {
             throw new ApiError(API_RESPONSES.NOT_FOUND);
         }
 
-        const otp = crypto.randomInt(100000, 999999).toString();
+        // const otp = crypto.randomInt(100000, 999999).toString();
+        // await this.otpRepo.saveOtp({ email, otp: hashedOtp, purpose });
+        // const hashedOtp = await bcrypt.hash(otp, 10);
 
-        const hashedOtp = await bcrypt.hash(otp, 10);
-
-        await this.otpRepo.saveOtp({ email, otp: hashedOtp, purpose });
-
-        return { message: "OTP sent to email" };
+        await this.otpService.sendOTP(email, otpStatus.FORGOT_PASSWORD)
+        return API_RESPONSES.OTP_SENT
     }
 
-    async resetPassword(email: string, otp: string, newPassword: string) {
+    async resetPassword(email: string, otp: number, newPassword: string) {
 
-        await this.otpRepo.verifyOTP(email, otp, otpStatus.FORGOT_PASSWORD);
+        await this.otpService.ensureVerified(email, otp, otpStatus.FORGOT_PASSWORD);
 
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-        const updatedUser = await this.otpRepo.updatePasswordByEmail(email, hashedPassword);
+        const updatedUser = await this.authRepo.updatePasswordByEmail(email, hashedPassword);
 
         if (!updatedUser) throw new ApiError(API_RESPONSES.USER_NOT_FOUND);
 

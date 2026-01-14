@@ -1,6 +1,7 @@
+import { IOtp } from "../models/otpModel"
+
 export interface IOtpRepository {
-    updatePasswordByEmail(email: string, hashedPass: string): Promise<any>
-    findOtp(email: string, purpose: string): Promise<any>
-    saveOtp(otpData: object): Promise<any>
-    deleteOldOtps(email: string, purpose: string): Promise<any>
+    saveOtp(email: string, otp: number ,purpose: string): Promise<IOtp>
+    deleteOtps(email: string, purpose: string): Promise<void>
+    findOtp(email: string, purpose: string): Promise<IOtp>
 }

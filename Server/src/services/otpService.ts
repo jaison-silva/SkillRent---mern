@@ -5,11 +5,12 @@ import { otpStatus } from "../enum/otpEnum"
 import bcrypt from "bcryptjs"
 import { IOtpRepository } from "../interfaces/IOtpRepository";
 import { IOtpService } from "../interfaces/IOtpService";
-import EmailService from "../services/emailService"
+import { IEmailService } from "../interfaces/IEmailService";
 
 
 export class OtpService implements IOtpService {
-    constructor(private otpRepo: IOtpRepository) { }
+    constructor(private _otpRepo: IOtpRepository,
+        private _emailService: IEmailService) { }
 
     async sendOTP(email: string, purpose: otpStatus) {
 
@@ -21,11 +22,11 @@ export class OtpService implements IOtpService {
 
         const hashedOtp = await bcrypt.hash(otp, 10);
 
-        await this.otpRepo.deleteOldOtps(email, purpose);
+        await this._otpRepo.deleteOtps(email, purpose);
 
-        await this.otpRepo.saveOtp({ email, otp: hashedOtp, purpose });
+        await this._otpRepo.saveOtp({ email, otp: hashedOtp, purpose });
 
-        await EmailService.sendOtpEmail(email, otp);
+        await this._emailService.sendOtpEmail(email, otp); // dp ot
 
         console.log(`OTP for ${purpose} sent to ${email}: ${otp}`);
 
@@ -38,7 +39,7 @@ export class OtpService implements IOtpService {
             throw new ApiError(API_RESPONSES.MISSING_REQUIRED_FIELDS)
         }
 
-        const otpDoc = await this.otpRepo.findOtp(email, purpose);
+        const otpDoc = await this._otpRepo.findOtp(email, purpose);
 
         if (!otpDoc) {
             throw new ApiError(API_RESPONSES.USER_NOT_FOUND);
@@ -53,8 +54,28 @@ export class OtpService implements IOtpService {
         otpDoc.verifiedAt = new Date();
         await otpDoc.save();
 
-        // await this.otpRepo.deleteOldOtps(email, purpose);
+        // await this._otpRepo.deleteOtps(email, purpose);
 
         return true;
+    }
+
+    async ensureVerified(email: string, otp: number, purpose: otpStatus) {
+
+        const otpDoc = await this._otpRepo.findOtp(email, purpose)
+
+        const isValid = await bcrypt.compare(otp.toString(), otpDoc.otp);
+        if (!isValid) {
+            throw new ApiError(API_RESPONSES.OTP_INVALID);
+        }
+
+        if (!otpDoc || !otpDoc.isVerified) {
+            throw new ApiError(API_RESPONSES.OTP_NOT_VERIFIED)
+        }
+
+        return otp
+    }
+
+    async deleteOtp(email: string, purpose: otpStatus) {
+        await this._otpRepo.deleteOtps(email, purpose)
     }
 }

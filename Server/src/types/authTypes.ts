@@ -1,20 +1,20 @@
-//   ├── types/                 ← TypeScript interfaces & types
-
 import { ObjectId } from "mongodb";
-
+import { UserRoleStatus } from "../enum/userRoleStatusEnum";
 
 export type UserRegisterInput = {
   name: string;
   email: string;
   password: string,
-  role?: "user" | "provider" | "admin"
+  otp:number,
+  role?: UserRoleStatus
 }
 
 export type ProviderRegisterInput = {
   name: string;
   email: string;
   password: string;
-  role: "provider" | "user";
+  otp:number,
+  role: UserRoleStatus.PROVIDER | UserRoleStatus.PROVIDER,
   bio?: string;
   skills?: string[];
   language?: string[];
@@ -38,7 +38,3 @@ export type ProviderCreateInput = {
     address: string;
   };
 };
-
-export default {
-
-}
