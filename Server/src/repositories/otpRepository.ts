@@ -1,19 +1,18 @@
-import {IOtpRepository} from "../interfaces/IOtpRepository";
-import User from "../models/userModel";
-import OtpModel from "../models/otpModel"
+import { IOtpRepository } from "../interfaces/IOtpRepository";
+import User from "../models/otpModel";
+import { otpStatus } from "../enum/otpEnum";
 
 export class OtpRepository implements IOtpRepository {
-    constructor() { }
 
-    async saveOtp(email: string, otp: number ,purpose: string) {
-        return await OtpModel.create({email,otp,purpose});
-    }
+  async saveOtp(email: string, otp: string, purpose: otpStatus) {
+    return await User.create({ email, otp, purpose });
+  }
 
-    async deleteOtps(email: string, purpose: string) {
-        return await OtpModel.deleteMany({ email, purpose });
-    }
-    
-    async findOtp(email: string, purpose: string) {
-    return await OtpModel.findOne({ email, purpose });
-}
+  async deleteOtps(email: string, purpose: otpStatus) {
+    await User.deleteMany({ email, purpose });
+  }
+
+  async findOtp(email: string, purpose: otpStatus) {
+    return await User.findOne({ email, purpose });
+  }
 }
