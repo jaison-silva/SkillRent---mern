@@ -1,6 +1,5 @@
-import mongoose, { Types } from "mongoose";
+import mongoose, { Types, Document } from "mongoose";
 import { ProviderStatus } from "../enum/providerStatusEnum";
-import { IUser } from "./userModel";
 
 interface IProviderLocation {
   lat: number;
@@ -8,8 +7,8 @@ interface IProviderLocation {
   address: string;
 }
 
-interface IProvider extends Omit<Document, "location"> {
-  userId: Types.ObjectId | IUser;
+export interface IProvider extends Omit<Document, "location"> {
+  userId: Types.ObjectId // | IUser;
   bio?: string;
   skills: string[];
   language: string[];
@@ -22,7 +21,6 @@ interface IProvider extends Omit<Document, "location"> {
     slots: string[];
   }[]; // ithu means an array of obj of {day : asdasdf , slots: a;sdlkjfa}
   validationStatus: ProviderStatus;
-  isBanned: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -55,7 +53,6 @@ const providerModel = new mongoose.Schema<IProvider>({
     enum: Object.values(ProviderStatus), // returns a n array os same as [vlaues,vale]
     default: ProviderStatus.PENDING
   },
-  isBanned: { type: Boolean, default: false },
 },
   { timestamps: true }
 )

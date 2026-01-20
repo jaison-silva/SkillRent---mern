@@ -1,79 +1,94 @@
 import { NextFunction, Request, Response } from "express";
-import ProviderRepository from "../repositories/providerRepository";
-import ProviderService from "../services/providerService";
 import { API_RESPONSES } from "../constants/statusMessageConstant";
+import { UpdateProviderProfileDTO } from "../dto/provider/updateProviderProfileDTO";
+import ApiError from "../utils/apiError";
+import { IProviderService } from "../interfaces/IProviderService";
 
-const providerService = new ProviderService(new ProviderRepository());
+// const providerService = new ProviderService(new ProviderRepository());
 
-export const providerProfileController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-        const providerId = req.jwtTokenVerified?.id;
+class ProviderController {
+    constructor(
+        private _providerService: IProviderService
+    ) { }
 
-        if (!providerId) throw new Error("Invalid Provider ID");
+    getProfile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const providerId = req.jwtTokenVerified?.id;
 
-        const provider = await providerService.providerProfileService(providerId);
+            if (!providerId) {
+                throw new ApiError(API_RESPONSES.UNAUTHORIZED);
+            }
 
-        const { status, message } = API_RESPONSES.SUCCESS;
-        res.status(status).json({ message, provider });
-    } catch (err) {
-        next(err);
+            const provider = await this._providerService.providerProfileService(providerId);
+
+            const { status, message } = API_RESPONSES.SUCCESS;
+            res.status(status).json({ message, provider });
+        } catch (err) {
+            next(err);
+        }
+    };
+
+    updateProfile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const providerId = req.jwtTokenVerified?.id;
+            const updateData: UpdateProviderProfileDTO = req.body;
+
+            if (!providerId) throw new Error("Invalid Provider ID");
+
+            const provider = await this._providerService.updateProviderProfileService(providerId, updateData);
+
+            const { status, message } = API_RESPONSES.SUCCESS;
+            res.status(status).json({ message, provider });
+        } catch (err) {
+            next(err);
+        }
+    };
+
+    // providerDashboard = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    //     try {
+    //         const providerId = req.jwtTokenVerified?.id;
+
+    //         if (!providerId) throw new ApiError(API_RESPONSES.NOT_FOUND);
+
+    //         // Logic for dashboard stats could go here
+    //         // const dashboardData = await providerService.providerDashboardService(providerId);
+
+    //         const { status, message } = API_RESPONSES.SUCCESS;
+    //         // res.status(status).json({ message, dashboardData });
+    //     } catch (err) {
+    //         next(err);
+    //     }
+    // };
+
+    listProviders = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            // Only return approved providers for public listing
+            // Note: Filtering banned users should be done in service layer after populating userId
+            const filter = { validationStatus: "approved" };
+            const providers = await this._providerService.listProviderService(filter)
+
+            const { status, message } = API_RESPONSES.SUCCESS
+            res.status(status).json({ message, providers })
+        } catch (err) {
+            next(err)
+        }
     }
-};
 
-export const updateProviderProfileController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-        const providerId = req.jwtTokenVerified?.id;
-        const updateData = req.body;
+    getProviderById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
 
-        if (!providerId) throw new Error("Invalid Provider ID");
+            const providerId = req.params.id
 
-        const provider = await providerService.updateProviderProfileService(providerId, updateData);
+            const provider = await this._providerService.providerDetailService(providerId)
 
-        const { status, message } = API_RESPONSES.SUCCESS;
-        res.status(status).json({ message, provider });
-    } catch (err) {
-        next(err);
+            const { status, message } = API_RESPONSES.SUCCESS
+            res.status(status).json({ message, provider })
+        } catch (err) {
+            next(err)
+        }
     }
-};
 
-// export const providerDashboard = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-//     try {
-//         const providerId = req.jwtTokenVerified?.id;
 
-//         if (!providerId) throw new ApiError(API_RESPONSES.NOT_FOUND);
-
-//         // Logic for dashboard stats could go here
-//         // const dashboardData = await providerService.providerDashboardService(providerId);
-
-//         const { status, message } = API_RESPONSES.SUCCESS;
-//         // res.status(status).json({ message, dashboardData });
-//     } catch (err) {
-//         next(err);
-//     }
-// };
-
-export const listProvidersController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-        const providers = await providerService.listProviderService()
-
-        const { status, message } = API_RESPONSES.SUCCESS
-        res.status(status).json({ message, providers })
-    } catch (err) {
-        next(err)
-    }
 }
 
-export const ProviderDetailsController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-
-        const providerId = req.params.id
-
-        const provider = await  providerService.providerDetailService(providerId)
-
-        const { status, message } = API_RESPONSES.SUCCESS
-        res.status(status).json({ message, provider })
-    } catch (err) {
-        next(err)
-    }
-}
-
+export { ProviderController }

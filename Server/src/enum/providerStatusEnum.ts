@@ -1,5 +1,5 @@
 export enum ProviderStatus{
     PENDING = 'pending',
-    APPROVED = 'approved',
+    APPROVED = 'approved', 
     DENIED = 'denied'
 } 

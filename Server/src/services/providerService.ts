@@ -1,18 +1,38 @@
 import providerRepository from "../repositories/providerRepository";
+import IUserRepository from "../interfaces/IUserRepository";
+import { UpdateProviderProfileDTO } from "../dto/provider/updateProviderProfileDTO";
+import { IProviderService } from "../interfaces/IProviderService";
 
-export default class ProviderService {
-  constructor(private providerRepo: providerRepository) {}
+export default class ProviderService implements IProviderService {
+  constructor(
+    private providerRepo: providerRepository,
+    private userRepo: IUserRepository
+  ) { }
 
-  providerProfileService(id: string) {
-    return this.providerRepo.findProviderById(id);
+  providerProfileService(userId: string) {
+    return this.providerRepo.findByUserId(userId);
   }
 
-  updateProviderProfileService(id: string, data: any) {
-    return this.providerRepo.updateProviderById(id, data);
+  async updateProviderProfileService(userId: string, data: UpdateProviderProfileDTO & { name?: string }) {
+    const { name, ...providerData } = data;
+
+    // Update provider and user in parallel if name is provided
+    const updatePromises: Promise<any>[] = [
+      this.providerRepo.updateProviderByUserId(userId, providerData)
+    ];
+
+    if (name) {
+      updatePromises.push(this.userRepo.updateUserById(userId, { name }));
+    }
+
+    const [updatedProvider] = await Promise.all(updatePromises);
+
+    // Re-fetch to get populated user info
+    return this.providerRepo.findByUserId(userId);
   }
 
-  listProviderService() {
-    return this.providerRepo.listProviders();
+  listProviderService(filter?: Record<string, any>) {
+    return this.providerRepo.listProviders(filter);
   }
 
   providerDetailService(id: string) {

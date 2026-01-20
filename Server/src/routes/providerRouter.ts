@@ -2,23 +2,22 @@ import { Router } from "express";
 import { protect } from "../middlewares/authMiddleware";
 import { authorize } from "../middlewares/roleAuthoriseMiddleware";
 import { ROLES } from "../constants/rolesConstants";
-import { 
-    getProviderProfile, 
-    updateProviderProfile, 
-    getAllProviders, 
-    getProviderById 
-} from "../controllers/providerController";
+import { ProviderContainer } from "../container/container";
+import { ProviderController } from "../controllers/providerController";
 
 const router = Router();
 
-router.use(protect);
+router.use(protect, authorize(ROLES.PROVIDER));
 
-// --- Me (The Current Provider) ---
-router.get('/profile', authorize(ROLES.PROVIDER), getProviderProfile);
-router.patch('/profile', authorize(ROLES.PROVIDER), updateProviderProfile);
+const providerService = ProviderContainer()
+const providerController = new ProviderController(providerService)
 
-// --- General Provider Resources ---
-router.get('/', getAllProviders);       // /providers (List all)
-router.get('/:id', getProviderById);    // /providers/123 (Details)
+// self
+router.get('/profile', authorize(ROLES.PROVIDER), providerController.getProfile);
+router.patch('/profile', authorize(ROLES.PROVIDER), providerController.updateProfile);
+
+
+router.get('/', providerController.listProviders);      
+router.get('/:id', providerController.getProviderById);
 
 export default router;

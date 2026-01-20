@@ -1,5 +1,7 @@
-export default interface loginResponse{
-      user: {
+// import { ROLES } from "../constants/rolesConstants"
+
+export interface RegisterResponseDTO {
+  user: {
     id: string
     name: string
     email: string
@@ -7,4 +9,4 @@ export default interface loginResponse{
   }
   accessToken: string
   refreshToken: string
-} 
+}

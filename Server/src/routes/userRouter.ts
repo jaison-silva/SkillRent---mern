@@ -2,26 +2,23 @@ import { Router } from "express";
 import { protect } from "../middlewares/authMiddleware";
 import { authorize } from "../middlewares/roleAuthoriseMiddleware";
 import { ROLES } from "../constants/rolesConstants";
-import { 
-    getUserDashboard, 
-    getMyProfile, 
-    updateMyProfile, 
-    getUserById, 
-    getAllUsers 
-} from "../controllers/userController";
+import { userContainer } from "../container/container";
+import { UserController } from "../controllers/userController";
 
 const router = Router();
 
-router.use(protect); // for checking this jwt ondo and adding it to rhe req 
+router.use(protect,authorize(ROLES.USER)); // for checking this jwt ondo and adding it to rhe req 
 
-// --- Me (The Current User) ---
-router.get('/dashboard', authorize(ROLES.USER), getUserDashboard); 
-router.get('/profile', authorize(ROLES.USER), getMyProfile);
-router.patch('/profile', authorize(ROLES.USER), updateMyProfile);  
+const userService = userContainer()
+const userController = new UserController(userService)
 
-// --- General User Resources ---
-// Important: Place these AFTER /profile to strictly avoid ID collisions
-router.get('/', getAllUsers);          
-router.get('/:id', getUserById);        
+
+router.get('/dashboard', authorize(ROLES.USER), userController.getDashboard); // client landing page, task pending
+router.get('/profile', authorize(ROLES.USER), userController.getProfile);
+router.patch('/profile', authorize(ROLES.USER), userController.updateProfile);  
+
+
+router.get('/', userController.listUsers);          
+router.get('/:id', userController.getUser);        
 
 export default router;

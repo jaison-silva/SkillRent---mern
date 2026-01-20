@@ -20,11 +20,13 @@ export class OtpService implements IOtpService {
 
         const otp = crypto.randomInt(100000, 999999).toString();
 
+        console.log("otp is "+otp)
+
         const hashedOtp = await bcrypt.hash(otp, 10);
 
         await this._otpRepo.deleteOtps(email, purpose);
 
-        await this._otpRepo.saveOtp({ email, otp: hashedOtp, purpose });
+        await this._otpRepo.saveOtp(email, hashedOtp, purpose);
 
         await this._emailService.sendOtpEmail(email, otp); // dp ot
 
@@ -33,7 +35,7 @@ export class OtpService implements IOtpService {
         return { success: true };
     }
 
-    async verifyOTP(email: string, otp: string, purpose: string) {
+    async verifyOTP(email: string, otp: string, purpose: otpStatus) {
 
         if (!email || !otp || !purpose) {
             throw new ApiError(API_RESPONSES.MISSING_REQUIRED_FIELDS)
@@ -50,9 +52,11 @@ export class OtpService implements IOtpService {
             throw new ApiError(API_RESPONSES.OTP_INVALID);
         }
 
-        otpDoc.isVerified = true;
-        otpDoc.verifiedAt = new Date();
-        await otpDoc.save();
+        await this._otpRepo.markAsVerified(email, purpose);
+
+        // otpDoc.isVerified = true;
+        // otpDoc.verifiedAt = new Date();
+        // await otpDoc.save();
 
         // await this._otpRepo.deleteOtps(email, purpose);
 
@@ -63,13 +67,19 @@ export class OtpService implements IOtpService {
 
         const otpDoc = await this._otpRepo.findOtp(email, purpose)
 
-        const isValid = await bcrypt.compare(otp.toString(), otpDoc.otp);
-        if (!isValid) {
-            throw new ApiError(API_RESPONSES.OTP_INVALID);
-        }
-
         if (!otpDoc || !otpDoc.isVerified) {
             throw new ApiError(API_RESPONSES.OTP_NOT_VERIFIED)
+        }
+
+        if (otp === undefined || otp === null) {
+            console.error("ensureVerified: OTP is missing for email:", email);
+            throw new ApiError(API_RESPONSES.VALIDATION_ERROR);
+        }
+
+        const otpStr = String(otp);
+        const isValid = await bcrypt.compare(otpStr, otpDoc.otp);
+        if (!isValid) {
+            throw new ApiError(API_RESPONSES.OTP_INVALID);
         }
 
         return otp

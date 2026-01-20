@@ -1,15 +1,8 @@
 import { ObjectId } from "mongodb";
-import { UserRoleStatus } from "../enum/userRoleStatusEnum";
+import { UserRoleStatus } from "../../enum/userRoleStatusEnum";
 
-export type UserRegisterInput = {
-  name: string;
-  email: string;
-  password: string,
-  otp:number,
-  role?: UserRoleStatus
-}
 
-export type ProviderRegisterInput = {
+export interface ProviderRegisterRequestDTO {
   name: string;
   email: string;
   password: string;
@@ -26,7 +19,7 @@ export type ProviderRegisterInput = {
   };
 };
 
-export type ProviderCreateInput = {
+export type ProviderCreateInput = { // ithu used service to enter data in provider db in authservice
   userId: ObjectId;
   bio?: string;
   skills?: string[];
@@ -37,4 +30,4 @@ export type ProviderCreateInput = {
     lng: number;
     address: string;
   };
-};
+}

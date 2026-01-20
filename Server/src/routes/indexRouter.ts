@@ -8,7 +8,7 @@ import adminRouter from './adminRouter';
 const router = Router();
  
 router.use(rateLimiter);
-
+ 
 router.use('/auth', authRouter);      
 router.use('/users', userRouter);       
 router.use('/providers', providerRouter);

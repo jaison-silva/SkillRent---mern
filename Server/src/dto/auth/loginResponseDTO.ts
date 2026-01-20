@@ -1,5 +1,4 @@
-// dto/registerResponseDTO.ts
-export default interface RegisterResponseDTO {
+export interface LoginResponseDTO  {
   user: {
     id: string
     name: string

@@ -1,4 +1,4 @@
 export enum otpStatus {
-    VERIFICATOIN = "verification",
+    VERIFICATION = "verification",
     FORGOT_PASSWORD = "forgot_password"
 }

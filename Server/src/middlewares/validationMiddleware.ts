@@ -8,7 +8,7 @@ export default function validate(schema: ZodObject) {
       const parsed = await schema.parseAsync(req.body);
       req.body = parsed;
       next();
-    } catch (error: any) {
+    } catch (error) {
       const { status, message } = API_RESPONSES.VALIDATION_ERROR;
       res.status(status).json({ message: message + error });
     }

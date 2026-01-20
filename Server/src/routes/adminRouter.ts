@@ -2,25 +2,22 @@ import { Router } from "express";
 import { protect } from "../middlewares/authMiddleware";
 import { authorize } from "../middlewares/roleAuthoriseMiddleware";
 import { ROLES } from "../constants/rolesConstants";
-import { 
-    getDashboardStats, 
-    changeUserStatus, 
-    changeProviderStatus, 
-    verifyProvider 
-} from "../controllers/adminController";
+import { adminContainer } from "../container/container";
+import { AdminController } from "../controllers/adminController";
 
 const router = Router();
+router.use(protect, authorize(ROLES.ADMIN));
 
-router.use(protect, authorize(ROLES.PROVIDER));
+const adminServices = adminContainer()
+const adminController = new AdminController(adminServices)
 
-router.get('/dashboard', getDashboardStats);
+router.get('/dashboard', adminController.adminDashboard);
 
-// --- User Management ---
-// We use /users here to indicate we are acting on users, but under the admin namespace
-router.patch('/users/:id/status', changeUserStatus); // Body: { status: 'blocked' } or { isBlocked: true }
+// user management
+router.patch('/users/:id/status', adminController.changeUserStatus); // Body: { status: 'blocked' } or { isBlocked: true }
 
-// --- Provider Management ---
-router.patch('/providers/:id/status', changeProviderStatus);
-router.patch('/providers/:id/verification', verifyProvider);
+// provider management
+router.patch('/providers/:id/status', adminController.changeProviderStatus); // blocking
+router.patch('/providers/:id/verification', adminController.verifyProvider); // approve \ reject
 
 export default router;

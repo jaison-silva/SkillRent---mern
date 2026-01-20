@@ -2,16 +2,20 @@ import bcrypt from "bcryptjs";
 import jwtToken from "../utils/generateToken";
 import { IAuthRepository } from "../interfaces/IAuthRepository";
 import { IOtpRepository } from "../interfaces/IOtpRepository";
-import { ProviderRegisterInput, UserRegisterInput } from "../types/authTypes";
+import { ProviderRegisterRequestDTO } from "../dto/register/providerRegisterRequestDTO";
+import { RegisterResponseDTO } from "../dto/register/RegisterResponseDTO";
 import ApiError from "../utils/apiError";
 import mongoose from "mongoose";
 import { UserRoleStatus } from "../enum/userRoleStatusEnum";
 import { otpStatus } from "../enum/otpEnum"
 import { API_RESPONSES } from "../constants/statusMessageConstant";
 import jwt from "jsonwebtoken";
-import loginResponseDTO from "../dto/loginResponseDTO";
+import { LoginResponseDTO } from "../dto/auth/loginResponseDTO";
 import IAuthService from "../interfaces/IAuthService"
 import { IOtpService } from "../interfaces/IOtpService";
+import { UserRegisterRequestDTO } from "../dto/register/userRegisterRequestDTO"
+import { LoginRequestDTO } from "../dto/auth/loginRequestDTO";
+import { RefreshResponseDTO } from "../dto/auth/refreshResponseDTO";
 
 export default class AuthServices implements IAuthService {
     constructor(
@@ -20,16 +24,17 @@ export default class AuthServices implements IAuthService {
         private otpService: IOtpService
     ) { }
 
-    async login(email: string, password: string): Promise<loginResponseDTO> {
+    async login(data: LoginRequestDTO): Promise<LoginResponseDTO> {
+
+        const { email, password } = data
 
         if (!email || !password) {
             throw new ApiError(API_RESPONSES.VALIDATION_ERROR)
         }
-
         const user = await this.authRepo.findByEmail(email)
 
         if (!user || !user.password) {
-            throw new ApiError(API_RESPONSES.ALREADY_EXISTS)
+            throw new ApiError(API_RESPONSES.USER_NOT_FOUND)
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password)
@@ -38,9 +43,11 @@ export default class AuthServices implements IAuthService {
         const accessToken = jwtToken.accessToken(user._id.toString(), user.role)
         const refreshToken = jwtToken.refreshToken(user._id.toString())
 
+        await this.authRepo.updateRefreshToken(user._id.toString(), refreshToken);
+
         return {
             user: {
-                id: user?._id,
+                id: user?._id.toString(),
                 name: user?.name,
                 email: user?.email,
                 role: user?.role
@@ -50,7 +57,7 @@ export default class AuthServices implements IAuthService {
         }
     }
 
-    // async UserRegister({ name, email, password }: UserRegisterInput): Promise<any> {
+    // async UserRegister({ name, email, password }: UserRegisterInput): Promise<> {
 
     //     const otpVerified = await this.otpRepo.findOtp(
     //         email,
@@ -89,11 +96,12 @@ export default class AuthServices implements IAuthService {
     //     }
     // }
 
-    async UserRegister(data: UserRegisterInput) {
-
+    async UserRegister(data: UserRegisterRequestDTO): Promise<RegisterResponseDTO> {
         const { name, email, otp, role, password } = data
 
-        await this.otpService.ensureVerified(email, otp, otpStatus.VERIFICATOIN)
+        console.log("UserRegister backend data:", { name, email, otp, role });
+
+        await this.otpService.ensureVerified(email, otp, otpStatus.VERIFICATION)
 
         const existingUser = await this.authRepo.findByEmail(email)
         if (existingUser) throw new ApiError(API_RESPONSES.ALREADY_EXISTS)
@@ -103,15 +111,37 @@ export default class AuthServices implements IAuthService {
         const newUser = await this.authRepo.createUser({
             ...data,
             password: hashedPassword,
-            role: UserRoleStatus.USER
+            // role: UserRoleStatus.USER
+            role
         })
 
-        await this.otpService.deleteOtp(email, otpStatus.VERIFICATOIN)
+        if (!newUser || !newUser._id) {
+            console.error("UserRegister: FAILED to create user doc or get _id", { newUser });
+            throw new ApiError(API_RESPONSES.INTERNAL_SERVER_ERROR);
+        }
 
-        return newUser
+        const userIdStr = String(newUser._id);
+        const accessToken = jwtToken.accessToken(userIdStr, newUser.role);
+        const refreshToken = jwtToken.refreshToken(userIdStr);
+
+        await this.authRepo.updateRefreshToken(userIdStr, refreshToken);
+
+        await this.otpService.deleteOtp(email, otpStatus.VERIFICATION)
+
+        return {
+            user: {
+                id: userIdStr,
+                name: newUser.name,
+                email: newUser.email,
+                role: newUser.role
+            },
+            accessToken,
+            refreshToken
+        }
     }
 
-    async ProviderRegister(data: ProviderRegisterInput) {
+    async ProviderRegister(data: ProviderRegisterRequestDTO): Promise<RegisterResponseDTO> {
+
         const {
             name,
             email,
@@ -123,6 +153,9 @@ export default class AuthServices implements IAuthService {
             hasTransport,
             location,
         } = data;
+        console.log("ProviderRegister backend data:", { name, email, otp });
+
+        await this.otpService.ensureVerified(email, otp, otpStatus.VERIFICATION)
 
         const existingUser = await this.authRepo.findByEmail(email);
         if (existingUser) throw new ApiError(API_RESPONSES.ALREADY_EXISTS)
@@ -134,7 +167,15 @@ export default class AuthServices implements IAuthService {
 
         try {
 
-            const newUser = await this.authRepo.createUser({ name, email, password: hashedPassword, otp, role: UserRoleStatus.PROVIDER }, { session });
+            const newUser = await this.authRepo.createUser({
+                name,
+                email,
+                password: hashedPassword,
+                otp,
+                role: UserRoleStatus.PROVIDER
+            }, { session });
+
+
             // const newProvider = await this.authRepo.createUser({ name: name, email: email, password: hashedPassword, role: "provider" });
             // console.log("New User ID:", newUser?._id)
 
@@ -151,14 +192,23 @@ export default class AuthServices implements IAuthService {
             await session.commitTransaction()
             session.endSession()
 
-            const accessToken = jwtToken.accessToken(newUser._id.toString(), newUser.role)
-            const refreshToken = jwtToken.refreshToken(newUser._id.toString())
+            if (!newUser || !newUser._id) {
+                console.error("ProviderRegister: FAILED to create user doc or get _id", { newUser });
+                throw new ApiError(API_RESPONSES.INTERNAL_SERVER_ERROR);
+            }
+
+            const userIdStr = String(newUser._id);
+            const accessToken = jwtToken.accessToken(userIdStr, newUser.role);
+            const refreshToken = jwtToken.refreshToken(userIdStr);
+
+            await this.authRepo.updateRefreshToken(userIdStr, refreshToken);
 
             return {
                 user: {
-                    id: newUser._id,
+                    id: userIdStr,
                     name: newUser.name,
                     email: newUser.email,
+                    role: newUser.role
                 },
                 accessToken,
                 refreshToken
@@ -173,19 +223,33 @@ export default class AuthServices implements IAuthService {
 
     }
 
-    async refresh(refreshToken: string) {
+    async refresh(refreshToken: string): Promise<RefreshResponseDTO> {
         if (!refreshToken) throw new ApiError(API_RESPONSES.TOKEN_INVALID);
 
         try {
-            const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!) as any;
+            const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!) as { id: string }
 
             const user = await this.authRepo.findById(decoded.id);
 
             if (!user || user.isBanned) throw new ApiError(API_RESPONSES.ACCOUNT_DISABLED);
 
+            // Verify if the token matches the one in the database
+            if (user.refreshToken !== refreshToken) {
+                console.error("Token mismatch. Possible token reuse or breach.");
+                throw new ApiError(API_RESPONSES.TOKEN_INVALID);
+            }
+
             const accessToken = jwtToken.accessToken(user._id.toString(), user.role);
 
-            return { accessToken, user };
+            return {
+                accessToken,
+                user: {
+                    id: user._id.toString(),
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                }
+            };
         } catch (err) {
             throw err
         }
@@ -209,6 +273,7 @@ export default class AuthServices implements IAuthService {
     }
 
     async resetPassword(email: string, otp: number, newPassword: string) {
+        console.log("resetPassword backend data:", { email, otp });
 
         await this.otpService.ensureVerified(email, otp, otpStatus.FORGOT_PASSWORD);
 
@@ -218,7 +283,13 @@ export default class AuthServices implements IAuthService {
 
         if (!updatedUser) throw new ApiError(API_RESPONSES.USER_NOT_FOUND);
 
-        return API_RESPONSES.OTP_SENT;
+        await this.otpService.deleteOtp(email, otpStatus.FORGOT_PASSWORD);
+
+        return API_RESPONSES.PASSWORD_UPDATED;
+    }
+
+    async revokeToken(userId: string): Promise<void> {
+        await this.authRepo.updateRefreshToken(userId, null);
     }
 
 }

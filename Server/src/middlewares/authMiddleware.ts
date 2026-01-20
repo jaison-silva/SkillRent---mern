@@ -4,7 +4,7 @@ import ApiError from "../utils/apiError";
 import { JwtPayload } from "jsonwebtoken";
 import { API_RESPONSES } from "../constants/statusMessageConstant";
 
-export default function protect (req: Request, res: Response, next: NextFunction) {
+export function protect(req: Request, res: Response, next: NextFunction) {
     try {
         const authHeader = req.headers.authorization;
         const JwtToken = authHeader && authHeader.split(" ")[1];
@@ -20,10 +20,15 @@ export default function protect (req: Request, res: Response, next: NextFunction
         req.jwtTokenVerified = decoded;
         next();
 
-    } catch (err) {
-        next(err)
-        // next(new ApiError(401, "Invalid or expired JwtToken"));
+    } catch (err: unknown) {
+
+        let message : string = API_RESPONSES.TOKEN_MISSING.message
+
+        if (err instanceof Error) {
+            message = err.message;
+        }
+
+        next(new ApiError({ status: 401, message }));
     }
 };
 
-  

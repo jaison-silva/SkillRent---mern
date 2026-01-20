@@ -1,10 +1,14 @@
 import { SaveOptions } from "mongoose";
-import { UserRegisterInput, ProviderCreateInput } from "../types/authTypes";
+import { ProviderCreateInput } from "../dto/register/providerRegisterRequestDTO";
+import { IUser } from "../models/userModel";
+import { IProvider } from "../models/providerModel";
+import { UserRegisterRequestDTO } from "../dto/register/userRegisterRequestDTO";
 
-export interface IAuthRepository { // yet to change the any to IUser and all that 
-    findByEmail(email: string): Promise<any>
-    updatePasswordByEmail(email: string, hashedPass: string): Promise<any>
-    findById(id: string): Promise<any>
-    createUser(data: UserRegisterInput, options?: SaveOptions): Promise<any> //| UserRegisterInput[]
-    createProvider(data: ProviderCreateInput, options?: SaveOptions): Promise<any> //| ProviderCreateInput[]
-}
+export interface IAuthRepository {
+    findByEmail(email: string): Promise<IUser | null>
+    updatePasswordByEmail(email: string, hashedPass: string): Promise<IUser | null>
+    findById(id: string): Promise<IUser | null>
+    createUser(data: UserRegisterRequestDTO, options?: SaveOptions): Promise<IUser> //| UserRegisterInput[]
+    createProvider(data: ProviderCreateInput, options?: SaveOptions): Promise<IProvider> //| ProviderCreateInput[]
+    updateRefreshToken(id: string, token: string | null): Promise<void>
+}  

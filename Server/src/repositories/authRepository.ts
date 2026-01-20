@@ -1,18 +1,20 @@
 import User from "../models/userModel";
 import Provider from "../models/providerModel";
 import { IAuthRepository } from "../interfaces/IAuthRepository";
-import { UserRegisterInput, ProviderCreateInput } from "../types/authTypes";
+import { ProviderCreateInput } from "../dto/register/providerRegisterRequestDTO";
+import { UserRegisterRequestDTO } from "../dto/register/userRegisterRequestDTO";
+import { IUser } from "../models/userModel";
 import { SaveOptions } from "mongoose";
 
 
 export class MongoAuthRepository implements IAuthRepository {
   constructor() { }
 
-  findByEmail(email: string) {
+  findByEmail(email: string): Promise<IUser | null> {
     return User.findOne({ email });
   };
 
-  async updatePasswordByEmail(email: string, hashedPass: string): Promise<any> {
+  async updatePasswordByEmail(email: string, hashedPass: string): Promise<IUser | null> {
     return await User.findOneAndUpdate(
       { email },
       { $set: { password: hashedPass } },
@@ -20,11 +22,11 @@ export class MongoAuthRepository implements IAuthRepository {
     );
   }
 
-  findById(id: string) {
+  findById(id: string): Promise<IUser | null> {
     return User.findById(id)
   }
 
-  async createUser(data: UserRegisterInput | UserRegisterInput[], options?: SaveOptions) {
+  async createUser(data: UserRegisterRequestDTO | UserRegisterRequestDTO[], options?: SaveOptions) {
     // return User.create(Array.isArray(data) ? data : [data], options);
     const user = new User(data);
     await user.save(options);
@@ -37,6 +39,9 @@ export class MongoAuthRepository implements IAuthRepository {
     const provider = new Provider(data);
     await provider.save(options);
     return provider;
+  }
+  async updateRefreshToken(id: string, token: string | null): Promise<void> {
+    await User.findByIdAndUpdate(id, { $set: { refreshToken: token } });
   }
 
 }

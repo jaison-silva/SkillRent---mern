@@ -15,4 +15,16 @@ export class OtpRepository implements IOtpRepository {
   async findOtp(email: string, purpose: otpStatus) {
     return await User.findOne({ email, purpose });
   }
+
+  async markAsVerified(email: string, purpose: otpStatus): Promise<void> {
+    await User.updateOne(
+      { email, purpose },
+      {
+        $set: {
+          isVerified: true,
+          verifiedAt: new Date()
+        }
+      }
+    );
+  }
 }

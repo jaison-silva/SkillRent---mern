@@ -1,25 +1,29 @@
 import { NextFunction, Request, Response } from "express"
+import jwt from "jsonwebtoken";
 import { API_RESPONSES } from "../constants/statusMessageConstant";
 import IAuthService from "../interfaces/IAuthService"
 import { otpStatus } from "../enum/otpEnum";
-import { ProviderRegisterInput } from "../types/authTypes";
 import { setAuthCookies } from "../utils/setAuthCookies";
+import { UserRegisterRequestDTO } from "../dto/register/userRegisterRequestDTO";
+import { ProviderRegisterRequestDTO } from "../dto/register/providerRegisterRequestDTO";
+import { LoginRequestDTO } from "../dto/auth/loginRequestDTO";
 
-// const authService = new AuthServices(new MongoAuthRepository(), new Otp()) // creating an obj from the classss
+// const authService = new AuthServices(new MongoAuthRepository(), new Otp()) // creating an obj from the classss // this was not DI
 
 export class AuthController {
     constructor(private authService: IAuthService
     ) { }
 
-    async registerUser(req: Request, res: Response, next: NextFunction) {
+    registerUser = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { name, email, password, otp, role } = req.body
+            console.log("AuthController.registerUser body:", req.body);
+            const data: UserRegisterRequestDTO = req.body
 
-            const result = await this.authService.UserRegister({ name, email, password, otp, role });
+            const result = await this.authService.UserRegister(data);
 
             setAuthCookies(res, result.refreshToken, result.accessToken)
 
-            res.status(201).json({ user: result.user, accessToken: result.accessToken, });
+            res.status(201).json({ user: result.user, accessToken: result.accessToken });
             return
         } catch (err) {
             next(err)
@@ -27,50 +31,52 @@ export class AuthController {
     }
 
 
-    async registerProvider(req: Request, res: Response, next: NextFunction) {
+    registerProvider = async (req: Request, res: Response, next: NextFunction) => {
         try {
-
-            const data: ProviderRegisterInput = req.body
+            console.log("AuthController.registerProvider body:", req.body);
+            const data: ProviderRegisterRequestDTO = req.body
 
             const result = await this.authService.ProviderRegister(data);
 
             setAuthCookies(res, result.refreshToken, result.accessToken)
 
-            res.status(201).json({ user: result.user, accessToken: result.accessToken, });
+            res.status(201).json({ user: result.user, refreshToken: result.refreshToken });
         } catch (err) {
             next(err)
         }
     }
 
 
-    async login(req: Request, res: Response, next: NextFunction): Promise<void> {
+    login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
-            const { email, password } = req.body
+            const data: LoginRequestDTO = req.body
 
-            const { user, accessToken, refreshToken } = await this.authService.login(email, password)
+            const { user, accessToken, refreshToken } = await this.authService.login(data)
 
-            res.cookie("accessToken", accessToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
-                sameSite: "strict",
-                maxAge: 15 * 60 * 1000 // 15 min
-            });
+            // res.cookie("accessToken", accessToken, {
+            //     httpOnly: true,
+            //     secure: process.env.NODE_ENV === "production",
+            //     sameSite: "strict",
+            //     maxAge: 15 * 60 * 1000 // 15 min
+            // });
 
-            res.cookie("refreshToken", refreshToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
-                sameSite: "strict",
-                maxAge: 7 * 24 * 60 * 60 * 1000
-            });
+            // res.cookie("refreshToken", refreshToken, {
+            //     httpOnly: true,
+            //     secure: process.env.NODE_ENV === "production",
+            //     sameSite: "strict",
+            //     maxAge: 7 * 24 * 60 * 60 * 1000
+            // });
+
+            setAuthCookies(res, refreshToken, accessToken)
 
             const { status, message } = API_RESPONSES.SUCCESS
-            res.status(status).json({ message, user, accessToken, refreshToken })
+            res.status(status).json({ message, user, accessToken })
         } catch (err) {
             next(err)
         }
     }
 
-    async refresh(req: Request, res: Response, next: NextFunction) {
+    refresh = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const refreshToken = req.cookies.refreshToken;
             const { accessToken } = await this.authService.refresh(refreshToken);
@@ -82,7 +88,7 @@ export class AuthController {
         }
     }
 
-    async forgotPassword(req: Request, res: Response, next: NextFunction) {
+    forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { email } = req.body;
 
@@ -97,7 +103,7 @@ export class AuthController {
         }
     }
 
-    async resetPassword(req: Request, res: Response, next: NextFunction) {
+    resetPassword = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { email, otp, newPassword } = req.body;
 
@@ -105,7 +111,31 @@ export class AuthController {
 
             res.status(API_RESPONSES.SUCCESS.status).json({
                 success: true,
-                message: API_RESPONSES.SUCCESS.message,
+                message: API_RESPONSES.PASSWORD_UPDATED.message,
+            });
+        } catch (err) {
+            next(err);
+        }
+    };
+
+    logout = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const refreshToken = req.cookies.refreshToken;
+
+            if (refreshToken) {
+                try {
+                    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!) as { id: string };
+                    await this.authService.revokeToken(decoded.id);
+                } catch (err) {
+                    console.error("Logout: Failed to revoke token in DB (likely expired or invalid):", (err as Error).message);
+                }
+            }
+
+            res.clearCookie("refreshToken");
+            res.clearCookie("accessToken");
+            res.status(API_RESPONSES.SUCCESS.status).json({
+                success: true,
+                message: "Logged out successfully",
             });
         } catch (err) {
             next(err);
