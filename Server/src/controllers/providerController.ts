@@ -62,8 +62,6 @@ class ProviderController {
 
     listProviders = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
-            // Only return approved providers for public listing
-            // Note: Filtering banned users should be done in service layer after populating userId
             const filter = { validationStatus: "approved" };
             const providers = await this._providerService.listProviderService(filter)
 

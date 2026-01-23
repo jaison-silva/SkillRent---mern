@@ -52,21 +52,6 @@ export class AuthController {
             const data: LoginRequestDTO = req.body
 
             const { user, accessToken, refreshToken } = await this.authService.login(data)
-
-            // res.cookie("accessToken", accessToken, {
-            //     httpOnly: true,
-            //     secure: process.env.NODE_ENV === "production",
-            //     sameSite: "strict",
-            //     maxAge: 15 * 60 * 1000 // 15 min
-            // });
-
-            // res.cookie("refreshToken", refreshToken, {
-            //     httpOnly: true,
-            //     secure: process.env.NODE_ENV === "production",
-            //     sameSite: "strict",
-            //     maxAge: 7 * 24 * 60 * 60 * 1000
-            // });
-
             setAuthCookies(res, refreshToken, accessToken)
 
             const { status, message } = API_RESPONSES.SUCCESS

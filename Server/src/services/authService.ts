@@ -33,6 +33,12 @@ export default class AuthServices implements IAuthService {
         }
         const user = await this.authRepo.findByEmail(email)
 
+        // if(user?.logincount != null && Number(user.logincount) > 5){
+        //     throw new ApiError({status : 500, message : "too many logins this month"})
+        // }else{
+        //     await this.authRepo.loginCountManage(user?.email,user?.logincount +)
+        // }
+
         if (!user || !user.password) {
             throw new ApiError(API_RESPONSES.USER_NOT_FOUND)
         }

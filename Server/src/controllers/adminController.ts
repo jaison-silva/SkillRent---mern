@@ -18,8 +18,6 @@ import { IAdminService } from "../interfaces/IAdminService";
 // );
 
 
-
-
 export class AdminController {
     constructor(private _adminService: IAdminService) { }
 

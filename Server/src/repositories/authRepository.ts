@@ -14,6 +14,10 @@ export class MongoAuthRepository implements IAuthRepository {
     return User.findOne({ email });
   };
 
+  // async loginCountManage(email: string, count: number){
+  //   return await User.findOneAndUpdate({email},{$set: {count}})
+  // }
+
   async updatePasswordByEmail(email: string, hashedPass: string): Promise<IUser | null> {
     return await User.findOneAndUpdate(
       { email },

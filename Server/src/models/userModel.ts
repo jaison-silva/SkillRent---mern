@@ -8,6 +8,7 @@ export interface IUser extends Document { //Rule of "Colocation" (Keep related t
     password?: string;
     role: UserRoleStatus;
     lastLogin: Date | null;
+    // logincount : Number
     isBanned: boolean;
     refreshToken: string | null;
     createdAt: Date;
@@ -24,6 +25,7 @@ const userSchema = new mongoose.Schema<IUser>({
         default: UserRoleStatus.USER
     },
     lastLogin: { type: Date, default: null },
+    // logincount: { count: Number, default: 0 },
     isBanned: { type: Boolean, default: false },
     refreshToken: { type: String, default: null }
 },
