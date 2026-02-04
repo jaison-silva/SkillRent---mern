@@ -1,4 +1,4 @@
-export interface LoginResponseDTO  {
+export interface LoginResponseDTO {
   user: {
     id: string
     name: string
@@ -7,4 +7,6 @@ export interface LoginResponseDTO  {
   }
   accessToken: string
   refreshToken: string
+  providerStatus?: string
 }
+

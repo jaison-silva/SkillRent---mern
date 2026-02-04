@@ -62,11 +62,24 @@ class ProviderController {
 
     listProviders = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
+            // Parse pagination from query params
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 6;
+
+            // Only show approved providers
             const filter = { validationStatus: "approved" };
-            const providers = await this._providerService.listProviderService(filter)
+
+            const result = await this._providerService.listProviderService(filter, page, limit)
 
             const { status, message } = API_RESPONSES.SUCCESS
-            res.status(status).json({ message, providers })
+            res.status(status).json({
+                message,
+                providers: result.providers,
+                total: result.total,
+                page,
+                limit,
+                totalPages: Math.ceil(result.total / limit)
+            })
         } catch (err) {
             next(err)
         }

@@ -16,11 +16,22 @@ import { IOtpService } from "../interfaces/IOtpService";
 import { UserRegisterRequestDTO } from "../dto/register/userRegisterRequestDTO"
 import { LoginRequestDTO } from "../dto/auth/loginRequestDTO";
 import { RefreshResponseDTO } from "../dto/auth/refreshResponseDTO";
+import Provider from "../models/providerModel";
+
+// Validation helper functions
+function isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+function isValidName(name: string): boolean {
+    const nameRegex = /^[a-zA-Z\s]{2,50}$/;
+    return nameRegex.test(name.trim());
+}
 
 export default class AuthServices implements IAuthService {
     constructor(
         private authRepo: IAuthRepository,
-        // private otpRepo: IOtpRepository,
         private otpService: IOtpService
     ) { }
 
@@ -32,12 +43,6 @@ export default class AuthServices implements IAuthService {
             throw new ApiError(API_RESPONSES.VALIDATION_ERROR)
         }
         const user = await this.authRepo.findByEmail(email)
-
-        // if(user?.logincount != null && Number(user.logincount) > 5){
-        //     throw new ApiError({status : 500, message : "too many logins this month"})
-        // }else{
-        //     await this.authRepo.loginCountManage(user?.email,user?.logincount +)
-        // }
 
         if (!user || !user.password) {
             throw new ApiError(API_RESPONSES.USER_NOT_FOUND)
@@ -51,6 +56,12 @@ export default class AuthServices implements IAuthService {
 
         await this.authRepo.updateRefreshToken(user._id.toString(), refreshToken);
 
+        let providerStatus: string | undefined;
+        if (user.role === UserRoleStatus.PROVIDER) {
+            const provider = await Provider.findOne({ userId: user._id });
+            providerStatus = provider?.validationStatus;
+        }
+
         return {
             user: {
                 id: user?._id.toString(),
@@ -59,53 +70,25 @@ export default class AuthServices implements IAuthService {
                 role: user?.role
             },
             accessToken,
-            refreshToken
+            refreshToken,
+            providerStatus
         }
     }
-
-    // async UserRegister({ name, email, password }: UserRegisterInput): Promise<> {
-
-    //     const otpVerified = await this.otpRepo.findOtp(
-    //         email,
-    //         otpStatus.VERIFICATOIN
-    //     );
-
-    //     if (!otpVerified || otpVerified.isVerified !== true) {
-    //         throw new ApiError(API_RESPONSES.OTP_NOT_VERIFIED)
-    //     }
-
-    //     const existingUser = await this.authRepo.findByEmail(email);
-    //     if (existingUser) throw new ApiError(API_RESPONSES.ALREADY_EXISTS)
-
-    //     const hashedPassword = await bcrypt.hash(password, 10);
-
-    //     const newUser = await this.authRepo.createUser({ name, email, password: hashedPassword, role: "user" });
-
-    //     if (!newUser || !newUser._id) {
-    //         throw new ApiError(API_RESPONSES.INTERNAL_SERVER_ERROR);
-    //     }
-
-    //     const accessToken = jwtToken.accessToken(newUser._id.toString(), newUser.role)
-    //     const refreshToken = jwtToken.refreshToken(newUser._id.toString())
-
-    //     await this.otpRepo.deleteOldOtps(email, otpStatus.VERIFICATOIN);
-
-    //     return {
-    //         user: {
-    //             id: newUser._id,
-    //             name: newUser.name,
-    //             email: newUser.email,
-    //             role: newUser?.role,
-    //         },
-    //         accessToken,
-    //         refreshToken
-    //     }
-    // }
 
     async UserRegister(data: UserRegisterRequestDTO): Promise<RegisterResponseDTO> {
         const { name, email, otp, role, password } = data
 
-        console.log("UserRegister backend data:", { name, email, otp, role });
+        console.log("UserRegister backend data:", { name, email, password, otp, role });
+
+        // Validate name
+        if (!name || !isValidName(name)) {
+            throw new ApiError({ status: 400, message: "Name must be 2-50 characters and contain only letters" });
+        }
+
+        // Validate email format
+        if (!email || !isValidEmail(email)) {
+            throw new ApiError(API_RESPONSES.INVALID_EMAIL_FORMAT);
+        }
 
         await this.otpService.ensureVerified(email, otp, otpStatus.VERIFICATION)
 
@@ -160,6 +143,16 @@ export default class AuthServices implements IAuthService {
             location,
         } = data;
         console.log("ProviderRegister backend data:", { name, email, otp });
+
+        // Validate name
+        if (!name || !isValidName(name)) {
+            throw new ApiError({ status: 400, message: "Name must be 2-50 characters and contain only letters" });
+        }
+
+        // Validate email format
+        if (!email || !isValidEmail(email)) {
+            throw new ApiError(API_RESPONSES.INVALID_EMAIL_FORMAT);
+        }
 
         await this.otpService.ensureVerified(email, otp, otpStatus.VERIFICATION)
 

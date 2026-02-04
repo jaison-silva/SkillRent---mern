@@ -20,7 +20,7 @@ export class OtpService implements IOtpService {
 
         const otp = crypto.randomInt(100000, 999999).toString();
 
-        console.log("otp is "+otp)
+        console.log("otp is " + otp)
 
         const hashedOtp = await bcrypt.hash(otp, 10);
 
@@ -47,7 +47,17 @@ export class OtpService implements IOtpService {
             throw new ApiError(API_RESPONSES.USER_NOT_FOUND);
         }
 
-        const isValid = await bcrypt.compare(otp, otpDoc.otp);
+        // Check if OTP has expired (10 minutes = 600000 milliseconds)
+        const OTP_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
+        const now = new Date();
+        const otpAge = now.getTime() - new Date(otpDoc.createdAt).getTime();
+
+        if (otpAge > OTP_EXPIRY_MS) {
+            throw new ApiError(API_RESPONSES.OTP_EXPIRED);
+        }
+
+        const isValid = await bcrypt.compare(otp.toString(), otpDoc.otp);
+
         if (!isValid) {
             throw new ApiError(API_RESPONSES.OTP_INVALID);
         }

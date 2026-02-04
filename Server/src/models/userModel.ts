@@ -1,14 +1,14 @@
 import mongoose, { Types, Document } from "mongoose";
 import { UserRoleStatus } from "../enum/userRoleStatusEnum";
 
-export interface IUser extends Document { //Rule of "Colocation" (Keep related things together)
+export interface IUser extends Document {
     _id: Types.ObjectId;
     name: string;
     email: string;
+    phone?: string;
     password?: string;
     role: UserRoleStatus;
     lastLogin: Date | null;
-    // logincount : Number
     isBanned: boolean;
     refreshToken: string | null;
     createdAt: Date;
@@ -18,6 +18,7 @@ export interface IUser extends Document { //Rule of "Colocation" (Keep related t
 const userSchema = new mongoose.Schema<IUser>({
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true },
+    phone: { type: String, default: null, trim: true },
     password: { type: String, required: true },
     role: {
         type: String,

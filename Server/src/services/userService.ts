@@ -4,7 +4,7 @@ import { API_RESPONSES } from "../constants/statusMessageConstant";
 import { IUserService } from "../interfaces/IUserService";
 import { IUser } from "../models/userModel";
 
-class UserService implements IUserService{
+class UserService implements IUserService {
     private userRepository: IUserRepository;
 
     constructor(userRepository: IUserRepository) {
@@ -40,8 +40,8 @@ class UserService implements IUserService{
         return userDetails;
     }
 
-    async listAllUsersService() {
-        const users = await this.userRepository.findUsers();
+    async listAllUsersService(filter?: Record<string, any>, page?: number, limit?: number) {
+        const users = await this.userRepository.findUsers(filter, page, limit);
         return users;
     }
 

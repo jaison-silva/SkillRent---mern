@@ -7,17 +7,15 @@ import { ProviderController } from "../controllers/providerController";
 
 const router = Router();
 
-router.use(protect, authorize(ROLES.PROVIDER));
-
 const providerService = ProviderContainer()
 const providerController = new ProviderController(providerService)
 
-// self
-router.get('/profile', authorize(ROLES.PROVIDER), providerController.getProfile);
-router.patch('/profile', authorize(ROLES.PROVIDER), providerController.updateProfile);
+// Public routes (any authenticated user can access)
+router.get('/', protect, providerController.listProviders);
+router.get('/:id', protect, providerController.getProviderById);
 
-
-router.get('/', providerController.listProviders);      
-router.get('/:id', providerController.getProviderById);
+// Provider-only routes
+router.get('/profile', protect, authorize(ROLES.PROVIDER), providerController.getProfile);
+router.patch('/profile', protect, authorize(ROLES.PROVIDER), providerController.updateProfile);
 
 export default router;

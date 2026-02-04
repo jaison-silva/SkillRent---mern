@@ -36,7 +36,7 @@ export class OtpController {
             await this.OtpService.verifyOTP(email, otp, purpose);
 
             res.status(API_RESPONSES.OTP_VERIFIED.status).json({
-                success: true,
+                isVerified: true,
                 message: API_RESPONSES.OTP_VERIFIED.message,
             });
         } catch (err) {

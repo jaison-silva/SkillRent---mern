@@ -31,8 +31,8 @@ export default class ProviderService implements IProviderService {
     return this.providerRepo.findByUserId(userId);
   }
 
-  listProviderService(filter?: Record<string, any>) {
-    return this.providerRepo.listProviders(filter);
+  listProviderService(filter?: Record<string, any>, page?: number, limit?: number) {
+    return this.providerRepo.listProviders(filter, page, limit);
   }
 
   providerDetailService(id: string) {

@@ -4,10 +4,17 @@ import IUserhRepository from "../interfaces/IUserRepository";
 
 export default class MongoUserRepository implements IUserhRepository {
 
-  async findUsers() {
-    return await User.find().select("-password") // should exclude pass
+  async findUsers(filter?: Record<string, any>, page: number = 1, limit: number = 6) {
+    const skip = (page - 1) * limit;
+
+    const [users, total] = await Promise.all([
+      User.find(filter || {}).select("-password -refreshToken").skip(skip).limit(limit),
+      User.countDocuments(filter || {})
+    ]);
+
+    return { users, total };
   }
-  
+
   async findUserById(id: string) {
     return await User.findById(id);
   };
@@ -18,11 +25,11 @@ export default class MongoUserRepository implements IUserhRepository {
       { $set: updateData }
     )
   }
- 
+
   async blockUserById(id: string, isBanned: boolean) {
     return await User.findByIdAndUpdate(
       id,
-      { $set: {isBanned} },
+      { $set: { isBanned } },
       { new: true } // ithu full docu update akkum 
     )
   }

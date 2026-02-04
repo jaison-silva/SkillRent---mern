@@ -11,7 +11,7 @@ export interface IProviderService {
     data: UpdateProviderProfileDTO
   ): Promise<IProvider | null>;
 
-  listProviderService(filter?: any): Promise<IProvider[] | null>;
+  listProviderService(filter?: any, page?: number, limit?: number): Promise<{ providers: IProvider[], total: number }>;
 
   providerDetailService(id: string): Promise<IProvider | null>;
 }

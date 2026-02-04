@@ -1,12 +1,11 @@
-import { Route, Routes } from "react-router-dom";
-import { Login } from "./pages/Login";
+import { AppRoutes } from "./routes/AppRoutes";
+import { Navbar } from "./components/Navbar";
 
-
-export function App (){
-    return(
-        <Routes>
-            <Route path="/login" element={<Login/>}/>
-            <Route path="*" element={<Login/>}/>
-        </Routes>
-    )
+export function App() {
+  return (
+    <>
+      <Navbar />
+      <AppRoutes />
+    </>
+  );
 }

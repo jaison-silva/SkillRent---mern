@@ -8,11 +8,11 @@ export interface IUserService {
     lastLogin: Date;
   }>;
 
-  userProfileService(userId: string): Promise<IUser>;  
-  
+  userProfileService(userId: string): Promise<IUser>;
+
   updateUserProfileService(userId: string, updateData: Partial<IUser>): Promise<IUser>;
 
   getUserDetailsService(id: string): Promise<IUser>;
 
-  listAllUsersService(): Promise<IUser[]>;
+  listAllUsersService(filter?: any, page?: number, limit?: number): Promise<{ users: IUser[], total: number }>;
 }

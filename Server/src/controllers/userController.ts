@@ -5,9 +5,9 @@ import ApiError from "../utils/apiError";
 import { IUserService } from "../interfaces/IUserService";
 
 // const userService = new UserService(new UserRepository())
- 
+
 export class UserController {
-    constructor(private userService : IUserService) { }
+    constructor(private userService: IUserService) { }
 
     getDashboard = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
@@ -80,14 +80,23 @@ export class UserController {
 
     listUsers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
-            // You can extract query params here for pagination: const { page, limit } = req.query;
-            const users = await this.userService.listAllUsersService();
+            // Parse pagination from query params
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 6;
+
+            // Only show non-banned users with 'user' role (not providers or admins)
+            const filter = { isBanned: false, role: "user" };
+
+            const result = await this.userService.listAllUsersService(filter, page, limit);
 
             const { status, message } = API_RESPONSES.SUCCESS;
             res.status(status).json({
                 message,
-                count: users.length,
-                users
+                users: result.users,
+                total: result.total,
+                page,
+                limit,
+                totalPages: Math.ceil(result.total / limit)
             });
         } catch (err) {
             next(err);

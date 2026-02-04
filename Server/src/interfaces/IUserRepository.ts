@@ -2,7 +2,7 @@ import { IUser } from "../models/userModel";
 
 export default interface IUserRepository {
 
-    findUsers(): Promise<IUser[]>; 
+    findUsers(filter?: Record<string, any>, page?: number, limit?: number): Promise<{ users: IUser[], total: number }>;
 
     findUserById(id: string): Promise<IUser | null>;
 

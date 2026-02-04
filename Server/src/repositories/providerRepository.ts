@@ -5,8 +5,15 @@ import { UpdateProviderProfileDTO } from "../dto/provider/updateProviderProfileD
 
 export default class MongoProviderRepository implements IProviderhRepository {
 
-  listProviders(filter?: Record<string, any>) {
-    return Provider.find(filter || {}).populate("userId");
+  async listProviders(filter?: Record<string, any>, page: number = 1, limit: number = 6) {
+    const skip = (page - 1) * limit;
+
+    const [providers, total] = await Promise.all([
+      Provider.find(filter || {}).populate("userId").skip(skip).limit(limit),
+      Provider.countDocuments(filter || {})
+    ]);
+
+    return { providers, total };
   }
 
   findProviderById(id: string): Promise<IProvider | null> {

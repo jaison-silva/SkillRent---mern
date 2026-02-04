@@ -23,7 +23,8 @@ export class AuthController {
 
             setAuthCookies(res, result.refreshToken, result.accessToken)
 
-            res.status(201).json({ user: result.user, accessToken: result.accessToken });
+            const { status, message } = API_RESPONSES.SUCCESS
+            res.status(status).json({ message, user: result.user, accessToken: result.accessToken });
             return
         } catch (err) {
             next(err)
