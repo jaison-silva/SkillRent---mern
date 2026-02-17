@@ -1,26 +1,26 @@
 import bcrypt from "bcryptjs";
-import jwtToken from "../utils/generateToken";
-import { IAuthRepository } from "../interfaces/IAuthRepository";
-import { IOtpRepository } from "../interfaces/IOtpRepository";
-import { ProviderRegisterRequestDTO } from "../dto/register/providerRegisterRequestDTO";
-import { RegisterResponseDTO } from "../dto/register/RegisterResponseDTO";
-import ApiError from "../utils/apiError";
+import jwtToken from "../../utils/generateToken";
+import { IAuthRepository } from "../../repositories/interfaces/IAuthRepository";
+import { IOtpRepository } from "../../repositories/interfaces/IOtpRepository";
+import { ProviderRegisterRequestDTO } from "../../dto/register/providerRegisterRequestDTO";
+import { RegisterResponseDTO } from "../../dto/register/RegisterResponseDTO";
+import ApiError from "../../utils/apiError";
 import mongoose from "mongoose";
-import { UserRoleStatus } from "../enum/userRoleStatusEnum";
-import { otpStatus } from "../enum/otpEnum"
-import { API_RESPONSES } from "../constants/statusMessageConstant";
+import { UserRoleStatus } from "../../enum/userRoleStatusEnum";
+import { otpStatus } from "../../enum/otpEnum"
+import { API_RESPONSES } from "../../constants/statusMessageConstant";
 import jwt from "jsonwebtoken";
-import { LoginResponseDTO } from "../dto/auth/loginResponseDTO";
+import { LoginResponseDTO } from "../../dto/auth/loginResponseDTO";
 import IAuthService from "../interfaces/IAuthService"
 import { IOtpService } from "../interfaces/IOtpService";
-import { UserRegisterRequestDTO } from "../dto/register/userRegisterRequestDTO"
-import { LoginRequestDTO } from "../dto/auth/loginRequestDTO";
-import { RefreshResponseDTO } from "../dto/auth/refreshResponseDTO";
+import { UserRegisterRequestDTO } from "../../dto/register/userRegisterRequestDTO"
+import { LoginRequestDTO } from "../../dto/auth/loginRequestDTO";
+import { RefreshResponseDTO } from "../../dto/auth/refreshResponseDTO";
 
 export default class AuthServices implements IAuthService {
     constructor(
         private authRepo: IAuthRepository,
-        // private otpRepo: IOtpRepository,
+        // private otpRepo: IOtpRepository, 
         private otpService: IOtpService
     ) { }
 

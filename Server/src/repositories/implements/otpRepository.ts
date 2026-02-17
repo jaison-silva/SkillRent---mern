@@ -1,6 +1,6 @@
-import { IOtpRepository } from "../interfaces/IOtpRepository";
-import User from "../models/otpModel";
-import { otpStatus } from "../enum/otpEnum";
+import { IOtpRepository } from "../interfaces/IOtpRepository"
+import User from "../../models/otpModel";
+import { otpStatus } from "../../enum/otpEnum";
 
 export class OtpRepository implements IOtpRepository {
 

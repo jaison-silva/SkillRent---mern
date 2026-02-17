@@ -1,9 +1,9 @@
-import User from "../models/userModel";
-import Provider from "../models/providerModel";
-import { IAuthRepository } from "../interfaces/IAuthRepository";
-import { ProviderCreateInput } from "../dto/register/providerRegisterRequestDTO";
-import { UserRegisterRequestDTO } from "../dto/register/userRegisterRequestDTO";
-import { IUser } from "../models/userModel";
+import User from "../../models/userModel";
+import Provider from "../../models/providerModel";
+import { IAuthRepository } from "../../interfaces/IAuthRepository";
+import { ProviderCreateInput } from "../../dto/register/providerRegisterRequestDTO";
+import { UserRegisterRequestDTO } from "../../dto/register/userRegisterRequestDTO";
+import { IUser } from "../../models/userModel";
 import { SaveOptions } from "mongoose";
 
 

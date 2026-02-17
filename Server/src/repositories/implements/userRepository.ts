@@ -1,8 +1,8 @@
-import User from "../models/userModel";
-import { IUser } from "../models/userModel";
-import IUserhRepository from "../interfaces/IUserRepository";
+import User from "../../models/userModel";
+import { IUser } from "../../models/userModel";
+import IUserRepository from "../interfaces/IUserRepository"
 
-export default class MongoUserRepository implements IUserhRepository {
+export default class MongoUserRepository implements IUserRepository {
 
   async findUsers() {
     return await User.find().select("-password") // should exclude pass

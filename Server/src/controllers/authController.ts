@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express"
 import jwt from "jsonwebtoken";
 import { API_RESPONSES } from "../constants/statusMessageConstant";
-import IAuthService from "../interfaces/IAuthService"
+import IAuthService from "../services/interfaces/IAuthService"
 import { otpStatus } from "../enum/otpEnum";
 import { setAuthCookies } from "../utils/setAuthCookies";
 import { UserRegisterRequestDTO } from "../dto/register/userRegisterRequestDTO";
@@ -24,6 +24,9 @@ export class AuthController {
             setAuthCookies(res, result.refreshToken, result.accessToken)
 
             res.status(201).json({ user: result.user, accessToken: result.accessToken });
+            // createResponse(res,STATUS_CODES.sucess,true,"User Registered Successfuly",{
+//dry
+            // })
             return
         } catch (err) {
             next(err)
@@ -40,7 +43,7 @@ export class AuthController {
 
             setAuthCookies(res, result.refreshToken, result.accessToken)
 
-            res.status(201).json({ user: result.user, refreshToken: result.refreshToken });
+            res.status(201).json({ user: result.user, refreshToken: result.refreshToken,message:"hello" });
         } catch (err) {
             next(err)
         }

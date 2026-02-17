@@ -5,16 +5,16 @@
 
 // iviide oro service inn controller class inte instance return cheyyum
 
-import { MongoAuthRepository } from "../repositories/authRepository"
-import { OtpRepository } from "../repositories/otpRepository"
-import AuthServices from "../services/authService"
-import { OtpService } from "../services/otpService"
-import { EmailService } from "../services/emailService"
-import MongoUserRepository from "../repositories/userRepository"
-import MongoProviderRepository from "../repositories/providerRepository"
-import AdminService from "../services/adminServices"
-import UserService from "../services/userService"
-import ProviderService from "../services/providerService"
+import { MongoAuthRepository } from "../repositories/implements/authRepository"
+import { OtpRepository } from "../repositories/implements/otpRepository"
+import AuthServices from "../services/implements/authService"
+import { OtpService } from "../services/implements/otpService"
+import { EmailService } from "../services/implements/emailService"
+import MongoUserRepository from "../repositories/implements/userRepository"
+import MongoProviderRepository from "../repositories/implements/providerRepository"
+import AdminService from "../services/implements/adminServices"
+import UserService from "../services/implements/userService"
+import ProviderService from "../services/implements/providerService"
 
 function authContainer() {
     const authRepo = new MongoAuthRepository()

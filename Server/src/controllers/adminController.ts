@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express"
 import { API_RESPONSES } from "../constants/statusMessageConstant";
-import { IAdminService } from "../interfaces/IAdminService";
+import { IAdminService } from "../services/interfaces/IAdminService"
 
 // interface Request extends Request {
 //     jwtTokenVerified?: {

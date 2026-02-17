@@ -1,5 +1,5 @@
-import { IOtp } from "../models/otpModel";
-import { otpStatus } from "../enum/otpEnum";
+import { IOtp } from "../../models/otpModel"
+import { otpStatus } from "../../enum/otpEnum";
 
 export interface IOtpRepository {
   saveOtp(email: string, otp: string, purpose: otpStatus): Promise<IOtp>;

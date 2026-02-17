@@ -1,7 +1,7 @@
-import ApiError from "../utils/apiError";
-import { API_RESPONSES } from "../constants/statusMessageConstant";
+import ApiError from "../../utils/apiError";
+import { API_RESPONSES } from "../../constants/statusMessageConstant";
 import crypto from "crypto"
-import { otpStatus } from "../enum/otpEnum"
+import { otpStatus } from "../../enum/otpEnum"
 import bcrypt from "bcryptjs"
 import { IOtpRepository } from "../interfaces/IOtpRepository";
 import { IOtpService } from "../interfaces/IOtpService";

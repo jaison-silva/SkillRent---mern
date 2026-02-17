@@ -1,8 +1,8 @@
 import IUserRepository from "../interfaces/IUserRepository";
-import ApiError from "../utils/apiError";
-import { API_RESPONSES } from "../constants/statusMessageConstant";
+import ApiError from "../../utils/apiError";
+import { API_RESPONSES } from "../../constants/statusMessageConstant";
 import { IUserService } from "../interfaces/IUserService";
-import { IUser } from "../models/userModel";
+import { IUser } from "../../models/userModel";
 
 class UserService implements IUserService{
     private userRepository: IUserRepository;

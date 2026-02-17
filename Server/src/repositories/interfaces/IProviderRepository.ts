@@ -1,6 +1,6 @@
-import { UpdateProviderProfileDTO } from "../dto/provider/updateProviderProfileDTO";
-import { ProviderStatus } from "../enum/providerStatusEnum";
-import { IProvider } from "../models/providerModel";
+import { UpdateProviderProfileDTO } from "../../dto/provider/updateProviderProfileDTO"
+import { ProviderStatus } from "../../enum/providerStatusEnum";
+import { IProvider } from "../../models/providerModel";
 
 export default interface IProviderRepository {
     listProviders(filter?: Record<string, any>): Promise<IProvider[] | null>

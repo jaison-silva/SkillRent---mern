@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { API_RESPONSES } from "../constants/statusMessageConstant";
 import { UpdateProviderProfileDTO } from "../dto/provider/updateProviderProfileDTO";
 import ApiError from "../utils/apiError";
-import { IProviderService } from "../interfaces/IProviderService";
+import { IProviderService } from "../services/interfaces/IProviderService";
 
 // const providerService = new ProviderService(new ProviderRepository());
 

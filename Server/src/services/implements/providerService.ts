@@ -1,6 +1,6 @@
-import providerRepository from "../repositories/providerRepository";
+import providerRepository from "../../repositories/implements/providerRepository";
 import IUserRepository from "../interfaces/IUserRepository";
-import { UpdateProviderProfileDTO } from "../dto/provider/updateProviderProfileDTO";
+import { UpdateProviderProfileDTO } from "../../dto/provider/updateProviderProfileDTO";
 import { IProviderService } from "../interfaces/IProviderService";
 
 export default class ProviderService implements IProviderService {

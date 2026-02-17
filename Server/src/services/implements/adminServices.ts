@@ -1,8 +1,8 @@
-import IProviderRepository from "../interfaces/IProviderRepository";
-import IUserRepository from "../interfaces/IUserRepository";
-import { ProviderStatus } from "../enum/providerStatusEnum";
-import ApiError from "../utils/apiError";
-import { API_RESPONSES } from "../constants/statusMessageConstant";
+import IProviderRepository from "..//../repositories/interfaces/IProviderRepository";
+import IUserRepository from "../../repositories/interfaces/IUserRepository";
+import { ProviderStatus } from "../../enum/providerStatusEnum";
+import ApiError from "../../utils/apiError";
+import { API_RESPONSES } from "../../constants/statusMessageConstant";
 import { IAdminService } from "../interfaces/IAdminService";
 
 
