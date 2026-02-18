@@ -1,76 +1,71 @@
-export function Navbar() {
+import { Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { selectCurrentUser, logOut } from '../features/auth/authSlice';
+import { User, LogOut, MessageSquare, PlusCircle } from 'lucide-react';
+
+const Navbar = () => {
+  const user = useSelector(selectCurrentUser);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch(logOut());
+    navigate('/login');
+  };
+
   return (
-    <>
-      <nav className="w-full border-b border-gray-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            {/* Left: Logo */}
-            <div className="flex items-center">
-              <a
-                href="/"
-                className="text-xl font-semibold tracking-tight text-gray-900"
-              >
-                Brand
-              </a>
-            </div>
+    <nav className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/80 backdrop-blur-md">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16 items-center">
+          
+          {/* Logo */}
+          <Link to="/" className="text-2xl font-bold text-blue-600 tracking-tight">
+            SkillRent
+          </Link>
 
-            {/* Center: Navigation Links */}
-            <div className="hidden md:flex items-center space-x-8">
-              <a
-                href="#"
-                className="text-sm font-medium text-gray-700 hover:text-gray-900"
-              >
-                Dashboard
-              </a>
-              <a
-                href="#"
-                className="text-sm font-medium text-gray-700 hover:text-gray-900"
-              >
-                Projects
-              </a>
-              <a
-                href="#"
-                className="text-sm font-medium text-gray-700 hover:text-gray-900"
-              >
-                Team
-              </a>
-              <a
-                href="#"
-                className="text-sm font-medium text-gray-700 hover:text-gray-900"
-              >
-                Reports
-              </a>
-            </div>
-
-            {/* Right: Actions */}
-            <div className="flex items-center space-x-4">
-              <button className="hidden md:inline-flex items-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">
-                Sign in
-              </button>
-              <button className="inline-flex items-center rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800">
-                Get Started
-              </button>
-
-              {/* Mobile Menu Button */}
-              <button className="md:hidden inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 focus:outline-none">
-                <svg
-                  className="h-6 w-6"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
+          {/* Navigation Links */}
+          <div className="hidden md:flex items-center space-x-8">
+            <Link to="/services" className="text-gray-600 hover:text-blue-600 font-medium">Browse</Link>
+            
+            {user ? (
+              // Authenticated View
+              <div className="flex items-center space-x-6">
+                <Link to="/post-skill" className="flex items-center text-gray-600 hover:text-blue-600">
+                  <PlusCircle className="w-5 h-5 mr-1" />
+                  <span>Post a Skill</span>
+                </Link>
+                <Link to="/messages" className="text-gray-600 hover:text-blue-600">
+                  <MessageSquare className="w-5 h-5" />
+                </Link>
+                <div className="flex items-center space-x-3 pl-4 border-l border-gray-200">
+                  <Link to="/profile" className="flex items-center space-x-2">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                      <User className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <span className="text-sm font-semibold text-gray-700">{user.name}</span>
+                  </Link>
+                  <button onClick={handleLogout} className="text-gray-400 hover:text-red-500">
+                    <LogOut className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              // Unauthenticated View
+              <div className="flex items-center space-x-4">
+                <Link to="/login" className="text-gray-600 hover:text-blue-600 font-medium">Login</Link>
+                <Link 
+                  to="/signup" 
+                  className="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              </button>
-            </div>
+                  Join as Provider
+                </Link>
+              </div>
+            )}
           </div>
         </div>
-      </nav>
-    </>
+      </div>
+    </nav>
   );
-}
+};
+
+export default Navbar;

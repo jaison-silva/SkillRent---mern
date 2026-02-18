@@ -1,16 +1,12 @@
-import { MainLayout } from "./layouts/MainLayout"
-import { BrowserRouter, Route, Routes } from "react-router-dom"
+import { BrowserRouter } from "react-router-dom";
+import { AppRoutes } from "../src/routes/AppRoutes";
 
-function App(){
-    return(
-        <BrowserRouter>
-    <Routes>
-        <Route element={<MainLayout/>}>
-            <Route path="/" element={<h2>Hello World</h2>}/>
-        </Route>
-    </Routes>
+function App() {
+  return (
+    <BrowserRouter>
+        <AppRoutes />
     </BrowserRouter>
-    );
+  );
 }
 
-export {App}
+export { App };

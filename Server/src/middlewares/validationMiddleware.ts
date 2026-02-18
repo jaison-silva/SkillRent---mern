@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { ZodObject } from "zod";
+import { ZodObject } from 'zod';
 import { API_RESPONSES } from "../constants/statusMessageConstant";
 
 export default function validate(schema: ZodObject) {
@@ -14,3 +14,4 @@ export default function validate(schema: ZodObject) {
     }
   }
 }
+

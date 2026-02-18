@@ -82,10 +82,10 @@ export class AuthController {
     refresh = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const refreshToken = req.cookies.refreshToken;
-            const { accessToken } = await this.authService.refresh(refreshToken);
+            const response = await this.authService.refresh(refreshToken);
 
             const { status, message } = API_RESPONSES.CREATED
-            res.status(status).json({ message, accessToken })
+            res.status(status).json({ user: response.user, token:response.accessToken })
         } catch (err) {
             next(err)
         }
