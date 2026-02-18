@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express"
 import { API_RESPONSES } from "../constants/statusMessageConstant";
-import { IOtpService } from "../interfaces/IOtpService";
+import { IOtpService } from "../services/interfaces/IOtpService";
 import { otpStatus } from "../enum/otpEnum";
 import ApiError from "../utils/apiError";
 

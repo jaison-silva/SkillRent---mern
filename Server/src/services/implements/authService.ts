@@ -263,10 +263,9 @@ export default class AuthServices implements IAuthService {
         if (!user) {
             throw new ApiError(API_RESPONSES.NOT_FOUND);
         }
-
-        // const otp = crypto.randomInt(100000, 999999).toString();
-        // await this.otpRepo.saveOtp({ email, otp: hashedOtp, purpose });
-        // const hashedOtp = await bcrypt.hash(otp, 10);
+        if(purpose !== otpStatus.FORGOT_PASSWORD){
+            throw new ApiError(API_RESPONSES.SERVICE_UNAVAILABLE)
+        }
 
         await this.otpService.sendOTP(email, otpStatus.FORGOT_PASSWORD)
         return API_RESPONSES.OTP_SENT

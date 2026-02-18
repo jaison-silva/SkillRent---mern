@@ -3,7 +3,6 @@ import { IService } from "../../types/service";
 
 export const servicesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    // GET all services for the landing page
     getServices: builder.query<IService[], void>({
       query: () => '/services',
       providesTags: (result) =>
@@ -15,7 +14,6 @@ export const servicesApiSlice = apiSlice.injectEndpoints({
           : [{ type: 'Service', id: 'LIST' }],
     }),
     
-    // GET a single service detail
     getServiceById: builder.query<IService, string>({
       query: (id) => `/services/${id}`,
       providesTags: (result, error, id) => [{ type: 'Service', id }],
@@ -23,4 +21,4 @@ export const servicesApiSlice = apiSlice.injectEndpoints({
   }),
 });
 
-export const { useGetServicesQuery, useGetServiceByIdQuery } = servicesApiSlice;
+export const { useGetServicesQuery, useGetServiceByIdQuery } = servicesApiSlice; 
