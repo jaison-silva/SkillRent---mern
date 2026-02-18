@@ -1,5 +1,9 @@
 import { useState } from "react";
 import { useTimer } from "../../../hooks/useTimer";
+import { useParams, useNavigate } from "react-router-dom";
+import { EmailStep } from "../components/EmailStep";
+import { OtpStep } from "../components/OtpStep";
+import { DetailsStep } from "../components/DetailedStep";
 import {
   useSendOtpMutation,
   useVerifyOtpMutation,
@@ -7,62 +11,65 @@ import {
   useSignupProviderMutation,
 } from "../../auth/authApiSlice";
 
-type SignupStep = "ROLE_SELECT" | "EMAIL_INPUT" | "OTP_VERIFY" | "DETAILS";
+type SignupStep = "EMAIL_INPUT" | "OTP_VERIFY" | "DETAILS";
 type Role = "user" | "provider";
 
 interface BaseSignupData {
   password: string;
-  username: string;
+  email: string;
 }
 
 interface UserSignupData extends BaseSignupData {
-  name : string
+  name: string;
 }
 
 interface ProviderSignupData extends BaseSignupData {
+  name: string;
   hasTransport: boolean;
   skills: string[];
 }
 
-
 export const Signup = () => {
-  const [step, setStep] = useState<SignupStep>("ROLE_SELECT");
-  const [role, setRole] = useState<Role>("user");
+  const {UserRole} = useParams<{UserRole: Role}>()
+  const [step, setStep] = useState<SignupStep>("EMAIL_INPUT");
   const [email, setEmail] = useState("");
-  const { timeLeft, startTimer } = useTimer(60); 
-
-  const [sendOtp, { isLoading: isSending }] = useSendOtpMutation();
+  const [otp, setOtp] = useState("");
+  const { seconds, start } = useTimer(60);
+  const navigage = useNavigate()
+  const [sendOtp, { isLoading: isSending }] = useSendOtpMutation(); // ithu renamed ahnu, from isloading to isSending
   const [verifyOtp, { isLoading: isVerifying }] = useVerifyOtpMutation();
   const [registerUser] = useSignupUserMutation();
   const [registerProvider] = useSignupProviderMutation();
 
-
-  const handleSendOtp = async (targetEmail: string) => {
+  const handleSendOtp = async ({email:email}:{email:string}) => {
     try {
-      await sendOtp({ email: targetEmail }).unwrap();
-      setEmail(targetEmail);
-      startTimer();
+      await sendOtp({ email, purpose: 'verification' }).unwrap();
+      setEmail(email);
+      start();
       setStep("OTP_VERIFY");
     } catch (err) {
       console.error("OTP Send Error", err);
     }
   };
 
-  const handleVerify = async (otp: string) => {
+  const handleVerify = async (otpInput: string) => {
     try {
-      await verifyOtp({ email, otp }).unwrap();
+      await verifyOtp({ email, otp: otpInput, purpose: 'verification' }).unwrap();
+      setOtp(otpInput);
       setStep("DETAILS");
     } catch (err) {
-      console.log(err)
+      console.log(err);
     }
   };
 
-  const handleFinalSubmit = async (formData: any) => {
-    const finalData = { ...formData, email };
+  const handleFinalSubmit = async (
+    formData: UserSignupData | ProviderSignupData,
+  ) => {
+    const finalData = { ...formData, email, otp };
     try {
-      if (role === "user") await registerUser(finalData).unwrap();
-      else await registerProvider(finalData).unwrap();
-      // Redirect to Login
+      if (UserRole === "user") await registerUser(finalData).unwrap();
+      else if (UserRole === "provider") await registerProvider(finalData).unwrap()
+      navigage("/dashboard")
     } catch (err) {
       console.error("Registration failed", err);
     }
@@ -70,46 +77,22 @@ export const Signup = () => {
 
   return (
     <div className="max-w-md mx-auto py-12">
-      {step === "ROLE_SELECT" && (
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold">Join SkillRent as...</h2>
-          <button
-            onClick={() => {
-              setRole("user");
-              setStep("EMAIL_INPUT");
-            }}
-            className="w-full p-4 border rounded-lg hover:border-blue-500"
-          >
-            A Client (Looking for Skills)
-          </button>
-          <button
-            onClick={() => {
-              setRole("provider");
-              setStep("EMAIL_INPUT");
-            }}
-            className="w-full p-4 border rounded-lg hover:border-blue-500"
-          >
-            A Provider (Offering Skills)
-          </button>
-        </div>
-      )}
-
       {step === "EMAIL_INPUT" && (
-        <EmailStep onSubmit={handleSendOtp} isLoading={isSending} />
+        <EmailStep handleOtp={handleSendOtp} isLoading={isSending} />
       )}
 
       {step === "OTP_VERIFY" && (
         <OtpStep
           email={email}
-          timeLeft={timeLeft}
+          timeLeft={seconds}
           onVerify={handleVerify}
-          onResend={() => handleSendOtp(email)}
+          onResend={() => handleSendOtp({email})}
           isVerifying={isVerifying}
         />
       )}
 
       {step === "DETAILS" && (
-        <DetailsStep onSubmit={handleFinalSubmit} role={role} />
+        <DetailsStep onSubmit={handleFinalSubmit} role={UserRole} />
       )}
     </div>
   );

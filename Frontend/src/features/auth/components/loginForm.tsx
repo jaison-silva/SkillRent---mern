@@ -12,11 +12,7 @@ interface LoginFormProps {
   error?: string;
 }
 
-export default function LoginForm({
-  onSubmit,
-  loading = false,
-  error,
-}: LoginFormProps) {
+export default function LoginForm({  onSubmit,  loading = false,  error,}: LoginFormProps) {
   const {
     register,
     handleSubmit,
@@ -44,7 +40,7 @@ export default function LoginForm({
                   message: "Invalid email address",
                 },
               })}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-field"
             />
             {errors.email && (
               <p className="text-sm text-red-500 mt-1">
@@ -66,7 +62,7 @@ export default function LoginForm({
                   message: "Minimum 6 characters",
                 },
               })}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="input-field"
             />
             {errors.password && (
               <p className="text-sm text-red-500 mt-1">
@@ -82,20 +78,20 @@ export default function LoginForm({
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+            className="btn-primary"
           >
             {loading ? "Signing in..." : "Login"}
           </button>
         </form>
 
         <div className="flex justify-between mt-6 text-sm">
-          <Link to="/forgot-password" className="text-blue-600 hover:underline">
+          <Link to="/auth/password/forgot" className="link-primary">
             Forgot Password?
           </Link>
 
           <Link
-            to="/register-provider"
-            className="text-blue-600 hover:underline"
+            to="/auth/signup/:provider"
+            className="link-primary"
           >
             Register as Provider
           </Link>

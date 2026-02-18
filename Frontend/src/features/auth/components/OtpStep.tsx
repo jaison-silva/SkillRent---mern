@@ -11,14 +11,14 @@ export const OtpStep = ({ email, timeLeft, onVerify, onResend, isVerifying }: an
       <input 
         {...register('otp')} 
         maxLength={6}
-        className="w-32 text-center text-2xl tracking-widest p-2 border-b-2 border-blue-600 outline-none"
+        className="w-32 text-center text-2xl tracking-widest p-2 border-b-2 border-primary-600 outline-none focus:border-primary-700 transition-colors"
         placeholder="000000"
       />
       
       <div className="flex flex-col space-y-3 mt-4">
         <button 
           disabled={isVerifying}
-          className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
+          className="btn-primary"
         >
           {isVerifying ? 'Verifying...' : 'Verify OTP'}
         </button>
@@ -29,7 +29,7 @@ export const OtpStep = ({ email, timeLeft, onVerify, onResend, isVerifying }: an
           <button 
             type="button"
             onClick={onResend}
-            className="text-sm text-blue-600 hover:underline font-medium"
+            className="link-primary hover:underline"
           >
             Resend OTP
           </button>

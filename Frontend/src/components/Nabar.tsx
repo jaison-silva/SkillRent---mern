@@ -54,10 +54,16 @@ const Navbar = () => {
               <div className="flex items-center space-x-4">
                 <Link to="/login" className="text-gray-600 hover:text-blue-600 font-medium">Login</Link>
                 <Link 
-                  to="/signup" 
+                  to="/auth/signup/:provider" 
                   className="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
                 >
                   Join as Provider
+                </Link>
+                <Link 
+                  to="/auth/signup/:user" 
+                  className="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                >
+                  Join as User
                 </Link>
               </div>
             )}

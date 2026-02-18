@@ -19,11 +19,11 @@ interface AuthResponse {
 
 export const authApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
-        sendOtp: builder.mutation<{ message: string }, { email: string }>({
-            query: (body) => ({ url: '/otp/send', method: 'POST', body }),
+        sendOtp: builder.mutation<{ message: string }, { email: string, purpose: string }>({
+            query: (body) => ({ url: '/auth/otp/send', method: 'POST', body }),
         }),
-        verifyOtp: builder.mutation<{ success: boolean }, { email: string; otp: string }>({
-            query: (body) => ({ url: '/otp/verify', method: 'POST', body }),
+        verifyOtp: builder.mutation<{ success: boolean }, { email: string; otp: string, purpose: string }>({
+            query: (body) => ({ url: '/auth/otp/verify', method: 'POST', body }),
         }),
         login: builder.mutation<LoginResponse, LoginRequest>({
             query: (credentials) => ({

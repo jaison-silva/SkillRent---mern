@@ -1,19 +1,35 @@
 import { useState, useEffect, useCallback } from 'react';
 
 export const useTimer = (initialSeconds: number) => {
-  const [timeLeft, setTimeLeft] = useState(0);
+  const [seconds, setSeconds] = useState(initialSeconds);
+  const [isActive, setIsActive] = useState(false);
 
-  const startTimer = useCallback(() => {
-    setTimeLeft(initialSeconds);
+  const start = useCallback(() => {
+    setSeconds(initialSeconds);
+    setIsActive(true);
   }, [initialSeconds]);
 
-  useEffect(() => {
-    if (timeLeft <= 0) return;
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [timeLeft]);
+  const reset = useCallback(() => {
+    setIsActive(false);
+    setSeconds(0);
+  }, []);
 
-  return { timeLeft, startTimer };
+  useEffect(() => {
+    if (!isActive) return;
+
+    const interval = setInterval(() => {
+      setSeconds((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setIsActive(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isActive]);
+
+  return { seconds, isActive, start, reset };
 };

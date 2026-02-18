@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { protect } from "../middlewares/authMiddleware";
 import validate from "../middlewares/validationMiddleware";
 import { loginSchema, providerRegisterSchema, userRegisterSchema } from "../middlewares/zodSchemaMiddleware";
 import { AuthController } from "../controllers/authController";

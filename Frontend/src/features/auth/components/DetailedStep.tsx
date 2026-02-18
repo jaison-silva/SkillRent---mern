@@ -13,23 +13,23 @@ export const DetailsStep = ({ onSubmit, role, isLoading }: any) => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <h2 className="text-xl font-bold">Almost there!</h2>
-      <p className="text-sm text-gray-500 font-semibold text-blue-600 uppercase">Signing up as {role}</p>
+      <p className="text-sm text-gray-500 font-semibold text-primary-600 uppercase">Signing up as {role}</p>
       
       <div>
         <label className="text-sm block mb-1">Full Name</label>
-        <input {...register('name')} className="w-full p-2 border rounded-md" />
+        <input {...register('name')} className="input-field" />
         {errors.name && <p className="text-red-500 text-xs">{errors.name.message as string}</p>}
       </div>
 
       <div>
         <label className="text-sm block mb-1">Password</label>
-        <input {...register('password')} type="password" className="w-full p-2 border rounded-md" />
+        <input {...register('password')} type="password" className="input-field" />
         {errors.password && <p className="text-red-500 text-xs">{errors.password.message as string}</p>}
       </div>
 
       <button 
         disabled={isLoading}
-        className="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700"
+        className="btn-primary bg-primary-600 hover:bg-primary-700" 
       >
         {isLoading ? 'Creating Account...' : 'Complete Registration'}
       </button>

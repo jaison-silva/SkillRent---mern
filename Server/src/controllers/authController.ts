@@ -8,15 +8,12 @@ import { UserRegisterRequestDTO } from "../dto/register/userRegisterRequestDTO";
 import { ProviderRegisterRequestDTO } from "../dto/register/providerRegisterRequestDTO";
 import { LoginRequestDTO } from "../dto/auth/loginRequestDTO";
 
-// const authService = new AuthServices(new MongoAuthRepository(), new Otp()) // creating an obj from the classss // this was not DI
-
 export class AuthController {
     constructor(private authService: IAuthService
     ) { }
 
     registerUser = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            console.log("AuthController.registerUser body:", req.body);
             const data: UserRegisterRequestDTO = req.body
 
             const result = await this.authService.UserRegister(data);
@@ -24,9 +21,6 @@ export class AuthController {
             setAuthCookies(res, result.refreshToken, result.accessToken)
 
             res.status(201).json({ user: result.user, accessToken: result.accessToken });
-            // createResponse(res,STATUS_CODES.sucess,true,"User Registered Successfuly",{
-//dry
-            // })
             return
         } catch (err) {
             next(err)
@@ -36,14 +30,13 @@ export class AuthController {
 
     registerProvider = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            console.log("AuthController.registerProvider body:", req.body);
             const data: ProviderRegisterRequestDTO = req.body
 
             const result = await this.authService.ProviderRegister(data);
 
             setAuthCookies(res, result.refreshToken, result.accessToken)
 
-            res.status(201).json({ user: result.user, refreshToken: result.refreshToken,message:"hello" });
+            res.status(201).json({ user: result.user, refreshToken: result.refreshToken });
         } catch (err) {
             next(err)
         }
@@ -55,20 +48,6 @@ export class AuthController {
             const data: LoginRequestDTO = req.body
 
             const { user, accessToken, refreshToken } = await this.authService.login(data)
-
-            // res.cookie("accessToken", accessToken, {
-            //     httpOnly: true,
-            //     secure: process.env.NODE_ENV === "production",
-            //     sameSite: "strict",
-            //     maxAge: 15 * 60 * 1000 // 15 min
-            // });
-
-            // res.cookie("refreshToken", refreshToken, {
-            //     httpOnly: true,
-            //     secure: process.env.NODE_ENV === "production",
-            //     sameSite: "strict",
-            //     maxAge: 7 * 24 * 60 * 60 * 1000
-            // });
 
             setAuthCookies(res, refreshToken, accessToken)
 
@@ -85,7 +64,7 @@ export class AuthController {
             const response = await this.authService.refresh(refreshToken);
 
             const { status, message } = API_RESPONSES.CREATED
-            res.status(status).json({ user: response.user, token:response.accessToken })
+            res.status(status).json({ user: response.user, token: response.accessToken })
         } catch (err) {
             next(err)
         }
