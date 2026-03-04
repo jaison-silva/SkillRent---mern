@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express"
 // import UserRepository from "../repositories/userRepository";
 import { API_RESPONSES } from "../constants/statusMessageConstant";
 import ApiError from "../utils/apiError";
-import { IUserService } from "../interfaces/IUserService";
+import { IUserService } from "../services/interfaces/IUserService";
 
 // const userService = new UserService(new UserRepository())
  

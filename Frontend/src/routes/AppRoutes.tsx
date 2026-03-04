@@ -11,20 +11,27 @@ import Dashboard from "../pages/Dashboard";
 
 export function AppRoutes() {
   return (
-    <Routes>
-      <Provider store={store}>
+    <Provider store={store}>
+      <Routes>
+
         <Route element={<MainLayout />}>
+        {/*  // public routes */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/auth/signup/:role" element={<Signup />} />
-          <Route path="/landingPage" element={<LandingPage />} />
+          <Route path="/" element={<LandingPage />} />
 
+      {/*// protected routes */}
           <Route element={<PersistLogin />}>
+
             <Route element={<RequireAuth />}>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/dashboard" element={<Dashboard />} />
             </Route>
+
           </Route>
+
         </Route>
-      </Provider>
-    </Routes>
+
+      </Routes>
+    </Provider>
   );
 }

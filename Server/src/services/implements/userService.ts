@@ -1,4 +1,4 @@
-import IUserRepository from "../interfaces/IUserRepository";
+import IUserRepository from "../../repositories/interfaces/IUserRepository";
 import ApiError from "../../utils/apiError";
 import { API_RESPONSES } from "../../constants/statusMessageConstant";
 import { IUserService } from "../interfaces/IUserService";

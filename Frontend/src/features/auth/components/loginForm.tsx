@@ -12,7 +12,11 @@ interface LoginFormProps {
   error?: string;
 }
 
-export default function LoginForm({  onSubmit,  loading = false,  error,}: LoginFormProps) {
+export default function LoginForm({
+  onSubmit,
+  loading = false,
+  error,
+}: LoginFormProps) {
   const {
     register,
     handleSubmit,
@@ -41,6 +45,7 @@ export default function LoginForm({  onSubmit,  loading = false,  error,}: Login
                 },
               })}
               className="input-field"
+                autoComplete="username"
             />
             {errors.email && (
               <p className="text-sm text-red-500 mt-1">
@@ -63,6 +68,7 @@ export default function LoginForm({  onSubmit,  loading = false,  error,}: Login
                 },
               })}
               className="input-field"
+              autoComplete="current-password"
             />
             {errors.password && (
               <p className="text-sm text-red-500 mt-1">
@@ -75,11 +81,7 @@ export default function LoginForm({  onSubmit,  loading = false,  error,}: Login
             <div className="text-sm text-red-600 text-center">{error}</div>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary"
-          >
+          <button type="submit" disabled={loading} className="btn-primary">
             {loading ? "Signing in..." : "Login"}
           </button>
         </form>
@@ -89,10 +91,7 @@ export default function LoginForm({  onSubmit,  loading = false,  error,}: Login
             Forgot Password?
           </Link>
 
-          <Link
-            to="/auth/signup/:provider"
-            className="link-primary"
-          >
+          <Link to="/auth/signup/:provider" className="link-primary">
             Register as Provider
           </Link>
         </div>

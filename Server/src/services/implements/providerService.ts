@@ -1,5 +1,5 @@
 import providerRepository from "../../repositories/implements/providerRepository";
-import IUserRepository from "../interfaces/IUserRepository";
+import IUserRepository from "../../repositories/interfaces/IUserRepository";
 import { UpdateProviderProfileDTO } from "../../dto/provider/updateProviderProfileDTO";
 import { IProviderService } from "../interfaces/IProviderService";
 
