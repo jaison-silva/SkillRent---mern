@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express"
 import { API_RESPONSES } from "../constants/statusMessageConstant";
+import { StatusCodes } from 'http-status-codes';
 import { IOtpService } from "../services/interfaces/IOtpService";
 import { otpStatus } from "../enum/otpEnum";
 import ApiError from "../utils/apiError";
@@ -13,9 +14,9 @@ export class OtpController {
             const { email, purpose } = req.body;
             await this.otpService.sendOTP(email, purpose);
 
-            res.status(API_RESPONSES.OTP_SENT.status).json({
+            res.status(StatusCodes.OK).json({
                 success: true,
-                message: API_RESPONSES.OTP_SENT.message,
+                message: API_RESPONSES.OTP_SENT,
             });
 
         } catch (err) {
@@ -28,14 +29,14 @@ export class OtpController {
             const { email, otp, purpose } = req.body;
 
             if (!Object.values(otpStatus).includes(purpose)) {
-                throw new ApiError(API_RESPONSES.VALIDATION_ERROR);
+                throw new ApiError(StatusCodes.BAD_REQUEST, API_RESPONSES.VALIDATION_ERROR);
             }
 
             await this.otpService.verifyOTP(email, otp, purpose);
 
-            res.status(API_RESPONSES.OTP_VERIFIED.status).json({
+            res.status(StatusCodes.OK).json({
                 success: true,
-                message: API_RESPONSES.OTP_VERIFIED.message,
+                message: API_RESPONSES.OTP_VERIFIED,
             });
         } catch (err) {
             next(err);

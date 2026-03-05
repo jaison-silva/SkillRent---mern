@@ -1,8 +1,13 @@
 import { IOtpRepository } from "../interfaces/IOtpRepository"
-import User from "../../models/otpModel";
+import User from "../../models/otpModel"; // This is actually OtpModel, named User here
+import { IOtp } from "../../models/otpModel";
 import { otpStatus } from "../../enum/otpEnum";
+import { BaseRepository } from "./baseRepository";
 
-export class OtpRepository implements IOtpRepository {
+export class OtpRepository extends BaseRepository<IOtp> implements IOtpRepository {
+  constructor() {
+    super(User);
+  }
 
   async saveOtp(email: string, otp: string, purpose: otpStatus) {
     return await User.create({ email, otp, purpose });

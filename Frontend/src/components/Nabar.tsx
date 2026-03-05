@@ -1,16 +1,29 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectCurrentUser, logOut } from '../features/auth/authSlice';
+import { useLogoutMutation } from '../features/auth/authApiSlice';
 import { User, LogOut, MessageSquare, PlusCircle } from 'lucide-react';
+
+import { useState } from 'react';
 
 const Navbar = () => {
   const user = useSelector(selectCurrentUser);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  const handleLogout = () => {
-    dispatch(logOut());
-    navigate('/login');
+  const [logoutApi] = useLogoutMutation();
+
+  const handleLogoutConfirm = async () => {
+    try {
+      await logoutApi().unwrap();
+    } catch (err) {
+      console.error('Logout backend call failed, clearing local session anyway:', err);
+    } finally {
+      dispatch(logOut());
+      setShowLogoutModal(false);
+      navigate('/login');
+    }
   };
 
   return (
@@ -38,13 +51,13 @@ const Navbar = () => {
                   <MessageSquare className="w-5 h-5" />
                 </Link>
                 <div className="flex items-center space-x-3 pl-4 border-l border-gray-200">
-                  <Link to="/profile" className="flex items-center space-x-2">
+                  <Link to="/dashboard" className="flex items-center space-x-2">
                     <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
                       <User className="w-5 h-5 text-blue-600" />
                     </div>
                     <span className="text-sm font-semibold text-gray-700">{user.name}</span>
                   </Link>
-                  <button onClick={handleLogout} className="text-gray-400 hover:text-red-500">
+                  <button onClick={() => setShowLogoutModal(true)} className="text-gray-400 hover:text-red-500">
                     <LogOut className="w-5 h-5" />
                   </button>
                 </div>
@@ -70,6 +83,31 @@ const Navbar = () => {
           </div>
         </div>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl transform transition-all">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Confirm Logout</h3>
+            <p className="text-gray-500 text-sm mb-6">Are you sure you want to sign out of your account?</p>
+            <div className="flex space-x-3 justify-end">
+              <button 
+                onClick={() => setShowLogoutModal(false)}
+                className="px-4 py-2 font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleLogoutConfirm}
+                className="px-4 py-2 font-medium text-white bg-red-600 rounded-lg hover:bg-red-700"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </nav>
   );
 };

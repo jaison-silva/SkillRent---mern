@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express"
 import { API_RESPONSES } from "../constants/statusMessageConstant";
+import { StatusCodes } from 'http-status-codes';
 import { IAdminService } from "../services/interfaces/IAdminService"
 
 // interface Request extends Request {
@@ -28,10 +29,15 @@ export class AdminController {
             const adminId = req.jwtTokenVerified?.id
             if (!adminId) throw new Error()
 
-            const data = await this._adminService.listUsersAndProviders()
+            const page = parseInt(req.query.page as string) || undefined;
+            const limit = parseInt(req.query.limit as string) || undefined;
+            const search = (req.query.search as string) || undefined;
 
-            const { status, message } = API_RESPONSES.SUCCESS
-            res.status(status).json({ message, users: data.users, providers: data.providers })
+            const data = await this._adminService.listUsersAndProviders(page, limit, search)
+
+            const status = StatusCodes.OK;
+            const message = API_RESPONSES.SUCCESS;
+            res.status(status).json({ message, users: data.users, totalUsers: data.totalUsers, providers: data.providers })
         } catch (err) {
             next(err)
         }
@@ -40,11 +46,12 @@ export class AdminController {
     changeUserStatus = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { id } = req.params;
-            const { isBanned } = req.body; // like { isBanned: true } or { isBanned: false }
+            const { isBanned } = req.body;
 
             const user = await this._adminService.blockUserService(id, isBanned);
 
-            const { status, message } = API_RESPONSES.SUCCESS
+            const status = StatusCodes.OK;
+            const message = API_RESPONSES.SUCCESS;
             res.status(status).json({ message, user })
         } catch (err) {
             next(err);
@@ -58,7 +65,8 @@ export class AdminController {
 
             const provider = await this._adminService.blockProviderService(id, isBanned);
 
-            const { status, message } = API_RESPONSES.SUCCESS
+            const status = StatusCodes.OK;
+            const message = API_RESPONSES.SUCCESS;
             res.status(status).json({ message, provider })
         } catch (err) {
             next(err);
@@ -68,7 +76,7 @@ export class AdminController {
     verifyProvider = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { id } = req.params;
-            const { status } = req.body; // Expect { status: 'approved' } or { status: 'denied' }
+            const { status } = req.body;
             console.log(`AdminController.verifyProvider: Received request for ID ${id} with status ${status}`);
 
             const provider = await this._adminService.verifyProviderService(id, status);

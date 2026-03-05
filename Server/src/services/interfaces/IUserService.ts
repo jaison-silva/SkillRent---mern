@@ -1,4 +1,4 @@
-import { IUser } from "../models/userModel";
+import { IUser } from "../../models/userModel";
 
 export interface IUserService {
 
@@ -8,11 +8,11 @@ export interface IUserService {
     lastLogin: Date;
   }>;
 
-  userProfileService(userId: string): Promise<IUser>;  
-  
+  userProfileService(userId: string): Promise<IUser>;
+
   updateUserProfileService(userId: string, updateData: Partial<IUser>): Promise<IUser>;
 
   getUserDetailsService(id: string): Promise<IUser>;
 
-  listAllUsersService(): Promise<IUser[]>;
+  listAllUsersService(page?: number, limit?: number, search?: string): Promise<{ users: IUser[], total: number }>;
 }

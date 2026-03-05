@@ -18,12 +18,16 @@ const baseQuery = fetchBaseQuery({ // ithu axios interceptor polle, header kettu
 const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> = async (args, api, extraOptions) => {
     let result = await baseQuery(args, api, extraOptions);
 
-    if (result?.error?.status === 401) {
+    const url = typeof args === 'string' ? args : args.url;
+    const isAuthEndpoint = url?.startsWith('/auth/');
+
+    if (result?.error?.status === 401 && !isAuthEndpoint) {
         const refreshResult = await baseQuery('/auth/refresh', api, extraOptions);
 
         if (refreshResult?.data) {
-            const user = (api.getState() as RootState).auth.user;
-            api.dispatch(setCredentials({ user: user!, token: refreshResult.data as string }));
+            const refreshData = refreshResult.data as { user: any; token: string };
+            const user = refreshData.user ?? (api.getState() as RootState).auth.user;
+            api.dispatch(setCredentials({ user: user!, token: refreshData.token }));
             result = await baseQuery(args, api, extraOptions);
         } else {
             api.dispatch(logOut());
@@ -34,7 +38,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 
 export const apiSlice = createApi({
     baseQuery: baseQueryWithReauth,
-    tagTypes: ['User', 'Service'], // ithu catching related ah, to refetch
+    tagTypes: ['User', 'Service', 'Provider', 'ProviderProfile', 'AdminDashboard'], // ithu catching related ah, to refetch
     endpoints: () => ({}),
 });
 

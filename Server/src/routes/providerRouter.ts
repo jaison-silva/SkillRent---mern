@@ -7,7 +7,7 @@ import { ProviderController } from "../controllers/providerController";
 
 const router = Router();
 
-router.use(protect, authorize(ROLES.PROVIDER));
+router.use(protect);
 
 const providerService = ProviderContainer()
 const providerController = new ProviderController(providerService)
@@ -17,7 +17,7 @@ router.get('/profile', authorize(ROLES.PROVIDER), providerController.getProfile)
 router.patch('/profile', authorize(ROLES.PROVIDER), providerController.updateProfile);
 
 
-router.get('/', providerController.listProviders);      
-router.get('/:id', providerController.getProviderById);
+router.get('/', authorize(ROLES.USER, ROLES.ADMIN, ROLES.PROVIDER), providerController.listProviders);
+router.get('/:id', authorize(ROLES.USER, ROLES.ADMIN, ROLES.PROVIDER), providerController.getProviderById);
 
 export default router;

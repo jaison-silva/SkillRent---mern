@@ -1,10 +1,12 @@
 import { SaveOptions } from "mongoose";
-import { ProviderCreateInput } from "../dto/register/providerRegisterRequestDTO";
-import { IUser } from "../models/userModel";
-import { IProvider } from "../models/providerModel";
-import { UserRegisterRequestDTO } from "../dto/register/userRegisterRequestDTO";
+import { ProviderCreateInput } from "../../dto/register/providerRegisterRequestDTO";
+import { IUser } from "../../models/userModel";
+import { IProvider } from "../../models/providerModel";
+import { UserRegisterRequestDTO } from "../../dto/register/userRegisterRequestDTO";
 
-export interface IAuthRepository {
+import { IBaseRepository } from "./IBaseRepository";
+
+export interface IAuthRepository extends IBaseRepository<IUser> {
     findByEmail(email: string): Promise<IUser | null>
     updatePasswordByEmail(email: string, hashedPass: string): Promise<IUser | null>
     findById(id: string): Promise<IUser | null>

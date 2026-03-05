@@ -3,12 +3,12 @@ import { apiSlice } from "../../api/apiSlice";
 export const userApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         getProfile: builder.query<any, void>({
-            query: () => '/user/profile',
+            query: () => '/users/profile',
             providesTags: ['User'],
         }),
         updateProfile: builder.mutation<any, any>({
             query: (data) => ({
-                url: '/user/profile',
+                url: '/users/profile',
                 method: 'PATCH',
                 body: data,
             }),
@@ -16,7 +16,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
         }),
         updateProviderProfile: builder.mutation<any, any>({
             query: (payload) => ({
-                url: '/user/profile/provider',
+                url: '/users/profile/provider',
                 method: 'PATCH',
                 body: payload,
             }),
@@ -25,4 +25,4 @@ export const userApiSlice = apiSlice.injectEndpoints({
     })
 })
 
-export const { useGetProfileQuery, useUpdateProfileMutation } = userApiSlice
+export const { useGetProfileQuery, useUpdateProfileMutation, useUpdateProviderProfileMutation } = userApiSlice

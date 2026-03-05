@@ -87,7 +87,7 @@ export default function LoginForm({
         </form>
 
         <div className="flex justify-between mt-6 text-sm">
-          <Link to="/auth/password/forgot" className="link-primary">
+          <Link to="/forgot-password" className="link-primary">
             Forgot Password?
           </Link>
 

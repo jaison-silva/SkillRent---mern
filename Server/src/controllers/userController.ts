@@ -1,13 +1,14 @@
 import { NextFunction, Request, Response } from "express"
 // import UserRepository from "../repositories/userRepository";
 import { API_RESPONSES } from "../constants/statusMessageConstant";
+import { StatusCodes } from 'http-status-codes';
 import ApiError from "../utils/apiError";
 import { IUserService } from "../services/interfaces/IUserService";
 
 // const userService = new UserService(new UserRepository())
- 
+
 export class UserController {
-    constructor(private userService : IUserService) { }
+    constructor(private userService: IUserService) { }
 
     getDashboard = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
@@ -16,7 +17,8 @@ export class UserController {
 
             const homeData = await this.userService.getHomeData(userId);
 
-            const { status, message } = API_RESPONSES.SUCCESS;
+            const status = StatusCodes.OK;
+            const message = API_RESPONSES.SUCCESS;
             res.status(status).json({ message, data: homeData });
         } catch (err) {
             next(err);
@@ -28,12 +30,13 @@ export class UserController {
             const userId = req.jwtTokenVerified?.id
 
             if (!userId) {
-                throw new ApiError(API_RESPONSES.UNAUTHORIZED);
+                throw new ApiError(StatusCodes.UNAUTHORIZED, API_RESPONSES.UNAUTHORIZED);
             }
 
             const user = await this.userService.userProfileService(userId);
 
-            const { status, message } = API_RESPONSES.SUCCESS
+            const status = StatusCodes.OK;
+            const message = API_RESPONSES.SUCCESS;
             res.status(status).json({ message, user })
         } catch (err) {
             next(err)
@@ -45,14 +48,15 @@ export class UserController {
             const userId = req.jwtTokenVerified?.id
 
             if (!userId) {
-                throw new ApiError(API_RESPONSES.UNAUTHORIZED);
+                throw new ApiError(StatusCodes.UNAUTHORIZED, API_RESPONSES.UNAUTHORIZED);
             }
 
             const updateData = req.body;
 
             const user = await this.userService.updateUserProfileService(userId, updateData)
 
-            const { status, message } = API_RESPONSES.SUCCESS
+            const status = StatusCodes.OK;
+            const message = API_RESPONSES.SUCCESS;
             res.status(status).json({ message, user })
 
         } catch (err) {
@@ -71,7 +75,8 @@ export class UserController {
                 return;
             }
 
-            const { status, message } = API_RESPONSES.SUCCESS;
+            const status = StatusCodes.OK;
+            const message = API_RESPONSES.SUCCESS;
             res.status(status).json({ message, user: userDetails });
         } catch (err) {
             next(err);
@@ -80,13 +85,17 @@ export class UserController {
 
     listUsers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
-            // You can extract query params here for pagination: const { page, limit } = req.query;
-            const users = await this.userService.listAllUsersService();
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 10;
+            const search = (req.query.search as string) || "";
 
-            const { status, message } = API_RESPONSES.SUCCESS;
+            const { users, total } = await this.userService.listAllUsersService(page, limit, search);
+
+            const status = StatusCodes.OK;
+            const message = API_RESPONSES.SUCCESS;
             res.status(status).json({
                 message,
-                count: users.length,
+                count: total,
                 users
             });
         } catch (err) {

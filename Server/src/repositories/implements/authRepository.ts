@@ -7,8 +7,12 @@ import { IUser } from "../../models/userModel";
 import { SaveOptions } from "mongoose";
 
 
-export class MongoAuthRepository implements IAuthRepository {
-  constructor() { }
+import { BaseRepository } from "./baseRepository";
+
+export class MongoAuthRepository extends BaseRepository<IUser> implements IAuthRepository {
+  constructor() {
+    super(User);
+  }
 
   findByEmail(email: string): Promise<IUser | null> {
     return User.findOne({ email });
@@ -23,7 +27,7 @@ export class MongoAuthRepository implements IAuthRepository {
   }
 
   findById(id: string): Promise<IUser | null> {
-    return User.findById(id)
+    return super.findById(id);
   }
 
   async createUser(data: UserRegisterRequestDTO | UserRegisterRequestDTO[], options?: SaveOptions) {

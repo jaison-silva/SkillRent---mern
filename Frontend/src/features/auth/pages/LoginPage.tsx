@@ -1,8 +1,6 @@
 import LoginForm from "../../auth/components/loginForm";
 import { useLoginMutation } from "../authApiSlice";
-
-import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import type { SerializedError } from "@reduxjs/toolkit";
+import toast from "react-hot-toast";
 
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -24,14 +22,8 @@ export default function LoginPage() {
         }),
       );
       navigate("/");
-    } catch (err) {
-      const error = err as FetchBaseQueryError | SerializedError;
-
-      if ("status" in error) {
-        console.log(error.data);
-      } else {
-        console.log(error.message);
-      }
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Login failed. Please check your credentials.");
     }
   };
 

@@ -1,16 +1,26 @@
 import { CorsOptions } from "cors"
 
-const allowedOrigins: string[] = (process.env.ALLOWED_ORIGINS || "").split(',')
+const allowedOrigins: string[] = (process.env.ALLOWED_ORIGINS || "")
+    .split(',')
+    .map(origin => origin.trim().replace(/\/$/, "")); // Trim whitespace and trailing slashes
 
 const corsOptions: CorsOptions = {
-    // origin:allowedOrigins,
     origin: (origin, callback) => {
         if (!origin) return callback(null, true)
-        if (allowedOrigins.includes(origin)) {
+
+        // Remove trailing slash from incoming origin just in case
+        const incomingOrigin = origin.trim().replace(/\/$/, "");
+
+        // Locally, allow any localhost or 127.0.0.1 port to bypass strict env checks (useful for vite port switching)
+        if (incomingOrigin.startsWith("http://localhost") || incomingOrigin.startsWith("http://127.0.0.1")) {
+            return callback(null, true);
+        }
+
+        if (allowedOrigins.includes(incomingOrigin)) {
             callback(null, true)
         } else {
+            console.warn(`[CORS REJECTED] Incoming Origin: "${incomingOrigin}" | Allowed: ${JSON.stringify(allowedOrigins)}`);
             callback(new Error("Not allowed by CORS"))
-            console.warn(`access attempt by : ${origin}`)
         }
     },
     allowedHeaders: ['Content-Type', 'Authorization'],

@@ -1,5 +1,5 @@
-import { otpStatus } from "../enum/otpEnum"
-import { MessageResponseDTO } from "../dto/otp/messageResponseDTO"
+import { otpStatus } from "../../enum/otpEnum"
+import { MessageResponseDTO } from "../../dto/otp/messageResponseDTO"
 
 export interface IOtpService {
     sendOTP(email: string, purpose: otpStatus): Promise<MessageResponseDTO>

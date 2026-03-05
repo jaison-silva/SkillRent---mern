@@ -1,4 +1,5 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useTimer } from "../../../hooks/useTimer";
 import {
@@ -26,38 +27,56 @@ export default function ResetPasswordPage() {
   const { seconds: timeLeft, start: startTimer } = useTimer(60);
 
   const handleRequest = async (data: { email: string }) => {
-    await forgotPassword(data).unwrap();
-    setEmail(data.email);
-    startTimer();
-    setStep(2);
+    try {
+      await forgotPassword(data).unwrap();
+      setEmail(data.email);
+      startTimer();
+      setStep(2);
+      toast.success("OTP sent to your email!");
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to send OTP.");
+    }
   };
 
   const handleVerify = async (data: { otp: string }) => {
-    await verifyOtp({
-      email,
-      otp: data.otp,
-      purpose: "FORGOT_PASSWORD",
-    }).unwrap();
-    setOtp(data.otp);
-    setStep(3);
+    try {
+      await verifyOtp({
+        email,
+        otp: data.otp,
+        purpose: "FORGOT_PASSWORD",
+      }).unwrap();
+      setOtp(data.otp);
+      setStep(3);
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Invalid OTP.");
+    }
   };
 
   const handleReset = async (data: {
     password: string;
     confirmPassword: string;
   }) => {
-    await resetPassword({
-      email,
-      otp: Number(otp),
-      newPassword: data.password,
-    }).unwrap();
-    alert("Password updated successfully!");
-    navigate("/login");
+    try {
+      await resetPassword({
+        email,
+        otp: Number(otp),
+        newPassword: data.password,
+      }).unwrap();
+      toast.success("Password updated successfully!");
+      navigate("/login");
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to reset password.");
+    }
   };
 
   const handleResend = async () => {
-    await forgotPassword({ email }).unwrap();
-    startTimer();
+    try {
+      await forgotPassword({ email }).unwrap();
+      startTimer();
+      toast.success("OTP resent successfully!");
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to resend OTP.");
+    }
   };
 
   return (

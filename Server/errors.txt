@@ -1,0 +1,25 @@
+﻿
+> server@1.0.0 build
+> tsc
+
+src/repositories/interfaces/IAuthRepository.ts(2,37): error TS2307: Cannot find module '../dto/register/providerRegisterRequestDTO' or its corresponding type declarations.
+src/repositories/interfaces/IAuthRepository.ts(3,23): error TS2307: Cannot find module '../models/userModel' or its corresponding type declarations.
+src/repositories/interfaces/IAuthRepository.ts(4,27): error TS2307: Cannot find module '../models/providerModel' or its corresponding type declarations.
+src/repositories/interfaces/IAuthRepository.ts(5,40): error TS2307: Cannot find module '../dto/register/userRegisterRequestDTO' or its corresponding type declarations.
+src/services/interfaces/IAdminService.ts(1,32): error TS2307: Cannot find module '../enum/providerStatusEnum' or its corresponding type declarations.
+src/services/interfaces/IAdminService.ts(2,23): error TS2307: Cannot find module '../models/userModel' or its corresponding type declarations.
+src/services/interfaces/IAdminService.ts(3,27): error TS2307: Cannot find module '../models/providerModel' or its corresponding type declarations.
+src/services/interfaces/IAuthService.ts(1,33): error TS2307: Cannot find module '../dto/auth/loginRequestDTO' or its corresponding type declarations.
+src/services/interfaces/IAuthService.ts(2,34): error TS2307: Cannot find module '../dto/auth/loginResponseDTO' or its corresponding type declarations.
+src/services/interfaces/IAuthService.ts(3,44): error TS2307: Cannot find module '../dto/register/providerRegisterRequestDTO' or its corresponding type declarations.
+src/services/interfaces/IAuthService.ts(4,40): error TS2307: Cannot find module '../dto/register/userRegisterRequestDTO' or its corresponding type declarations.
+src/services/interfaces/IAuthService.ts(5,37): error TS2307: Cannot find module '../dto/register/RegisterResponseDTO' or its corresponding type declarations.
+src/services/interfaces/IAuthService.ts(6,36): error TS2307: Cannot find module '../dto/auth/refreshResponseDTO' or its corresponding type declarations.
+src/services/interfaces/IAuthService.ts(7,27): error TS2307: Cannot find module '../enum/otpEnum' or its corresponding type declarations.
+src/services/interfaces/IAuthService.ts(8,43): error TS2307: Cannot find module '../dto/auth/forgotPasswordResponseDTO' or its corresponding type declarations.
+src/services/interfaces/IAuthService.ts(9,42): error TS2307: Cannot find module '../dto/auth/resetPasswordResponseDTO' or its corresponding type declarations.
+src/services/interfaces/IOtpService.ts(1,27): error TS2307: Cannot find module '../enum/otpEnum' or its corresponding type declarations.
+src/services/interfaces/IOtpService.ts(2,36): error TS2307: Cannot find module '../dto/otp/messageResponseDTO' or its corresponding type declarations.
+src/services/interfaces/IProviderService.ts(3,42): error TS2307: Cannot find module '../dto/provider/updateProviderProfileDTO' or its corresponding type declarations.
+src/services/interfaces/IProviderService.ts(4,27): error TS2307: Cannot find module '../models/providerModel' or its corresponding type declarations.
+src/services/interfaces/IUserService.ts(1,23): error TS2307: Cannot find module '../models/userModel' or its corresponding type declarations.

@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 import { otpStatus } from "../enum/otpEnum";
 
 export interface IOtp extends Document {

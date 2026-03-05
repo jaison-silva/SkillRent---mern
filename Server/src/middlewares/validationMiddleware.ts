@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { ZodObject } from 'zod';
 import { API_RESPONSES } from "../constants/statusMessageConstant";
+import { StatusCodes } from 'http-status-codes';
 
 export default function validate(schema: ZodObject) {
   return async (req: Request, res: Response, next: NextFunction) => {
@@ -9,7 +10,8 @@ export default function validate(schema: ZodObject) {
       req.body = parsed;
       next();
     } catch (error) {
-      const { status, message } = API_RESPONSES.VALIDATION_ERROR;
+      const status = StatusCodes.BAD_REQUEST;
+            const message = API_RESPONSES.VALIDATION_ERROR;
       res.status(status).json({ message: message + error });
     }
   }

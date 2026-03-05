@@ -1,5 +1,7 @@
 import { useForm } from "react-hook-form";
+import { useEffect, useRef } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import toast from "react-hot-toast";
 import * as z from "zod";
 
 const otpSchema = z.object({
@@ -31,6 +33,18 @@ export const VerifyStep = ({
   } = useForm({
     resolver: zodResolver(otpSchema),
   });
+  
+  const hasExpired = useRef(false);
+
+  useEffect(() => {
+    if (timeLeft > 0) {
+        hasExpired.current = false;
+    } else if (timeLeft === 0 && !hasExpired.current) {
+        toast.error("OTP has expired. Please request a new one.");
+        hasExpired.current = true;
+    }
+  }, [timeLeft]);
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <h1 className="text-2xl font-bold">Verify Code</h1>
@@ -51,17 +65,20 @@ export const VerifyStep = ({
         {isLoading ? "Verifying..." : "Continue"}
       </button>
 
-      {timeLeft > 0 ? (
-        <p className="text-xs text-gray-400">Resend code in {timeLeft}s</p>
-      ) : (
+      <div className="text-center w-full mt-2">
         <button
           type="button"
           onClick={onResend}
-          className="text-sm text-blue-600 underline"
+          disabled={timeLeft > 0}
+          className={`text-sm font-medium transition-colors ${
+            timeLeft > 0
+              ? 'text-gray-400 cursor-not-allowed'
+              : 'text-blue-600 hover:underline'
+          }`}
         >
-          Resend OTP
+          {timeLeft > 0 ? `Resend code in ${timeLeft}s` : 'Resend OTP'}
         </button>
-      )}
+      </div>
     </form>
   );
 };

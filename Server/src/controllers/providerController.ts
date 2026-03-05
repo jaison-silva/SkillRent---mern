@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { API_RESPONSES } from "../constants/statusMessageConstant";
+import { StatusCodes } from 'http-status-codes';
 import { UpdateProviderProfileDTO } from "../dto/provider/updateProviderProfileDTO";
 import ApiError from "../utils/apiError";
 import { IProviderService } from "../services/interfaces/IProviderService";
@@ -16,12 +17,13 @@ class ProviderController {
             const providerId = req.jwtTokenVerified?.id;
 
             if (!providerId) {
-                throw new ApiError(API_RESPONSES.UNAUTHORIZED);
+                throw new ApiError(StatusCodes.UNAUTHORIZED, API_RESPONSES.UNAUTHORIZED);
             }
 
             const provider = await this._providerService.providerProfileService(providerId);
 
-            const { status, message } = API_RESPONSES.SUCCESS;
+            const status = StatusCodes.OK;
+            const message = API_RESPONSES.SUCCESS;
             res.status(status).json({ message, provider });
         } catch (err) {
             next(err);
@@ -37,7 +39,8 @@ class ProviderController {
 
             const provider = await this._providerService.updateProviderProfileService(providerId, updateData);
 
-            const { status, message } = API_RESPONSES.SUCCESS;
+            const status = StatusCodes.OK;
+            const message = API_RESPONSES.SUCCESS;
             res.status(status).json({ message, provider });
         } catch (err) {
             next(err);
@@ -48,12 +51,13 @@ class ProviderController {
     //     try {
     //         const providerId = req.jwtTokenVerified?.id;
 
-    //         if (!providerId) throw new ApiError(API_RESPONSES.NOT_FOUND);
+    //         if (!providerId) throw new ApiError(StatusCodes.NOT_FOUND, API_RESPONSES.NOT_FOUND);
 
     //         // Logic for dashboard stats could go here
     //         // const dashboardData = await providerService.providerDashboardService(providerId);
 
-    //         const { status, message } = API_RESPONSES.SUCCESS;
+    //         const status = StatusCodes.OK;
+    //         const message = API_RESPONSES.SUCCESS;
     //         // res.status(status).json({ message, dashboardData });
     //     } catch (err) {
     //         next(err);
@@ -67,7 +71,8 @@ class ProviderController {
             const filter = { validationStatus: "approved" };
             const providers = await this._providerService.listProviderService(filter)
 
-            const { status, message } = API_RESPONSES.SUCCESS
+            const status = StatusCodes.OK;
+            const message = API_RESPONSES.SUCCESS;
             res.status(status).json({ message, providers })
         } catch (err) {
             next(err)
@@ -81,7 +86,8 @@ class ProviderController {
 
             const provider = await this._providerService.providerDetailService(providerId)
 
-            const { status, message } = API_RESPONSES.SUCCESS
+            const status = StatusCodes.OK;
+            const message = API_RESPONSES.SUCCESS;
             res.status(status).json({ message, provider })
         } catch (err) {
             next(err)

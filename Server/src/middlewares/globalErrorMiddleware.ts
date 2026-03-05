@@ -1,12 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { ErrorRequestHandler } from 'express';
 import { API_RESPONSES } from '../constants/statusMessageConstant';
+import { StatusCodes } from 'http-status-codes';
 import ApiError from '../utils/apiError';
 import { number } from 'zod';
 
 const globalErrorHandler: ErrorRequestHandler = ((err: unknown, req: Request, res: Response, next: NextFunction) => {
-  let statusCode: number = API_RESPONSES.INTERNAL_SERVER_ERROR.status
-  let message : string = API_RESPONSES.INTERNAL_SERVER_ERROR.message
+  let statusCode: number = StatusCodes.INTERNAL_SERVER_ERROR
+  let message : string = API_RESPONSES.INTERNAL_SERVER_ERROR
 
   if (err instanceof ApiError) {
     statusCode = err.statusCode;

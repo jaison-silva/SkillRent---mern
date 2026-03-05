@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express"
 import jwt from "jsonwebtoken";
 import { API_RESPONSES } from "../constants/statusMessageConstant";
+import { StatusCodes } from 'http-status-codes';
 import IAuthService from "../services/interfaces/IAuthService"
 import { otpStatus } from "../enum/otpEnum";
 import { setAuthCookies } from "../utils/setAuthCookies";
@@ -36,7 +37,7 @@ export class AuthController {
 
             setAuthCookies(res, result.refreshToken, result.accessToken)
 
-            res.status(201).json({ user: result.user, refreshToken: result.refreshToken });
+            res.status(201).json({ user: result.user, accessToken: result.accessToken });
         } catch (err) {
             next(err)
         }
@@ -51,7 +52,8 @@ export class AuthController {
 
             setAuthCookies(res, refreshToken, accessToken)
 
-            const { status, message } = API_RESPONSES.SUCCESS
+            const status = StatusCodes.OK;
+            const message = API_RESPONSES.SUCCESS;
             res.status(status).json({ message, user, accessToken })
         } catch (err) {
             next(err)
@@ -63,7 +65,8 @@ export class AuthController {
             const refreshToken = req.cookies.refreshToken;
             const response = await this.authService.refresh(refreshToken);
 
-            const { status, message } = API_RESPONSES.CREATED
+            const status = StatusCodes.CREATED;
+            const message = API_RESPONSES.CREATED;
             res.status(status).json({ user: response.user, token: response.accessToken })
         } catch (err) {
             next(err)
@@ -76,9 +79,9 @@ export class AuthController {
 
             await this.authService.forgotPassword(email, otpStatus.FORGOT_PASSWORD);
 
-            res.status(API_RESPONSES.SUCCESS.status).json({
+            res.status(StatusCodes.OK).json({
                 success: true,
-                message: API_RESPONSES.OTP_SENT.message,
+                message: API_RESPONSES.OTP_SENT,
             });
         } catch (err) {
             next(err);
@@ -91,9 +94,9 @@ export class AuthController {
 
             await this.authService.resetPassword(email, otp, newPassword);
 
-            res.status(API_RESPONSES.SUCCESS.status).json({
+            res.status(StatusCodes.OK).json({
                 success: true,
-                message: API_RESPONSES.PASSWORD_UPDATED.message,
+                message: API_RESPONSES.PASSWORD_UPDATED,
             });
         } catch (err) {
             next(err);
@@ -115,7 +118,7 @@ export class AuthController {
 
             res.clearCookie("refreshToken");
             res.clearCookie("accessToken");
-            res.status(API_RESPONSES.SUCCESS.status).json({
+            res.status(StatusCodes.OK).json({
                 success: true,
                 message: "Logged out successfully",
             });

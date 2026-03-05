@@ -6,7 +6,7 @@ export interface ProviderRegisterRequestDTO {
   name: string;
   email: string;
   password: string;
-  otp:number,
+  otp?: number,
   role: UserRoleStatus.PROVIDER | UserRoleStatus.PROVIDER,
   bio?: string;
   skills?: string[];

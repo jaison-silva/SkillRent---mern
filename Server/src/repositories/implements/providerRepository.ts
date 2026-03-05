@@ -2,8 +2,12 @@ import Provider, { IProvider } from "../../models/providerModel";
 import IProviderhRepository from "../../repositories/interfaces/IProviderRepository";
 import { ProviderStatus } from "../../enum/providerStatusEnum";
 import { UpdateProviderProfileDTO } from "../../dto/provider/updateProviderProfileDTO";
+import { BaseRepository } from "./baseRepository";
 
-export default class MongoProviderRepository implements IProviderhRepository {
+export default class MongoProviderRepository extends BaseRepository<IProvider> implements IProviderhRepository {
+  constructor() {
+    super(Provider);
+  }
 
   listProviders(filter?: Record<string, any>) {
     return Provider.find(filter || {}).populate("userId");
@@ -12,7 +16,7 @@ export default class MongoProviderRepository implements IProviderhRepository {
   findProviderById(id: string): Promise<IProvider | null> {
     return Provider.findById(id).populate("userId") as unknown as Promise<IProvider | null>;
   }
-  
+
 
   findByUserId(userId: string) {
     return Provider.findOne({ userId }).populate("userId");

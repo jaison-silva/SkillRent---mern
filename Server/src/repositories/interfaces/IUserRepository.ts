@@ -1,8 +1,9 @@
 import { IUser } from "../../models/userModel";
+import { IBaseRepository } from "./IBaseRepository";
 
-export default interface IUserRepository {
+export default interface IUserRepository extends IBaseRepository<IUser> {
 
-    findUsers(): Promise<IUser[]>; 
+    findUsers(page?: number, limit?: number, search?: string): Promise<{ users: IUser[], total: number }>;
 
     findUserById(id: string): Promise<IUser | null>;
 

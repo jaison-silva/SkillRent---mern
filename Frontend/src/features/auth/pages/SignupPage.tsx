@@ -1,4 +1,7 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { setCredentials } from "../authSlice";
 import { useTimer } from "../../../hooks/useTimer";
 import { useParams, useNavigate } from "react-router-dom";
 import { EmailStep } from "../components/EmailStep";
@@ -30,16 +33,19 @@ interface ProviderSignupData extends BaseSignupData {
 }
 
 export const Signup = () => {
-  const {UserRole} = useParams<{UserRole: Role}>()
+  const { role: UserRole } = useParams<{ role: Role }>();
   const [step, setStep] = useState<SignupStep>("EMAIL_INPUT");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const { seconds, start } = useTimer(60);
-  const navigage = useNavigate()
-  const [sendOtp, { isLoading: isSending }] = useSendOtpMutation(); // ithu renamed ahnu, from isloading to isSending
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const [sendOtp, { isLoading: isSending }] = useSendOtpMutation(); // ithu renamed ahnu, from isloading to isSending 
   const [verifyOtp, { isLoading: isVerifying }] = useVerifyOtpMutation();
-  const [registerUser] = useSignupUserMutation();
-  const [registerProvider] = useSignupProviderMutation();
+  const [registerUser, { isLoading: isRegisteringUser }] = useSignupUserMutation();
+  const [registerProvider, { isLoading: isRegisteringProvider }] = useSignupProviderMutation();
+
+  const isRegistering = isRegisteringUser || isRegisteringProvider;
 
   const handleSendOtp = async ({email:email}:{email:string}) => {
     try {
@@ -47,8 +53,9 @@ export const Signup = () => {
       setEmail(email);
       start();
       setStep("OTP_VERIFY");
-    } catch (err) {
+    } catch (err: any) {
       console.error("OTP Send Error", err);
+      toast.error(err?.data?.message || err?.message || "Failed to send OTP. User may already exist.");
     }
   };
 
@@ -57,8 +64,9 @@ export const Signup = () => {
       await verifyOtp({ email, otp: otpInput, purpose: 'verification' }).unwrap();
       setOtp(otpInput);
       setStep("DETAILS");
-    } catch (err) {
+    } catch (err: any) {
       console.log(err);
+      toast.error(err?.data?.message || "Invalid OTP provided.");
     }
   };
 
@@ -67,11 +75,26 @@ export const Signup = () => {
   ) => {
     const finalData = { ...formData, email, otp };
     try {
-      if (UserRole === "user") await registerUser(finalData).unwrap();
-      else if (UserRole === "provider") await registerProvider(finalData).unwrap()
-      navigage("/dashboard")
-    } catch (err) {
+      let result;
+      if (UserRole === "user") {
+        result = await registerUser(finalData).unwrap();
+      } else if (UserRole === "provider") {
+        result = await registerProvider(finalData).unwrap();
+      }
+
+      if (result && result.user && result.accessToken) {
+        dispatch(
+          setCredentials({
+            user: result.user,
+            token: result.accessToken,
+          })
+        );
+      }
+      
+      navigate("/dashboard")
+    } catch (err: any) {
       console.error("Registration failed", err);
+      toast.error(err?.data?.message || "Registration failed. User may already exist.");
     }
   };
 
@@ -92,7 +115,7 @@ export const Signup = () => {
       )}
 
       {step === "DETAILS" && (
-        <DetailsStep onSubmit={handleFinalSubmit} role={UserRole} />
+        <DetailsStep onSubmit={handleFinalSubmit} role={UserRole} isLoading={isRegistering} />
       )}
     </div>
   );

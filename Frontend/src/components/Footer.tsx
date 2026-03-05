@@ -5,9 +5,9 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">Brand</h2>
+            <h2 className="text-lg font-semibold text-gray-900">SR ltd.</h2>
             <p className="mt-4 text-sm text-gray-600">
-              Concise description of the product or company. Keep it direct and clear.
+              Skill Rent is a platform where you can hire highly skilled people or team to get whatever work you have to do. 
             </p>
           </div>
 

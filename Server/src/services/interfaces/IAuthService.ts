@@ -1,12 +1,12 @@
-import { LoginRequestDTO } from "../dto/auth/loginRequestDTO";
-import { LoginResponseDTO } from "../dto/auth/loginResponseDTO";
-import { ProviderRegisterRequestDTO } from "../dto/register/providerRegisterRequestDTO";
-import { UserRegisterRequestDTO } from "../dto/register/userRegisterRequestDTO";
-import { RegisterResponseDTO } from "../dto/register/RegisterResponseDTO";
-import { RefreshResponseDTO } from "../dto/auth/refreshResponseDTO";
-import { otpStatus } from "../enum/otpEnum"
-import { ForgotPasswordResponseDTO } from "../dto/auth/forgotPasswordResponseDTO";
-import { ResetPasswordResponseDTO } from "../dto/auth/resetPasswordResponseDTO";
+import { LoginRequestDTO } from "../../dto/auth/loginRequestDTO";
+import { LoginResponseDTO } from "../../dto/auth/loginResponseDTO";
+import { ProviderRegisterRequestDTO } from "../../dto/register/providerRegisterRequestDTO";
+import { UserRegisterRequestDTO } from "../../dto/register/userRegisterRequestDTO";
+import { RegisterResponseDTO } from "../../dto/register/RegisterResponseDTO";
+import { RefreshResponseDTO } from "../../dto/auth/refreshResponseDTO";
+import { otpStatus } from "../../enum/otpEnum"
+import { ForgotPasswordResponseDTO } from "../../dto/auth/forgotPasswordResponseDTO";
+import { ResetPasswordResponseDTO } from "../../dto/auth/resetPasswordResponseDTO";
 
 
 export default interface AuthService {

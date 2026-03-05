@@ -21,7 +21,7 @@ function authContainer() {
     const otpRepo = new OtpRepository()
     const emailService = new EmailService()
 
-    const otpService = new OtpService(otpRepo, emailService)
+    const otpService = new OtpService(otpRepo, emailService, authRepo)
 
     const authService = new AuthServices(authRepo, otpService)
 
@@ -29,10 +29,11 @@ function authContainer() {
 }
 
 function otpContainer() {
+    const authRepo = new MongoAuthRepository()
     const otpRepo = new OtpRepository()
     const emailService = new EmailService()
 
-    const otpService = new OtpService(otpRepo, emailService)
+    const otpService = new OtpService(otpRepo, emailService, authRepo)
 
     return otpService
 }

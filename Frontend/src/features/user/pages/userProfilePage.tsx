@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 import { useGetProfileQuery, useUpdateProfileMutation } from '../userApiSlice';
 import { BasicInfoForm } from '../components/BasicInfoForm';
 import { User, ShieldCheck, Calendar } from 'lucide-react';
 
 export default function UserProfilePage() {
-  const { data: profile, isLoading, isError } = useGetProfileQuery();
+  const { data, isLoading, isError } = useGetProfileQuery();
+  const profile = data?.user;
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
   const [isEditing, setIsEditing] = useState(false);
 
@@ -14,9 +16,11 @@ export default function UserProfilePage() {
   const handleSave = async (formData: any) => {
     try {
       await updateProfile(formData).unwrap();
-      setIsEditing(false); 
-    } catch (err) {
+      toast.success('Profile updated successfully!');
+      setIsEditing(false);
+    } catch (err: any) {
       console.error("Update failed", err);
+      toast.error(err?.data?.message || 'Failed to update profile.');
     }
   };
 

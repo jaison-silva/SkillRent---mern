@@ -9,6 +9,7 @@ import mongoose from "mongoose";
 import { UserRoleStatus } from "../../enum/userRoleStatusEnum";
 import { otpStatus } from "../../enum/otpEnum"
 import { API_RESPONSES } from "../../constants/statusMessageConstant";
+import { StatusCodes } from 'http-status-codes';
 import jwt from "jsonwebtoken";
 import { LoginResponseDTO } from "../../dto/auth/loginResponseDTO";
 import IAuthService from "../interfaces/IAuthService"
@@ -29,16 +30,16 @@ export default class AuthServices implements IAuthService {
         const { email, password } = data
 
         if (!email || !password) {
-            throw new ApiError(API_RESPONSES.VALIDATION_ERROR)
+            throw new ApiError(StatusCodes.BAD_REQUEST, API_RESPONSES.VALIDATION_ERROR)
         }
         const user = await this.authRepo.findByEmail(email)
 
         if (!user || !user.password) {
-            throw new ApiError(API_RESPONSES.USER_NOT_FOUND)
+            throw new ApiError(StatusCodes.NOT_FOUND, API_RESPONSES.USER_NOT_FOUND)
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password)
-        if (!isPasswordValid) throw new ApiError(API_RESPONSES.LOGIN_FAILED)
+        if (!isPasswordValid) throw new ApiError(StatusCodes.UNAUTHORIZED, API_RESPONSES.LOGIN_FAILED)
 
         const accessToken = jwtToken.accessToken(user._id.toString(), user.role)
         const refreshToken = jwtToken.refreshToken(user._id.toString())
@@ -65,18 +66,18 @@ export default class AuthServices implements IAuthService {
     //     );
 
     //     if (!otpVerified || otpVerified.isVerified !== true) {
-    //         throw new ApiError(API_RESPONSES.OTP_NOT_VERIFIED)
+    //         throw new ApiError(StatusCodes.FORBIDDEN, API_RESPONSES.OTP_NOT_VERIFIED)
     //     }
 
     //     const existingUser = await this.authRepo.findByEmail(email);
-    //     if (existingUser) throw new ApiError(API_RESPONSES.ALREADY_EXISTS)
+    //     if (existingUser) throw new ApiError(StatusCodes.CONFLICT, API_RESPONSES.ALREADY_EXISTS)
 
     //     const hashedPassword = await bcrypt.hash(password, 10);
 
     //     const newUser = await this.authRepo.createUser({ name, email, password: hashedPassword, role: "user" });
 
     //     if (!newUser || !newUser._id) {
-    //         throw new ApiError(API_RESPONSES.INTERNAL_SERVER_ERROR);
+    //         throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, API_RESPONSES.INTERNAL_SERVER_ERROR);
     //     }
 
     //     const accessToken = jwtToken.accessToken(newUser._id.toString(), newUser.role)
@@ -97,27 +98,32 @@ export default class AuthServices implements IAuthService {
     // }
 
     async UserRegister(data: UserRegisterRequestDTO): Promise<RegisterResponseDTO> {
-        const { name, email, otp, role, password } = data
+        const { name, email, otp, role, password, ...rest } = data
 
         console.log("UserRegister backend data:", { name, email, otp, role });
+
+        if (otp === undefined) {
+            throw new ApiError(StatusCodes.BAD_REQUEST, "OTP is required");
+        }
 
         await this.otpService.ensureVerified(email, otp, otpStatus.VERIFICATION)
 
         const existingUser = await this.authRepo.findByEmail(email)
-        if (existingUser) throw new ApiError(API_RESPONSES.ALREADY_EXISTS)
+        if (existingUser) throw new ApiError(StatusCodes.CONFLICT, API_RESPONSES.ALREADY_EXISTS)
 
         const hashedPassword = await bcrypt.hash(password, 10)
 
         const newUser = await this.authRepo.createUser({
-            ...data,
+            name,
+            email,
             password: hashedPassword,
-            // role: UserRoleStatus.USER
-            role
+            role,
+            ...rest
         })
 
         if (!newUser || !newUser._id) {
             console.error("UserRegister: FAILED to create user doc or get _id", { newUser });
-            throw new ApiError(API_RESPONSES.INTERNAL_SERVER_ERROR);
+            throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, API_RESPONSES.INTERNAL_SERVER_ERROR);
         }
 
         const userIdStr = String(newUser._id);
@@ -155,10 +161,17 @@ export default class AuthServices implements IAuthService {
         } = data;
         console.log("ProviderRegister backend data:", { name, email, otp });
 
+        if (otp === undefined) {
+            throw new ApiError(StatusCodes.BAD_REQUEST, "OTP is required");
+        }
+
         await this.otpService.ensureVerified(email, otp, otpStatus.VERIFICATION)
 
         const existingUser = await this.authRepo.findByEmail(email);
-        if (existingUser) throw new ApiError(API_RESPONSES.ALREADY_EXISTS)
+        if (existingUser) {
+            console.log(`[AuthService] ProviderRegister 409 Conflict: User found with email ${email}, role: ${existingUser.role}`);
+            throw new ApiError(StatusCodes.CONFLICT, "An account with this email already exists. Please log in or use a different email.");
+        }
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -171,7 +184,6 @@ export default class AuthServices implements IAuthService {
                 name,
                 email,
                 password: hashedPassword,
-                otp,
                 role: UserRoleStatus.PROVIDER
             }, { session });
 
@@ -190,11 +202,11 @@ export default class AuthServices implements IAuthService {
             }, { session });
 
             await session.commitTransaction()
-            session.endSession()
+            console.log("Provider registration transaction committed for:", email);
 
             if (!newUser || !newUser._id) {
                 console.error("ProviderRegister: FAILED to create user doc or get _id", { newUser });
-                throw new ApiError(API_RESPONSES.INTERNAL_SERVER_ERROR);
+                throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, API_RESPONSES.INTERNAL_SERVER_ERROR);
             }
 
             const userIdStr = String(newUser._id);
@@ -203,6 +215,9 @@ export default class AuthServices implements IAuthService {
 
             await this.authRepo.updateRefreshToken(userIdStr, refreshToken);
 
+            await this.otpService.deleteOtp(email, otpStatus.VERIFICATION);
+
+            console.log("ProviderRegister successful response prepared for:", email);
             return {
                 user: {
                     id: userIdStr,
@@ -224,19 +239,19 @@ export default class AuthServices implements IAuthService {
     }
 
     async refresh(refreshToken: string): Promise<RefreshResponseDTO> {
-        if (!refreshToken) throw new ApiError(API_RESPONSES.TOKEN_INVALID);
+        if (!refreshToken) throw new ApiError(StatusCodes.UNAUTHORIZED, API_RESPONSES.TOKEN_INVALID);
 
         try {
             const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!) as { id: string }
 
             const user = await this.authRepo.findById(decoded.id);
 
-            if (!user || user.isBanned) throw new ApiError(API_RESPONSES.ACCOUNT_DISABLED);
+            if (!user || user.isBanned) throw new ApiError(StatusCodes.FORBIDDEN, API_RESPONSES.ACCOUNT_DISABLED);
 
             // Verify if the token matches the one in the database
             if (user.refreshToken !== refreshToken) {
                 console.error("Token mismatch. Possible token reuse or breach.");
-                throw new ApiError(API_RESPONSES.TOKEN_INVALID);
+                throw new ApiError(StatusCodes.UNAUTHORIZED, API_RESPONSES.TOKEN_INVALID);
             }
 
             const accessToken = jwtToken.accessToken(user._id.toString(), user.role);
@@ -261,14 +276,14 @@ export default class AuthServices implements IAuthService {
         const user = await this.authRepo.findByEmail(email);
 
         if (!user) {
-            throw new ApiError(API_RESPONSES.NOT_FOUND);
+            throw new ApiError(StatusCodes.NOT_FOUND, API_RESPONSES.NOT_FOUND);
         }
-        if(purpose !== otpStatus.FORGOT_PASSWORD){
-            throw new ApiError(API_RESPONSES.SERVICE_UNAVAILABLE)
+        if (purpose !== otpStatus.FORGOT_PASSWORD) {
+            throw new ApiError(StatusCodes.SERVICE_UNAVAILABLE, API_RESPONSES.SERVICE_UNAVAILABLE)
         }
 
         await this.otpService.sendOTP(email, otpStatus.FORGOT_PASSWORD)
-        return API_RESPONSES.OTP_SENT
+        return { status: StatusCodes.OK, message: API_RESPONSES.OTP_SENT };
     }
 
     async resetPassword(email: string, otp: number, newPassword: string) {
@@ -280,11 +295,11 @@ export default class AuthServices implements IAuthService {
 
         const updatedUser = await this.authRepo.updatePasswordByEmail(email, hashedPassword);
 
-        if (!updatedUser) throw new ApiError(API_RESPONSES.USER_NOT_FOUND);
+        if (!updatedUser) throw new ApiError(StatusCodes.NOT_FOUND, API_RESPONSES.USER_NOT_FOUND);
 
         await this.otpService.deleteOtp(email, otpStatus.FORGOT_PASSWORD);
 
-        return API_RESPONSES.PASSWORD_UPDATED;
+        return { status: StatusCodes.OK, message: API_RESPONSES.PASSWORD_UPDATED };
     }
 
     async revokeToken(userId: string): Promise<void> {

@@ -3,6 +3,7 @@ import IUserRepository from "../../repositories/interfaces/IUserRepository";
 import { ProviderStatus } from "../../enum/providerStatusEnum";
 import ApiError from "../../utils/apiError";
 import { API_RESPONSES } from "../../constants/statusMessageConstant";
+import { StatusCodes } from 'http-status-codes';
 import { IAdminService } from "../interfaces/IAdminService";
 
 
@@ -23,13 +24,11 @@ export default class AdminService implements IAdminService {
         const provider = await this.providerRepo.findProviderById(id);
 
         if (!provider || !provider.userId) {
-            throw new ApiError(API_RESPONSES.NOT_FOUND);
+            throw new ApiError(StatusCodes.NOT_FOUND, API_RESPONSES.NOT_FOUND);
         }
 
-        // Get the userId - it could be populated (object with _id) or just an ObjectId
         const userId = (provider.userId as any)._id?.toString() ?? provider.userId.toString();
 
-        // Ban the USER, not the provider
         const updatedUser = await this.userRepo.blockUserById(userId, isBanned);
 
         if (provider.userId && typeof provider.userId === 'object' && 'email' in provider.userId) {
@@ -43,18 +42,18 @@ export default class AdminService implements IAdminService {
             );
         }
 
-        return provider; // Return provider for consistency with interface
+        return provider;
     }
 
     // async listPendingProvidersService(){
     //     return this.userRepo.
     // }
 
-    async listUsersAndProviders() {
-        const users = await this.userRepo.findUsers()
+    async listUsersAndProviders(page: number = 1, limit: number = 10, search: string = "") {
+        const { users, total } = await this.userRepo.findUsers(page, limit, search);
         const providers = await this.providerRepo.listProviders()
 
-        return { users, providers }
+        return { users, totalUsers: total, providers }
     }
 
     async verifyProviderService(id: string, status: ProviderStatus) {
@@ -65,10 +64,9 @@ export default class AdminService implements IAdminService {
 
             if (!provider) {
                 console.error(`AdminService.verifyProviderService: Provider ${id} not found`);
-                throw new ApiError(API_RESPONSES.NOT_FOUND);
+                throw new ApiError(StatusCodes.NOT_FOUND, API_RESPONSES.NOT_FOUND);
             }
 
-            // Check if the associated user is banned (via populated userId)
             const userIsBanned = provider.userId &&
                 typeof provider.userId === 'object' &&
                 'isBanned' in provider.userId &&
@@ -76,7 +74,7 @@ export default class AdminService implements IAdminService {
 
             if (userIsBanned) {
                 console.error(`AdminService.verifyProviderService: Provider ${id}'s user is banned`);
-                throw new ApiError(API_RESPONSES.ACCOUNT_DISABLED);
+                throw new ApiError(StatusCodes.FORBIDDEN, API_RESPONSES.ACCOUNT_DISABLED);
             }
 
             console.log(`AdminService.verifyProviderService: Updating status in DB...`);
@@ -94,7 +92,6 @@ export default class AdminService implements IAdminService {
                     await this.emailService.sendNotificationEmail(email, subject, message);
                 } catch (emailErr) {
                     console.error("AdminService.verifyProviderService: Email notification failed, but DB was updated.", emailErr);
-                    // We don't necessarily want to fail the whole request if just the email fails
                 }
             } else {
                 console.warn(`AdminService.verifyProviderService: No email found for provider ${id}, skipping notification.`);

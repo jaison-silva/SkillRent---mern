@@ -4,6 +4,6 @@ export interface UserRegisterRequestDTO {
   name: string
   email: string
   password: string
-  otp: number
+  otp?: number;
   role: "user" | "provider"
 }

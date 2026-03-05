@@ -6,6 +6,7 @@ export interface IUser extends Document { //Rule of "Colocation" (Keep related t
     name: string;
     email: string;
     password?: string;
+    phone?: string;
     role: UserRoleStatus;
     lastLogin: Date | null;
     isBanned: boolean;
@@ -18,6 +19,7 @@ const userSchema = new mongoose.Schema<IUser>({
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true },
     password: { type: String, required: true },
+    phone: { type: String, trim: true },
     role: {
         type: String,
         enum: Object.values(UserRoleStatus), // returns a n array os same as [vlaues,vale]
