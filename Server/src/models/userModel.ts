@@ -11,6 +11,9 @@ export interface IUser extends Document { //Rule of "Colocation" (Keep related t
     lastLogin: Date | null;
     isBanned: boolean;
     refreshToken: string | null;
+    googleId?: string;
+    authProvider?: 'local' | 'google';
+    profilePicture?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -18,7 +21,9 @@ export interface IUser extends Document { //Rule of "Colocation" (Keep related t
 const userSchema = new mongoose.Schema<IUser>({
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true },
-    password: { type: String, required: true },
+    password: { type: String, required: function (this: any) { return !this.googleId; } },
+    googleId: { type: String, unique: true, sparse: true },
+    authProvider: { type: String, enum: ['local', 'google'], default: 'local' },
     phone: { type: String, trim: true },
     role: {
         type: String,
@@ -27,7 +32,8 @@ const userSchema = new mongoose.Schema<IUser>({
     },
     lastLogin: { type: Date, default: null },
     isBanned: { type: Boolean, default: false },
-    refreshToken: { type: String, default: null }
+    refreshToken: { type: String, default: null },
+    profilePicture: { type: String, default: "" }
 },
     { timestamps: true }
 )

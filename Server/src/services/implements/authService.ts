@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import { OAuth2Client } from "google-auth-library";
 import jwtToken from "../../utils/generateToken";
 import { IAuthRepository } from "../../repositories/interfaces/IAuthRepository";
 import { IOtpRepository } from "../../repositories/interfaces/IOtpRepository";
@@ -34,8 +35,12 @@ export default class AuthServices implements IAuthService {
         }
         const user = await this.authRepo.findByEmail(email)
 
-        if (!user || !user.password) {
+        if (!user || user.password === undefined) {
             throw new ApiError(StatusCodes.NOT_FOUND, API_RESPONSES.USER_NOT_FOUND)
+        }
+
+        if (user.isBanned) {
+            throw new ApiError(StatusCodes.FORBIDDEN, "Your account has been suspended by the administrator.");
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password)
@@ -55,6 +60,71 @@ export default class AuthServices implements IAuthService {
             },
             accessToken,
             refreshToken
+        }
+    }
+
+    async googleLogin(credential: string, role?: string): Promise<LoginResponseDTO> {
+        const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+        try {
+            const ticket = await client.verifyIdToken({
+                idToken: credential,
+                audience: process.env.GOOGLE_CLIENT_ID,
+            });
+            const payload = ticket.getPayload();
+            if (!payload || !payload.email) throw new ApiError(StatusCodes.UNAUTHORIZED, "Invalid Google Token");
+
+            const email = payload.email;
+            let user = await this.authRepo.findByEmail(email);
+
+            if (!user) {
+                const requestedRole = role === "provider" ? UserRoleStatus.PROVIDER : UserRoleStatus.USER;
+                const data: any = {
+                    name: payload.name || "User",
+                    email: email,
+                    googleId: payload.sub,
+                    authProvider: 'google',
+                    role: requestedRole,
+                    isBanned: false,
+                };
+
+                if (requestedRole === UserRoleStatus.PROVIDER) {
+                    const session = await mongoose.startSession();
+                    session.startTransaction();
+                    try {
+                        user = await this.authRepo.createUser(data, { session });
+                        await this.authRepo.createProvider({ userId: user._id }, { session });
+                        await session.commitTransaction();
+                    } catch (error) {
+                        await session.abortTransaction();
+                        throw error;
+                    } finally {
+                        session.endSession();
+                    }
+                } else {
+                    user = await this.authRepo.createUser(data);
+                }
+            } else if (user.isBanned) {
+                throw new ApiError(StatusCodes.FORBIDDEN, "Your account has been suspended by the administrator.");
+            }
+
+            const accessToken = jwtToken.accessToken(user._id.toString(), user.role);
+            const refreshToken = jwtToken.refreshToken(user._id.toString());
+
+            await this.authRepo.updateRefreshToken(user._id.toString(), refreshToken);
+
+            return {
+                user: {
+                    id: user._id.toString(),
+                    name: user.name,
+                    email: user.email,
+                    role: user.role
+                },
+                accessToken,
+                refreshToken
+            };
+        } catch (error) {
+            console.error("Google Auth Error:", error);
+            throw new ApiError(StatusCodes.UNAUTHORIZED, "Invalid Google Token");
         }
     }
 
@@ -302,7 +372,7 @@ export default class AuthServices implements IAuthService {
         return { status: StatusCodes.OK, message: API_RESPONSES.PASSWORD_UPDATED };
     }
 
-    async revokeToken(userId: string): Promise<void> {
+    async revokeToken(userId: string): Promise<void> { // ithu logout cheyyuumbo use ahn
         await this.authRepo.updateRefreshToken(userId, null);
     }
 

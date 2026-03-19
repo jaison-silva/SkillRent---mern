@@ -2,6 +2,8 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { useGetProfileQuery, useUpdateProfileMutation } from '../userApiSlice';
 import { BasicInfoForm } from '../components/BasicInfoForm';
+import { AvatarUpload } from '../components/AvatarUpload';
+import { ChangePasswordModal } from '../components/ChangePasswordModal';
 import { User, ShieldCheck, Calendar } from 'lucide-react';
 
 export default function UserProfilePage() {
@@ -9,6 +11,7 @@ export default function UserProfilePage() {
   const profile = data?.user;
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
   const [isEditing, setIsEditing] = useState(false);
+  const [isPasswordModalOpen, setPasswordModalOpen] = useState(false);
 
   if (isLoading) return <div className="p-20 text-center animate-pulse">Loading Profile...</div>;
   if (isError) return <div className="p-20 text-center text-red-500">Error loading profile data.</div>;
@@ -24,6 +27,16 @@ export default function UserProfilePage() {
     }
   };
 
+  const handleAvatarSuccess = async (url: string) => {
+    try {
+      await updateProfile({ profilePicture: url }).unwrap();
+      toast.success('Profile picture updated!');
+    } catch (err: any) {
+      console.error("Avatar update failed", err);
+      toast.error('Failed to link profile picture to your account.');
+    }
+  };
+
   return (
     <div className="max-w-3xl mx-auto py-12 px-4">
       <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
@@ -31,9 +44,12 @@ export default function UserProfilePage() {
         {/* Profile Header */}
         <div className="bg-gray-50 p-8 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center space-x-6">
-            <div className="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center text-white text-3xl font-bold">
-              {profile?.name?.charAt(0)}
-            </div>
+            <AvatarUpload 
+              currentImageUrl={profile?.profilePicture} 
+              name={profile?.name || '?'} 
+              onUploadSuccess={handleAvatarSuccess} 
+              isEditable={isEditing}
+            />
             <div>
               <h1 className="text-2xl font-bold text-gray-900">{profile?.name}</h1>
               <div className="flex items-center text-sm text-gray-500 mt-1">
@@ -43,15 +59,32 @@ export default function UserProfilePage() {
             </div>
           </div>
           
-          <button 
-            onClick={() => setIsEditing(!isEditing)}
-            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-              isEditing ? 'bg-gray-200 text-gray-700' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-            }`}
-          >
-            {isEditing ? 'Cancel' : 'Edit Profile'}
-          </button>
+          <div className="flex items-center space-x-3">
+            {profile?.authProvider !== 'google' && (
+               <button 
+                 onClick={() => setPasswordModalOpen(true)}
+                 className="px-4 py-2 rounded-lg text-sm font-bold transition-all bg-red-50 text-red-600 hover:bg-red-100"
+               >
+                 Change Password
+               </button>
+            )}
+            <button 
+              onClick={() => setIsEditing(!isEditing)}
+              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                isEditing ? 'bg-gray-200 text-gray-700' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+              }`}
+            >
+              {isEditing ? 'Cancel' : 'Edit Profile'}
+            </button>
+          </div>
         </div>
+
+        {/* Change Password Modal UI */}
+        <ChangePasswordModal 
+          email={profile?.email} 
+          isOpen={isPasswordModalOpen} 
+          onClose={() => setPasswordModalOpen(false)} 
+        />
 
         {/* Profile Content */}
         <div className="p-8">

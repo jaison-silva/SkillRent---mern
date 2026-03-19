@@ -1,10 +1,11 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { nameValidation, phoneValidation } from "../../auth/zod";
 
 const basicSchema = z.object({
-  name: z.string().min(2, "Name is too short"),
-  phone: z.string().regex(/^\d{10}$/, "Phone must be exactly 10 digits"),
+  name: nameValidation,
+  phone: phoneValidation,
 });
 
 export const BasicInfoForm = ({ initialData, onSave, isLoading }: any) => {
@@ -32,7 +33,7 @@ export const BasicInfoForm = ({ initialData, onSave, isLoading }: any) => {
           <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Phone Number</label>
           <input 
             {...register('phone')} 
-            placeholder="9876543210"
+            placeholder="eg : 9876543210"
             className="w-full p-3 mt-1 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all" 
           />
           {errors.phone && <p className="text-red-500 text-[10px] mt-1">{errors.phone.message as string}</p>}

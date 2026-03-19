@@ -17,7 +17,7 @@ const otpController = new OtpController(otpService)
 // no need here kariyam onniuum accesstoken vech ahlla oddunne
 
 router.post('/login', validate(loginSchema), authController.login);
-
+router.post('/google', authController.googleLogin);
 
 router.post('/register/user', validate(userRegisterSchema), authController.registerUser);
 router.post('/register/provider', validate(providerRegisterSchema), authController.registerProvider);

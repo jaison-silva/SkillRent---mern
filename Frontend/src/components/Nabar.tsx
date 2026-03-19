@@ -67,13 +67,13 @@ const Navbar = () => {
               <div className="flex items-center space-x-4">
                 <Link to="/login" className="text-gray-600 hover:text-blue-600 font-medium">Login</Link>
                 <Link 
-                  to="/auth/signup/:provider" 
+                  to="/auth/signup/provider" 
                   className="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
                 >
                   Join as Provider
                 </Link>
                 <Link 
-                  to="/auth/signup/:user" 
+                  to="/auth/signup/user" 
                   className="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
                 >
                   Join as User
@@ -86,7 +86,7 @@ const Navbar = () => {
 
       {/* Logout Confirmation Modal */}
       {showLogoutModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl transform transition-all">
             <h3 className="text-lg font-bold text-gray-900 mb-2">Confirm Logout</h3>
             <p className="text-gray-500 text-sm mb-6">Are you sure you want to sign out of your account?</p>

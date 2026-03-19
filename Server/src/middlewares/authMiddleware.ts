@@ -4,8 +4,9 @@ import ApiError from "../utils/apiError";
 import { JwtPayload } from "jsonwebtoken";
 import { API_RESPONSES } from "../constants/statusMessageConstant";
 import { StatusCodes } from 'http-status-codes';
+import User from "../models/userModel";
 
-export function protect(req: Request, res: Response, next: NextFunction) {
+export async function protect(req: Request, res: Response, next: NextFunction) {
     try {
         const authHeader = req.headers.authorization;
         const JwtToken = authHeader && authHeader.split(" ")[1];
@@ -18,6 +19,16 @@ export function protect(req: Request, res: Response, next: NextFunction) {
             id: string;
             role: string;
         }
+
+        const user = await User.findById(decoded.id);
+        if (!user) {
+            throw new ApiError(StatusCodes.UNAUTHORIZED, API_RESPONSES.NOT_FOUND);
+        }
+
+        if (user.isBanned) {
+            throw new ApiError(StatusCodes.FORBIDDEN, "Your account has been suspended by the administrator.");
+        }
+
         req.jwtTokenVerified = decoded;
         next();
 

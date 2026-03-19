@@ -17,31 +17,26 @@ export function AppRoutes() {
   return (
     <Provider store={store}>
       <Routes>
-
         <Route element={<MainLayout />}>
-        {/*  // public routes */}
+        
+          {/*  // public routes */}
           <Route element={<PublicRoute />}>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/auth/signup/:role" element={<Signup />} />
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/auth/signup/:role" element={<Signup />} />
           </Route>
 
-      {/*// protected routes */}
+          {/*// protected routes */}
           <Route element={<PersistLogin />}>
-
             <Route element={<RequireAuth />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/provider/:id" element={<ProviderDetailsPage />} />
             </Route>
-
           </Route>
 
-          {/* Catch-all 404 route */}
           <Route path="*" element={<NotFoundPage />} />
-
         </Route>
-
       </Routes>
     </Provider>
   );

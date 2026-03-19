@@ -43,7 +43,7 @@ export default function ResetPasswordPage() {
       await verifyOtp({
         email,
         otp: data.otp,
-        purpose: "FORGOT_PASSWORD",
+        purpose: "forgot_password",
       }).unwrap();
       setOtp(data.otp);
       setStep(3);

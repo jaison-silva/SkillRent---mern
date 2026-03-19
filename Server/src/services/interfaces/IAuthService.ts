@@ -11,6 +11,7 @@ import { ResetPasswordResponseDTO } from "../../dto/auth/resetPasswordResponseDT
 
 export default interface AuthService {
     login(data: LoginRequestDTO): Promise<LoginResponseDTO>
+    googleLogin(credential: string, role?: string): Promise<LoginResponseDTO>
     UserRegister(data: UserRegisterRequestDTO): Promise<RegisterResponseDTO>
     ProviderRegister(data: ProviderRegisterRequestDTO): Promise<RegisterResponseDTO>
     refresh(refreshToken: string): Promise<RefreshResponseDTO>

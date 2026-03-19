@@ -60,6 +60,25 @@ export class AuthController {
         }
     }
 
+    googleLogin = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const { credential, role } = req.body;
+            if (!credential) {
+                res.status(StatusCodes.BAD_REQUEST).json({ message: "Credential is required" });
+                return;
+            }
+            const { user, accessToken, refreshToken } = await this.authService.googleLogin(credential, role);
+
+            setAuthCookies(res, refreshToken, accessToken);
+
+            const status = StatusCodes.OK;
+            const message = API_RESPONSES.SUCCESS;
+            res.status(status).json({ message, user, accessToken });
+        } catch (err) {
+            next(err);
+        }
+    }
+
     refresh = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const refreshToken = req.cookies.refreshToken;

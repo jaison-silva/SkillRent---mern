@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useGetProviderProfileQuery, useUpdateProviderProfileMutation } from '../providerApiSlice';
+import { useGetProfileQuery } from '../../user/userApiSlice';
+import { ChangePasswordModal } from '../../user/components/ChangePasswordModal';
 
 export default function ProviderProfilePage() {
-  const { data: profileData, isLoading } = useGetProviderProfileQuery();
+  const { data: profileData, isLoading: isProviderLoading } = useGetProviderProfileQuery();
+  const { data: baseProfileData, isLoading: isUserLoading } = useGetProfileQuery();
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProviderProfileMutation();
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isPasswordModalOpen, setPasswordModalOpen] = useState(false);
 
   // Form State
   const [bio, setBio] = useState('');
@@ -13,6 +17,7 @@ export default function ProviderProfilePage() {
   const [location, setLocation] = useState('');
 
   const provider = profileData?.provider;
+  const userNode = baseProfileData?.user;
 
   useEffect(() => {
     if (provider) {
@@ -22,7 +27,7 @@ export default function ProviderProfilePage() {
     }
   }, [provider]);
 
-  if (isLoading) return <div className="p-20 text-center text-gray-500 animate-pulse">Loading Provider Data...</div>;
+  if (isProviderLoading || isUserLoading) return <div className="p-20 text-center text-gray-500 animate-pulse">Loading Provider Data...</div>;
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,21 +50,38 @@ export default function ProviderProfilePage() {
       <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
         
         {/* Header */}
-        <div className="bg-gray-50 p-8 border-b border-gray-100 flex items-center justify-between">
+        <div className="bg-gray-50 p-8 border-b border-gray-100 flex flex-col md:flex-row items-start md:items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Provider Storefront</h1>
             <p className="text-sm text-gray-500 mt-1">Manage exactly how clients see you.</p>
           </div>
           
-          <button 
-            onClick={() => setIsEditMode(!isEditMode)}
-            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-              isEditMode ? 'bg-gray-200 text-gray-700' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-            }`}
-          >
-            {isEditMode ? 'Discard Changes' : 'Edit Business Profile'}
-          </button>
+          <div className="flex items-center space-x-3 mt-4 md:mt-0">
+            {userNode?.authProvider !== 'google' && (
+               <button 
+                 onClick={() => setPasswordModalOpen(true)}
+                 className="px-4 py-2 rounded-lg text-sm font-bold transition-all bg-red-50 text-red-600 hover:bg-red-100"
+               >
+                 Change Password
+               </button>
+            )}
+            <button 
+              onClick={() => setIsEditMode(!isEditMode)}
+              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                isEditMode ? 'bg-gray-200 text-gray-700' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+              }`}
+            >
+              {isEditMode ? 'Discard Changes' : 'Edit Business Profile'}
+            </button>
+          </div>
         </div>
+
+        {/* Change Password Modal UI */}
+        <ChangePasswordModal 
+          email={userNode?.email} 
+          isOpen={isPasswordModalOpen} 
+          onClose={() => setPasswordModalOpen(false)} 
+        />
 
         {/* Content */}
         <div className="p-8">

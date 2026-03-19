@@ -17,20 +17,7 @@ import {
 type SignupStep = "EMAIL_INPUT" | "OTP_VERIFY" | "DETAILS";
 type Role = "user" | "provider";
 
-interface BaseSignupData {
-  password: string;
-  email: string;
-}
-
-interface UserSignupData extends BaseSignupData {
-  name: string;
-}
-
-interface ProviderSignupData extends BaseSignupData {
-  name: string;
-  hasTransport: boolean;
-  skills: string[];
-}
+// Unused interfaces gracefully removed
 
 export const Signup = () => {
   const { role: UserRole } = useParams<{ role: Role }>();
@@ -55,7 +42,12 @@ export const Signup = () => {
       setStep("OTP_VERIFY");
     } catch (err: any) {
       console.error("OTP Send Error", err);
-      toast.error(err?.data?.message || err?.message || "Failed to send OTP. User may already exist.");
+      if (err?.status === 409) {
+        toast.error("You already have an account! Please log in.");
+        setTimeout(() => navigate('/login'), 1500);
+      } else {
+        toast.error(err?.data?.message || err?.message || "Failed to send OTP.");
+      }
     }
   };
 
@@ -71,14 +63,17 @@ export const Signup = () => {
   };
 
   const handleFinalSubmit = async (
-    formData: UserSignupData | ProviderSignupData,
+    formData: any,
   ) => {
-    const finalData = { ...formData, email, otp };
+    const { confirmPassword, ...restData } = formData;
+    const finalData = { ...restData, email, otp: parseInt(otp, 10) };
     try {
       let result;
-      if (UserRole === "user") {
+      const safeRole = UserRole?.replace(':', '').toLowerCase();
+      
+      if (safeRole === "user") {
         result = await registerUser(finalData).unwrap();
-      } else if (UserRole === "provider") {
+      } else if (safeRole === "provider") {
         result = await registerProvider(finalData).unwrap();
       }
 
@@ -101,7 +96,7 @@ export const Signup = () => {
   return (
     <div className="max-w-md mx-auto py-12">
       {step === "EMAIL_INPUT" && (
-        <EmailStep handleOtp={handleSendOtp} isLoading={isSending} />
+        <EmailStep handleOtp={handleSendOtp} isLoading={isSending} role={UserRole} />
       )}
 
       {step === "OTP_VERIFY" && (

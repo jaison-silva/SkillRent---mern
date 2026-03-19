@@ -1,8 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-
-const emailSchema = z.object({ email: z.string().email() });
+import { z } from "zod";
+import { emailSchema } from "../zod";
 type EmailFormData = z.infer<typeof emailSchema>;
 
 export const RequestStep = ({
