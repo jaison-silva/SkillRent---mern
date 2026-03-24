@@ -10,7 +10,7 @@ export default class MongoProviderRepository extends BaseRepository<IProvider> i
   }
 
   listProviders(filter?: Record<string, any>) {
-    return Provider.find(filter || {}).populate("userId");
+    return Provider.find(filter || {}).sort({ createdAt: -1 }).populate("userId");
   }
 
   findProviderById(id: string): Promise<IProvider | null> {

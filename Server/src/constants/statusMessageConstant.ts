@@ -59,7 +59,7 @@ export const API_RESPONSES = {
   EMAIL_ALREADY_EXISTS: "Email already exists.",
   USERNAME_ALREADY_EXISTS: "Username already exists.",
   ACCOUNT_VERIFIED: "Account verified successfully.",
-  ACCOUNT_DISABLED: "This account has been disabled.",
+  ACCOUNT_DISABLED: "This account has been Banned.",
   ACCOUNT_LOCKED: "Account locked due to multiple failed attempts.",
 
   // ─────────────────────────

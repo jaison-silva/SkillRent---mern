@@ -20,7 +20,13 @@ export interface IUser extends Document { //Rule of "Colocation" (Keep related t
 
 const userSchema = new mongoose.Schema<IUser>({
     name: { type: String, required: true, trim: true },
-    email: { type: String, required: true, unique: true, lowercase: true },
+    email: { 
+        type: String, 
+        required: true, 
+        unique: true, 
+        lowercase: true,
+        match: [/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, "Please enter a valid email address"]
+    },
     password: { type: String, required: function (this: any) { return !this.googleId; } },
     googleId: { type: String, unique: true, sparse: true },
     authProvider: { type: String, enum: ['local', 'google'], default: 'local' },

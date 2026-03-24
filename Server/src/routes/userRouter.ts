@@ -7,18 +7,18 @@ import { UserController } from "../controllers/userController";
 
 const router = Router();
 
-router.use(protect,authorize(ROLES.USER)); // for checking this jwt ondo and adding it to rhe req 
+router.use(protect); // verify token, but let specific routes authorize roles
 
 const userService = userContainer()
 const userController = new UserController(userService)
 
 
 router.get('/dashboard', authorize(ROLES.USER), userController.getDashboard); // client landing page, task pending
-router.get('/profile', authorize(ROLES.USER), userController.getProfile);
-router.patch('/profile', authorize(ROLES.USER), userController.updateProfile);  
+router.get('/profile', authorize(ROLES.USER, ROLES.PROVIDER), userController.getProfile);
+router.patch('/profile', authorize(ROLES.USER, ROLES.PROVIDER), userController.updateProfile);  
 
 
-router.get('/', userController.listUsers);          
-router.get('/:id', userController.getUser);        
+router.get('/', authorize(ROLES.USER), userController.listUsers);          
+router.get('/:id', authorize(ROLES.USER), userController.getUser);        
 
 export default router;

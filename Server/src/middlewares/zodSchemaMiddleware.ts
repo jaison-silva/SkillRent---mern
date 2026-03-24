@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-const strictEmail = z.string().trim().email({ message: "Invalid email address" }).toLowerCase();
+const strictEmail = z.string()
+  .trim()
+  .min(1, { message: "Email is required" })
+  .regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, { message: "Invalid email address" })
+  .toLowerCase();
 const strictPassword = z.string().trim()
   .min(6, { message: "Password must be at least 6 characters" })
   .regex(/[a-zA-Z]/, { message: "Password must contain at least one letter" })

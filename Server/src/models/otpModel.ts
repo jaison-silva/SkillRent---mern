@@ -13,7 +13,11 @@ export interface IOtp extends Document {
 }
 
 const Otpschema = new mongoose.Schema<IOtp>({
-    email: { type: String, required: true },
+    email: { 
+        type: String, 
+        required: true,
+        match: [/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, "Please enter a valid email address"]
+    },
     otp: { type: String, required: true },
     purpose: {
         type: String,

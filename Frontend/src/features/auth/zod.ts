@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-const strictEmail = z.string().trim().min(1, "Email is required").email("Please enter a valid email address").toLowerCase();
+const strictEmail = z.string()
+  .trim()
+  .min(1, "Email is required")
+  .regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, "Please enter a valid email address")
+  .toLowerCase();
 
 export const passwordValidation = z
   .string()

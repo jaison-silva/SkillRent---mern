@@ -19,7 +19,7 @@ export default class MongoUserRepository extends BaseRepository<IUser> implement
     const skip = (page - 1) * limit;
 
     const [users, total] = await Promise.all([
-      this.model.find(query).select("-password").skip(skip).limit(limit).exec(),
+      this.model.find(query).select("-password").sort({ createdAt: -1 }).skip(skip).limit(limit).exec(),
       this.model.countDocuments(query)
     ]);
 
