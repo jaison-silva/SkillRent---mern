@@ -36,7 +36,7 @@ export const providerRegisterSchema = z.object({
   location: z.object({
     lat: z.number(),
     lng: z.number(),
-    address: z.string().trim().min(5, "Address requires at least 5 chars")
+    address: z.string().trim().min(5, "Address requires at least 5 chars").optional()
   }).optional()
 });
 

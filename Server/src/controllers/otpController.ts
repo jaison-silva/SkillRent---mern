@@ -6,13 +6,13 @@ import { otpStatus } from "../enum/otpEnum";
 import ApiError from "../utils/apiError";
 
 export class OtpController {
-    constructor(private otpService: IOtpService) { }
+    constructor(private _otpService: IOtpService) { }
 
     sendOTP = async (req: Request, res: Response, next: NextFunction) => {
 
         try {
             const { email, purpose } = req.body;
-            await this.otpService.sendOTP(email, purpose);
+            await this._otpService.sendOTP(email, purpose);
 
             res.status(StatusCodes.OK).json({
                 success: true,
@@ -32,7 +32,7 @@ export class OtpController {
                 throw new ApiError(StatusCodes.BAD_REQUEST, API_RESPONSES.VALIDATION_ERROR);
             }
 
-            await this.otpService.verifyOTP(email, otp, purpose);
+            await this._otpService.verifyOTP(email, otp, purpose);
 
             res.status(StatusCodes.OK).json({
                 success: true,

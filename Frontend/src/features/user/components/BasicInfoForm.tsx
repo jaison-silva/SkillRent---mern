@@ -2,20 +2,29 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { nameValidation, phoneValidation } from "../../auth/zod";
+import LocationPicker from "../../../components/LocationPicker";
 
 const basicSchema = z.object({
   name: nameValidation,
   phone: phoneValidation,
+  location: z.object({
+    lat: z.number(),
+    lng: z.number(),
+    address: z.string().optional()
+  }).optional()
 });
 
 export const BasicInfoForm = ({ initialData, onSave, isLoading }: any) => {
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm({
     resolver: zodResolver(basicSchema),
     defaultValues: {
       name: initialData?.name,
-      phone: initialData?.phone
+      phone: initialData?.phone,
+      location: initialData?.location
     },
   });
+
+  const currentLocation = watch('location');
 
   return (
     <form onSubmit={handleSubmit(onSave)} className="space-y-6">
@@ -43,6 +52,28 @@ export const BasicInfoForm = ({ initialData, onSave, isLoading }: any) => {
       <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
         <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Email (Read Only)</label>
         <p className="text-gray-500 mt-1 font-medium">{initialData?.email}</p>
+      </div>
+
+      <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Location</label>
+        <div className="mt-2">
+          <LocationPicker 
+            initialAddress={currentLocation?.address || ''}
+            onLocationSelect={(loc) => {
+              if (loc) {
+                setValue('location', loc);
+              } else {
+                setValue('location', undefined);
+              }
+            }} 
+            placeholder="Search for your city or use current location..."
+          />
+        </div>
+        {currentLocation && (
+          <p className="text-xs text-green-600 mt-2 font-medium">
+            Location set: {currentLocation.address || `${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)}`}
+          </p>
+        )}
       </div>
 
       <button 

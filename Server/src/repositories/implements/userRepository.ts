@@ -9,7 +9,7 @@ export default class MongoUserRepository extends BaseRepository<IUser> implement
   }
 
   async findUsers(page: number = 1, limit: number = 10, search: string = "") {
-    const query: any = {};
+    const query: Record<string, unknown> = {};
     if (search) {
       query.$or = [
         { name: { $regex: search, $options: "i" } },

@@ -12,10 +12,11 @@ export interface ProviderRegisterRequestDTO {
   skills?: string[];
   language?: string[];
   hasTransport?: boolean;
+  workNature?: 'online' | 'offline' | 'both';
   location?: {
     lat: number;
     lng: number;
-    address: string;
+    address?: string;
   };
 };
 
@@ -25,9 +26,10 @@ export type ProviderCreateInput = { // ithu used service to enter data in provid
   skills?: string[];
   language?: string[];
   hasTransport?: boolean;
+  workNature?: 'online' | 'offline' | 'both';
   location?: {
     lat: number;
     lng: number;
-    address: string;
+    address?: string;
   };
 }

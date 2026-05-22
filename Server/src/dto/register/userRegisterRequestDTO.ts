@@ -5,5 +5,9 @@ export interface UserRegisterRequestDTO {
   email: string
   password: string
   otp?: number;
-  role: "user" | "provider"
+  role: "user" | "provider";
+  location?: {
+    lat: number;
+    lng: number;
+  };
 }

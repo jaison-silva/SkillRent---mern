@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectCurrentUser, logOut } from '../features/auth/authSlice';
 import { useLogoutMutation } from '../features/auth/authApiSlice';
-import { User, LogOut, MessageSquare, PlusCircle } from 'lucide-react';
+import { User, LogOut, MessageSquare, PlusCircle, Briefcase, ClipboardList } from 'lucide-react';
 
 import { useState } from 'react';
 
@@ -44,10 +44,24 @@ const Navbar = () => {
             {user ? (
               // Authenticated View
               <div className="flex items-center space-x-6">
-                <Link to="/post-skill" className="flex items-center text-gray-600 hover:text-blue-600">
-                  <PlusCircle className="w-5 h-5 mr-1" />
-                  <span>Post a Skill</span>
-                </Link>
+                {user.role === 'provider' && (
+                  <Link to="/post-skill" className="flex items-center text-gray-600 hover:text-blue-600">
+                    <PlusCircle className="w-5 h-5 mr-1" />
+                    <span>Post a Skill</span>
+                  </Link>
+                )}
+                {user.role === 'user' && (
+                  <Link to="/my-jobs" className="flex items-center text-gray-600 hover:text-blue-600">
+                    <Briefcase className="w-5 h-5 mr-1" />
+                    <span>My Jobs</span>
+                  </Link>
+                )}
+                {user.role === 'provider' && (
+                  <Link to="/job-board" className="flex items-center text-gray-600 hover:text-blue-600">
+                    <ClipboardList className="w-5 h-5 mr-1" />
+                    <span>Job Board</span>
+                  </Link>
+                )}
                 <Link to="/messages" className="text-gray-600 hover:text-blue-600">
                   <MessageSquare className="w-5 h-5" />
                 </Link>

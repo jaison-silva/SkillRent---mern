@@ -40,6 +40,11 @@ export const userDetailsSchema = z.object({
   name: nameValidation,
   password: passwordValidation,
   confirmPassword: z.string(),
+  workNature: z.enum(['offline', 'online', 'both']).optional(),
+  location: z.object({
+    lat: z.number(),
+    lng: z.number(),
+  }).optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"]

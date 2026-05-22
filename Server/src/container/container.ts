@@ -65,4 +65,24 @@ function userContainer() {
 
 
 
-export { authContainer, otpContainer, adminContainer, userContainer, ProviderContainer }
+import { ReviewRepository } from "../repositories/implements/reviewRepository"
+import { ReviewService } from "../services/implements/reviewService"
+
+function reviewContainer() {
+    const reviewRepo = new ReviewRepository()
+    const providerRepo = new MongoProviderRepository()
+    const reviewService = new ReviewService(reviewRepo, providerRepo)
+
+    return reviewService
+}
+
+import { MongoJobRepository } from "../repositories/implements/jobRepository"
+import { JobService } from "../services/implements/jobService"
+
+function jobContainer() {
+    const jobRepo = new MongoJobRepository()
+    const jobService = new JobService(jobRepo)
+    return jobService
+}
+
+export { authContainer, otpContainer, adminContainer, userContainer, ProviderContainer, reviewContainer, jobContainer }

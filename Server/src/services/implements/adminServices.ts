@@ -11,32 +11,32 @@ import { IEmailService } from "../interfaces/IEmailService";
 
 export default class AdminService implements IAdminService {
     constructor(
-        private userRepo: IUserRepository,
-        private providerRepo: IProviderRepository,
-        private emailService: IEmailService
+        private _userRepo: IUserRepository,
+        private _providerRepo: IProviderRepository,
+        private _emailService: IEmailService
     ) { }
 
     async blockUserService(id: string, isBanned: boolean) {
-        return this.userRepo.blockUserById(id, isBanned);
+        return this._userRepo.blockUserById(id, isBanned);
     }
 
     async blockProviderService(id: string, isBanned: boolean) {
-        const provider = await this.providerRepo.findProviderById(id);
+        const provider = await this._providerRepo.findProviderById(id);
 
         if (!provider || !provider.userId) {
             throw new ApiError(StatusCodes.NOT_FOUND, API_RESPONSES.NOT_FOUND);
         }
 
-        const userId = (provider.userId as any)._id?.toString() ?? provider.userId.toString();
+        const userId = (provider.userId as unknown as { _id?: { toString(): string } })._id?.toString() ?? provider.userId.toString();
 
-        const updatedUser = await this.userRepo.blockUserById(userId, isBanned);
+        const updatedUser = await this._userRepo.blockUserById(userId, isBanned);
 
         if (provider.userId && typeof provider.userId === 'object' && 'email' in provider.userId) {
             const statusMessage = isBanned
                 ? "Your provider account has been restricted by the administrator."
                 : "Your provider account access has been restored.";
-            await this.emailService.sendNotificationEmail(
-                (provider.userId as any).email,
+            await this._emailService.sendNotificationEmail(
+                (provider.userId as unknown as { email: string }).email,
                 "Account Status Update",
                 statusMessage
             );
@@ -46,12 +46,12 @@ export default class AdminService implements IAdminService {
     }
 
     // async listPendingProvidersService(){
-    //     return this.userRepo.
+    //     return this._userRepo.
     // }
 
     async listUsersAndProviders(page: number = 1, limit: number = 10, search: string = "") {
-        const { users, total } = await this.userRepo.findUsers(page, limit, search);
-        const providers = await this.providerRepo.listProviders()
+        const { users, total } = await this._userRepo.findUsers(page, limit, search);
+        const { providers } = await this._providerRepo.listProviders()
 
         return { users, totalUsers: total, providers }
     }
@@ -60,7 +60,7 @@ export default class AdminService implements IAdminService {
         console.log(`AdminService.verifyProviderService: Verifying provider ${id} with status ${status}`);
 
         try {
-            const provider = await this.providerRepo.findProviderById(id)
+            const provider = await this._providerRepo.findProviderById(id)
 
             if (!provider) {
                 console.error(`AdminService.verifyProviderService: Provider ${id} not found`);
@@ -70,7 +70,7 @@ export default class AdminService implements IAdminService {
             const userIsBanned = provider.userId &&
                 typeof provider.userId === 'object' &&
                 'isBanned' in provider.userId &&
-                (provider.userId as any).isBanned;
+                (provider.userId as unknown as { isBanned: boolean }).isBanned;
 
             if (userIsBanned) {
                 console.error(`AdminService.verifyProviderService: Provider ${id}'s user is banned`);
@@ -78,10 +78,10 @@ export default class AdminService implements IAdminService {
             }
 
             console.log(`AdminService.verifyProviderService: Updating status in DB...`);
-            const updatedProvider = await this.providerRepo.verifyProviderById(id, status);
+            const updatedProvider = await this._providerRepo.verifyProviderById(id, status);
 
             if (provider.userId && typeof provider.userId === 'object' && 'email' in provider.userId) {
-                const email = (provider.userId as any).email;
+                const email = (provider.userId as unknown as { email: string }).email;
                 const subject = status === "approved" ? "Application Approved!" : "Application Update";
                 const message = status === "approved"
                     ? "Congratulations! Your provider profile has been verified and you can now accept bookings."
@@ -89,7 +89,7 @@ export default class AdminService implements IAdminService {
 
                 console.log(`AdminService.verifyProviderService: Sending notification email to ${email}...`);
                 try {
-                    await this.emailService.sendNotificationEmail(email, subject, message);
+                    await this._emailService.sendNotificationEmail(email, subject, message);
                 } catch (emailErr) {
                     console.error("AdminService.verifyProviderService: Email notification failed, but DB was updated.", emailErr);
                 }

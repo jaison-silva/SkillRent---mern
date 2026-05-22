@@ -3,6 +3,8 @@ import toast from 'react-hot-toast';
 import { useGetProviderProfileQuery, useUpdateProviderProfileMutation } from '../providerApiSlice';
 import { useGetProfileQuery } from '../../user/userApiSlice';
 import { ChangePasswordModal } from '../../user/components/ChangePasswordModal';
+import ProviderReviews from '../components/ProviderReviews';
+import LocationPicker, { type LocationData } from '../../../components/LocationPicker';
 
 export default function ProviderProfilePage() {
   const { data: profileData, isLoading: isProviderLoading } = useGetProviderProfileQuery();
@@ -14,7 +16,8 @@ export default function ProviderProfilePage() {
   // Form State
   const [bio, setBio] = useState('');
   const [skills, setSkills] = useState('');
-  const [location, setLocation] = useState('');
+  const [location, setLocation] = useState<LocationData | null>(null);
+  const [workNature, setWorkNature] = useState('offline');
 
   const provider = profileData?.provider;
   const userNode = baseProfileData?.user;
@@ -23,7 +26,8 @@ export default function ProviderProfilePage() {
     if (provider) {
         setBio(provider.bio || '');
         setSkills(provider.skills?.join(', ') || '');
-        setLocation(provider.location?.address || '');
+        setLocation(provider.location || null);
+        setWorkNature(provider.workNature || 'offline');
     }
   }, [provider]);
 
@@ -35,7 +39,8 @@ export default function ProviderProfilePage() {
         await updateProfile({
             bio,
             skills: skills.split(',').map(s => s.trim()).filter(s => s !== ''),
-            location
+            location: location || undefined,
+            workNature
         }).unwrap();
         toast.success('Provider profile updated successfully!');
         setIsEditMode(false);
@@ -108,14 +113,31 @@ export default function ProviderProfilePage() {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Primary Location</label>
-                        <input 
-                            type="text" 
-                            value={location}
-                            onChange={(e) => setLocation(e.target.value)}
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Location Coordinates</label>
+                        <div className="mt-2">
+                            <LocationPicker 
+                                initialAddress={location?.address || ''}
+                                onLocationSelect={(loc) => setLocation(loc)} 
+                                placeholder="Search for your city or use current location..."
+                            />
+                        </div>
+                        {location && (
+                            <p className="text-xs text-green-600 mt-2 font-medium">
+                                Location set: {location.address || `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`}
+                            </p>
+                        )}
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Work Nature</label>
+                        <select 
+                            value={workNature}
+                            onChange={(e) => setWorkNature(e.target.value)}
                             className="w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3 border"
-                            placeholder="e.g. New York, NY"
-                        />
+                        >
+                            <option value="offline">Offline / On-site</option>
+                            <option value="online">Online / Remote</option>
+                            <option value="both">Both</option>
+                        </select>
                     </div>
                     <div className="pt-4 flex justify-end">
                         <button 
@@ -148,11 +170,20 @@ export default function ProviderProfilePage() {
                             )}
                         </div>
                     </section>
+                    
+                    <section>
+                        <h2 className="text-xs font-bold uppercase text-gray-400 tracking-wider mb-2">Work Nature</h2>
+                        <p className="text-gray-800 leading-relaxed text-lg capitalize">{provider?.workNature || 'Offline'}</p>
+                    </section>
 
                     <section className="grid grid-cols-2 gap-8 border-t border-gray-100 pt-8 mt-8">
                         <div>
                             <h2 className="text-xs font-bold uppercase text-gray-400 tracking-wider mb-1">Service Area</h2>
-                            <p className="font-medium text-gray-900">{provider?.location?.address || <span className="text-gray-400 italic">Not set</span>}</p>
+                            <p className="font-medium text-gray-900">
+                              {provider?.location?.lat && provider?.location?.lng 
+                                ? provider.location.address || `${provider.location.lat.toFixed(4)}, ${provider.location.lng.toFixed(4)}` 
+                                : <span className="text-gray-400 italic">Not set</span>}
+                            </p>
                         </div>
                         <div>
                             <h2 className="text-xs font-bold uppercase text-gray-400 tracking-wider mb-1">Status</h2>
@@ -164,6 +195,13 @@ export default function ProviderProfilePage() {
         </div>
 
       </div>
+      
+      {/* Reviews Section */}
+      {provider?._id && (
+        <div className="mt-8 bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden p-8">
+           <ProviderReviews providerId={provider._id} />
+        </div>
+      )}
     </div>
   );
 }

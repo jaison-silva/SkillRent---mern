@@ -12,6 +12,8 @@ import { store } from "../store/store";
 import Dashboard from "../pages/Dashboard";
 import ProviderDetailsPage from "../features/user/pages/ProviderDetailsPage";
 import NotFoundPage from "../pages/NotFoundPage";
+import { UserJobsPage } from "../features/job/pages/UserJobsPage";
+import { JobBoardPage } from "../features/job/pages/JobBoardPage";
 
 export function AppRoutes() {
   return (
@@ -31,6 +33,8 @@ export function AppRoutes() {
           <Route element={<PersistLogin />}>
             <Route element={<RequireAuth />}>
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/my-jobs" element={<UserJobsPage />} />
+              <Route path="/job-board" element={<JobBoardPage />} />
               <Route path="/provider/:id" element={<ProviderDetailsPage />} />
             </Route>
           </Route>

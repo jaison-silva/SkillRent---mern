@@ -69,11 +69,18 @@ class ProviderController {
             // Only return approved providers for public listing
             // Note: Filtering banned users should be done in service layer after populating userId
             const filter = { validationStatus: "approved" };
-            const providers = await this._providerService.listProviderService(filter)
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 10;
+            const search = (req.query.search as string) || "";
+            const sort = (req.query.sort as string) || "newest";
+            const lat = req.query.lat ? parseFloat(req.query.lat as string) : undefined;
+            const lng = req.query.lng ? parseFloat(req.query.lng as string) : undefined;
+
+            const { providers, total } = await this._providerService.listProviderService(filter, page, limit, search, sort, lat, lng);
 
             const status = StatusCodes.OK;
             const message = API_RESPONSES.SUCCESS;
-            res.status(status).json({ message, providers })
+            res.status(status).json({ message, providers, total })
         } catch (err) {
             next(err)
         }

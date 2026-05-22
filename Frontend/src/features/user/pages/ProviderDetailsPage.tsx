@@ -1,10 +1,14 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGetProviderByIdQuery } from '../../provider/providerApiSlice';
-import { ArrowLeft, User, MapPin, Briefcase, Star, MessageSquare } from 'lucide-react';
+import { ArrowLeft, User, MapPin, Briefcase, Star, MessageSquare, X } from 'lucide-react';
+import ProviderReviews from '../../provider/components/ProviderReviews';
+import { CreateJobForm } from '../../job/components/CreateJobForm';
 
 export default function ProviderDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [isJobModalOpen, setIsJobModalOpen] = useState(false);
   
   // The backend route is GET /providers/:id
   const { data, isLoading, isError } = useGetProviderByIdQuery(id as string, { skip: !id });
@@ -46,9 +50,12 @@ export default function ProviderDetailsPage() {
               </div>
             </div>
             
-            <button className="bg-gray-900 hover:bg-black text-white px-6 py-2.5 rounded-xl font-semibold shadow-md flex items-center transition-all">
+            <button 
+              onClick={() => setIsJobModalOpen(true)}
+              className="bg-gray-900 hover:bg-black text-white px-6 py-2.5 rounded-xl font-semibold shadow-md flex items-center transition-all"
+            >
               <MessageSquare className="w-4 h-4 mr-2" />
-              Contact Provider
+              Send Direct Request
             </button>
           </div>
 
@@ -83,6 +90,17 @@ export default function ProviderDetailsPage() {
               </p>
             </div>
 
+            {/* Work Nature */}
+            <div>
+              <h2 className="text-xs font-bold uppercase text-gray-400 tracking-widest mb-3 flex items-center">
+                <Briefcase className="w-4 h-4 mr-2" />
+                Work Nature
+              </h2>
+              <p className="text-gray-700 leading-relaxed text-lg capitalize">
+                {provider.workNature || 'Offline'}
+              </p>
+            </div>
+
             {/* Skills */}
             <div>
               <h2 className="text-xs font-bold uppercase text-gray-400 tracking-widest mb-3 flex items-center">
@@ -105,9 +123,34 @@ export default function ProviderDetailsPage() {
               </div>
             </div>
 
+            <hr className="border-gray-100" />
+            
+            {/* Reviews Section */}
+            <ProviderReviews providerId={provider._id} />
+
           </div>
         </div>
       </div>
+
+      {/* Direct Request Modal */}
+      {isJobModalOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
+            <button 
+              onClick={() => setIsJobModalOpen(false)}
+              className="absolute top-6 right-6 p-2 bg-gray-100 hover:bg-gray-200 rounded-full text-gray-500 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="p-2">
+              <CreateJobForm 
+                onSuccess={() => setIsJobModalOpen(false)} 
+                prefillProviderId={provider._id} 
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -10,14 +10,14 @@ import { ProviderRegisterRequestDTO } from "../dto/register/providerRegisterRequ
 import { LoginRequestDTO } from "../dto/auth/loginRequestDTO";
 
 export class AuthController {
-    constructor(private authService: IAuthService
+    constructor(private _authService: IAuthService
     ) { }
 
     registerUser = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const data: UserRegisterRequestDTO = req.body
 
-            const result = await this.authService.UserRegister(data);
+            const result = await this._authService.UserRegister(data);
 
             setAuthCookies(res, result.refreshToken, result.accessToken)
 
@@ -33,7 +33,7 @@ export class AuthController {
         try {
             const data: ProviderRegisterRequestDTO = req.body
 
-            const result = await this.authService.ProviderRegister(data);
+            const result = await this._authService.ProviderRegister(data);
 
             setAuthCookies(res, result.refreshToken, result.accessToken)
 
@@ -48,7 +48,7 @@ export class AuthController {
         try {
             const data: LoginRequestDTO = req.body
 
-            const { user, accessToken, refreshToken } = await this.authService.login(data)
+            const { user, accessToken, refreshToken } = await this._authService.login(data)
 
             setAuthCookies(res, refreshToken, accessToken)
 
@@ -67,7 +67,7 @@ export class AuthController {
                 res.status(StatusCodes.BAD_REQUEST).json({ message: "Credential is required" });
                 return;
             }
-            const { user, accessToken, refreshToken } = await this.authService.googleLogin(credential, role);
+            const { user, accessToken, refreshToken } = await this._authService.googleLogin(credential, role);
 
             setAuthCookies(res, refreshToken, accessToken);
 
@@ -82,7 +82,7 @@ export class AuthController {
     refresh = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const refreshToken = req.cookies.refreshToken;
-            const response = await this.authService.refresh(refreshToken);
+            const response = await this._authService.refresh(refreshToken);
 
             const status = StatusCodes.CREATED;
             const message = API_RESPONSES.CREATED;
@@ -96,7 +96,7 @@ export class AuthController {
         try {
             const { email } = req.body;
 
-            await this.authService.forgotPassword(email, otpStatus.FORGOT_PASSWORD);
+            await this._authService.forgotPassword(email, otpStatus.FORGOT_PASSWORD);
 
             res.status(StatusCodes.OK).json({
                 success: true,
@@ -111,7 +111,7 @@ export class AuthController {
         try {
             const { email, otp, newPassword } = req.body;
 
-            await this.authService.resetPassword(email, otp, newPassword);
+            await this._authService.resetPassword(email, otp, newPassword);
 
             res.status(StatusCodes.OK).json({
                 success: true,
@@ -129,7 +129,7 @@ export class AuthController {
             if (refreshToken) {
                 try {
                     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!) as { id: string };
-                    await this.authService.revokeToken(decoded.id);
+                    await this._authService.revokeToken(decoded.id);
                 } catch (err) {
                     console.error("Logout: Failed to revoke token in DB (likely expired or invalid):", (err as Error).message);
                 }

@@ -5,7 +5,9 @@ import {
   useVerifyProviderMutation, 
   useChangeUserStatusMutation 
 } from '../adminApiSlice';
-import { ShieldAlert, Check, X, Ban, Undo2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ShieldAlert, Check, X, Ban, Undo2 } from 'lucide-react';
+import SearchInput from '../../../components/SearchInput';
+import Pagination from '../../../components/Pagination';
 
 export default function AdminDashboardPage() {
   const [page, setPage] = useState(1);
@@ -141,16 +143,11 @@ export default function AdminDashboardPage() {
 
       {activeTab === 'users' && (
         <div className="space-y-4">
-          <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-xl border border-gray-200 shadow-sm focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all">
-            <Search className="w-5 h-5 text-gray-400" />
-            <input 
-              type="text" 
-              placeholder="Search users by name or email..." 
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full focus:outline-none p-2 text-gray-700 bg-transparent" 
-            />
-          </div>
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Search users by name or email..."
+          />
 
         <div className="overflow-hidden rounded-2xl border border-gray-200">
           <table className="min-w-full divide-y divide-gray-200 bg-white">
@@ -197,30 +194,7 @@ export default function AdminDashboardPage() {
           </table>
         </div>
 
-        {/* Pagination Controls */}
-        {data?.totalUsers > limit && (
-          <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200 mt-4 shadow-sm">
-            <span className="text-sm text-gray-600 font-medium">
-              Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, data.totalUsers)} of {data.totalUsers} users
-            </span>
-            <div className="flex space-x-2">
-              <button 
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="p-2 bg-white text-gray-600 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white disabled:cursor-not-allowed border border-gray-200 transition-colors shadow-sm"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <button 
-                onClick={() => setPage(p => p + 1)}
-                disabled={page * limit >= data.totalUsers}
-                className="p-2 bg-white text-gray-600 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white disabled:cursor-not-allowed border border-gray-200 transition-colors shadow-sm"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        )}
+        <Pagination page={page} limit={limit} total={data?.totalUsers || 0} onPageChange={setPage} label="users" />
         </div>
       )}
     </div>

@@ -4,7 +4,7 @@ import { ProviderStatus } from "../enum/providerStatusEnum";
 interface IProviderLocation {
   lat: number;
   lng: number;
-  address: string;
+  address?: string;
 }
 
 export interface IProvider extends Omit<Document, "location"> {
@@ -13,6 +13,7 @@ export interface IProvider extends Omit<Document, "location"> {
   skills: string[];
   language: string[];
   hasTransport: boolean;
+  workNature: 'online' | 'offline' | 'both';
   location: IProviderLocation;
   rating: number;
   jobCount: number;
@@ -35,6 +36,11 @@ const providerModel = new mongoose.Schema<IProvider>({
   skills: [String],
   language: [String],
   hasTransport: Boolean,
+  workNature: { 
+    type: String, 
+    enum: ['online', 'offline', 'both'], 
+    default: 'offline' 
+  },
   location: {
     lat: Number,
     lng: Number,

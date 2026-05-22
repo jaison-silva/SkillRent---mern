@@ -5,9 +5,10 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 
 export const DetailsStep = ({ onSubmit, role, isLoading }: any) => {
-  const { register, handleSubmit, formState: { errors } } = useForm({ resolver: zodResolver(schema) });
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm({ resolver: zodResolver(schema) });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [locationStatus, setLocationStatus] = useState<'idle' | 'fetching' | 'success' | 'error' | 'unsupported'>('idle');
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -48,6 +49,52 @@ export const DetailsStep = ({ onSubmit, role, isLoading }: any) => {
           </button>
         </div>
         {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword.message as string}</p>}
+      </div>
+
+      {role === 'provider' && (
+        <div>
+          <label className="text-sm block mb-1">Work Nature</label>
+          <select {...register('workNature')} className="input-field w-full p-2 border rounded">
+            <option value="offline">Offline / On-site</option>
+            <option value="online">Online / Remote</option>
+            <option value="both">Both</option>
+          </select>
+          {errors.workNature && <p className="text-red-500 text-xs">{errors.workNature.message as string}</p>}
+        </div>
+      )}
+
+      <div>
+        <label className="text-sm block mb-1">Location (Optional)</label>
+        <button
+          type="button"
+          onClick={() => {
+            setLocationStatus('fetching');
+            if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(
+                (position) => {
+                  setValue('location', {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                  });
+                  setLocationStatus('success');
+                },
+                (error) => {
+                  console.error("Error getting location:", error);
+                  setLocationStatus('error');
+                }
+              );
+            } else {
+              setLocationStatus('unsupported');
+            }
+          }}
+          className="text-sm px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg flex items-center transition-colors"
+        >
+          {locationStatus === 'fetching' ? 'Fetching...' : 
+           locationStatus === 'success' ? 'Location Saved ✓' : 
+           locationStatus === 'error' ? 'Failed to get location' :
+           locationStatus === 'unsupported' ? 'Not supported by browser' :
+           '📍 Get Current Location'}
+        </button>
       </div>
 
       <button 

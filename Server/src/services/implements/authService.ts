@@ -21,9 +21,9 @@ import { RefreshResponseDTO } from "../../dto/auth/refreshResponseDTO";
 
 export default class AuthServices implements IAuthService {
     constructor(
-        private authRepo: IAuthRepository,
+        private _authRepo: IAuthRepository,
         // private otpRepo: IOtpRepository, 
-        private otpService: IOtpService
+        private _otpService: IOtpService
     ) { }
 
     async login(data: LoginRequestDTO): Promise<LoginResponseDTO> {
@@ -33,7 +33,7 @@ export default class AuthServices implements IAuthService {
         if (!email || !password) {
             throw new ApiError(StatusCodes.BAD_REQUEST, API_RESPONSES.VALIDATION_ERROR)
         }
-        const user = await this.authRepo.findByEmail(email)
+        const user = await this._authRepo.findByEmail(email)
 
         if (!user || user.password === undefined) {
             throw new ApiError(StatusCodes.NOT_FOUND, API_RESPONSES.USER_NOT_FOUND)
@@ -49,7 +49,7 @@ export default class AuthServices implements IAuthService {
         const accessToken = jwtToken.accessToken(user._id.toString(), user.role)
         const refreshToken = jwtToken.refreshToken(user._id.toString())
 
-        await this.authRepo.updateRefreshToken(user._id.toString(), refreshToken);
+        await this._authRepo.updateRefreshToken(user._id.toString(), refreshToken);
 
         return {
             user: {
@@ -74,25 +74,25 @@ export default class AuthServices implements IAuthService {
             if (!payload || !payload.email) throw new ApiError(StatusCodes.UNAUTHORIZED, "Invalid Google Token");
 
             const email = payload.email;
-            let user = await this.authRepo.findByEmail(email);
+            let user = await this._authRepo.findByEmail(email);
 
             if (!user) {
                 const requestedRole = role === "provider" ? UserRoleStatus.PROVIDER : UserRoleStatus.USER;
-                const data: any = {
+                const data = {
                     name: payload.name || "User",
                     email: email,
                     googleId: payload.sub,
                     authProvider: 'google',
                     role: requestedRole,
                     isBanned: false,
-                };
+                } as unknown as UserRegisterRequestDTO;
 
                 if (requestedRole === UserRoleStatus.PROVIDER) {
                     const session = await mongoose.startSession();
                     session.startTransaction();
                     try {
-                        user = await this.authRepo.createUser(data, { session });
-                        await this.authRepo.createProvider({ userId: user._id }, { session });
+                        user = await this._authRepo.createUser(data, { session });
+                        await this._authRepo.createProvider({ userId: user._id }, { session });
                         await session.commitTransaction();
                     } catch (error) {
                         await session.abortTransaction();
@@ -101,7 +101,7 @@ export default class AuthServices implements IAuthService {
                         session.endSession();
                     }
                 } else {
-                    user = await this.authRepo.createUser(data);
+                    user = await this._authRepo.createUser(data);
                 }
             } else if (user.isBanned) {
                 throw new ApiError(StatusCodes.FORBIDDEN, "Your account has been suspended by the administrator.");
@@ -110,7 +110,7 @@ export default class AuthServices implements IAuthService {
             const accessToken = jwtToken.accessToken(user._id.toString(), user.role);
             const refreshToken = jwtToken.refreshToken(user._id.toString());
 
-            await this.authRepo.updateRefreshToken(user._id.toString(), refreshToken);
+            await this._authRepo.updateRefreshToken(user._id.toString(), refreshToken);
 
             return {
                 user: {
@@ -139,12 +139,12 @@ export default class AuthServices implements IAuthService {
     //         throw new ApiError(StatusCodes.FORBIDDEN, API_RESPONSES.OTP_NOT_VERIFIED)
     //     }
 
-    //     const existingUser = await this.authRepo.findByEmail(email);
+    //     const existingUser = await this._authRepo.findByEmail(email);
     //     if (existingUser) throw new ApiError(StatusCodes.CONFLICT, API_RESPONSES.ALREADY_EXISTS)
 
     //     const hashedPassword = await bcrypt.hash(password, 10);
 
-    //     const newUser = await this.authRepo.createUser({ name, email, password: hashedPassword, role: "user" });
+    //     const newUser = await this._authRepo.createUser({ name, email, password: hashedPassword, role: "user" });
 
     //     if (!newUser || !newUser._id) {
     //         throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, API_RESPONSES.INTERNAL_SERVER_ERROR);
@@ -176,14 +176,14 @@ export default class AuthServices implements IAuthService {
             throw new ApiError(StatusCodes.BAD_REQUEST, "OTP is required");
         }
 
-        await this.otpService.ensureVerified(email, otp, otpStatus.VERIFICATION)
+        await this._otpService.ensureVerified(email, otp, otpStatus.VERIFICATION)
 
-        const existingUser = await this.authRepo.findByEmail(email)
+        const existingUser = await this._authRepo.findByEmail(email)
         if (existingUser) throw new ApiError(StatusCodes.CONFLICT, API_RESPONSES.ALREADY_EXISTS)
 
         const hashedPassword = await bcrypt.hash(password, 10)
 
-        const newUser = await this.authRepo.createUser({
+        const newUser = await this._authRepo.createUser({
             name,
             email,
             password: hashedPassword,
@@ -200,9 +200,9 @@ export default class AuthServices implements IAuthService {
         const accessToken = jwtToken.accessToken(userIdStr, newUser.role);
         const refreshToken = jwtToken.refreshToken(userIdStr);
 
-        await this.authRepo.updateRefreshToken(userIdStr, refreshToken);
+        await this._authRepo.updateRefreshToken(userIdStr, refreshToken);
 
-        await this.otpService.deleteOtp(email, otpStatus.VERIFICATION)
+        await this._otpService.deleteOtp(email, otpStatus.VERIFICATION)
 
         return {
             user: {
@@ -227,6 +227,7 @@ export default class AuthServices implements IAuthService {
             otp,
             language,
             hasTransport,
+            workNature,
             location,
         } = data;
         console.log("ProviderRegister backend data:", { name, email, otp });
@@ -235,9 +236,9 @@ export default class AuthServices implements IAuthService {
             throw new ApiError(StatusCodes.BAD_REQUEST, "OTP is required");
         }
 
-        await this.otpService.ensureVerified(email, otp, otpStatus.VERIFICATION)
+        await this._otpService.ensureVerified(email, otp, otpStatus.VERIFICATION)
 
-        const existingUser = await this.authRepo.findByEmail(email);
+        const existingUser = await this._authRepo.findByEmail(email);
         if (existingUser) {
             console.log(`[AuthService] ProviderRegister 409 Conflict: User found with email ${email}, role: ${existingUser.role}`);
             throw new ApiError(StatusCodes.CONFLICT, "An account with this email already exists. Please log in or use a different email.");
@@ -250,7 +251,7 @@ export default class AuthServices implements IAuthService {
 
         try {
 
-            const newUser = await this.authRepo.createUser({
+            const newUser = await this._authRepo.createUser({
                 name,
                 email,
                 password: hashedPassword,
@@ -258,16 +259,17 @@ export default class AuthServices implements IAuthService {
             }, { session });
 
 
-            // const newProvider = await this.authRepo.createUser({ name: name, email: email, password: hashedPassword, role: "provider" });
+            // const newProvider = await this._authRepo.createUser({ name: name, email: email, password: hashedPassword, role: "provider" });
             // console.log("New User ID:", newUser?._id)
 
 
-            await this.authRepo.createProvider({
+            await this._authRepo.createProvider({
                 userId: newUser._id,
                 bio: bio,
                 skills: skills,
                 language: language,
                 hasTransport: hasTransport,
+                workNature: workNature,
                 location: location,
             }, { session });
 
@@ -283,9 +285,9 @@ export default class AuthServices implements IAuthService {
             const accessToken = jwtToken.accessToken(userIdStr, newUser.role);
             const refreshToken = jwtToken.refreshToken(userIdStr);
 
-            await this.authRepo.updateRefreshToken(userIdStr, refreshToken);
+            await this._authRepo.updateRefreshToken(userIdStr, refreshToken);
 
-            await this.otpService.deleteOtp(email, otpStatus.VERIFICATION);
+            await this._otpService.deleteOtp(email, otpStatus.VERIFICATION);
 
             console.log("ProviderRegister successful response prepared for:", email);
             return {
@@ -314,7 +316,7 @@ export default class AuthServices implements IAuthService {
         try {
             const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!) as { id: string }
 
-            const user = await this.authRepo.findById(decoded.id);
+            const user = await this._authRepo.findById(decoded.id);
 
             if (!user || user.isBanned) throw new ApiError(StatusCodes.FORBIDDEN, API_RESPONSES.ACCOUNT_DISABLED);
 
@@ -343,7 +345,7 @@ export default class AuthServices implements IAuthService {
 
     async forgotPassword(email: string, purpose: otpStatus) {
 
-        const user = await this.authRepo.findByEmail(email);
+        const user = await this._authRepo.findByEmail(email);
 
         if (!user) {
             throw new ApiError(StatusCodes.NOT_FOUND, API_RESPONSES.NOT_FOUND);
@@ -352,28 +354,28 @@ export default class AuthServices implements IAuthService {
             throw new ApiError(StatusCodes.SERVICE_UNAVAILABLE, API_RESPONSES.SERVICE_UNAVAILABLE)
         }
 
-        await this.otpService.sendOTP(email, otpStatus.FORGOT_PASSWORD)
+        await this._otpService.sendOTP(email, otpStatus.FORGOT_PASSWORD)
         return { status: StatusCodes.OK, message: API_RESPONSES.OTP_SENT };
     }
 
     async resetPassword(email: string, otp: number, newPassword: string) {
         console.log("resetPassword backend data:", { email, otp });
 
-        await this.otpService.ensureVerified(email, otp, otpStatus.FORGOT_PASSWORD);
+        await this._otpService.ensureVerified(email, otp, otpStatus.FORGOT_PASSWORD);
 
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-        const updatedUser = await this.authRepo.updatePasswordByEmail(email, hashedPassword);
+        const updatedUser = await this._authRepo.updatePasswordByEmail(email, hashedPassword);
 
         if (!updatedUser) throw new ApiError(StatusCodes.NOT_FOUND, API_RESPONSES.USER_NOT_FOUND);
 
-        await this.otpService.deleteOtp(email, otpStatus.FORGOT_PASSWORD);
+        await this._otpService.deleteOtp(email, otpStatus.FORGOT_PASSWORD);
 
         return { status: StatusCodes.OK, message: API_RESPONSES.PASSWORD_UPDATED };
     }
 
     async revokeToken(userId: string): Promise<void> { // ithu logout cheyyuumbo use ahn
-        await this.authRepo.updateRefreshToken(userId, null);
+        await this._authRepo.updateRefreshToken(userId, null);
     }
 
 }

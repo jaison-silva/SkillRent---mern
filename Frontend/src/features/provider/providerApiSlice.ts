@@ -2,8 +2,13 @@ import { apiSlice } from "../../api/apiSlice";
 
 export const providerApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
-        getProviders: builder.query<any, void>({
-            query: () => '/providers',
+        getProviders: builder.query<any, { page?: number; limit?: number; search?: string; sort?: string; lat?: number; lng?: number } | void>({
+            query: (params) => {
+                if (!params) return '/providers';
+                const activeParams = Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined));
+                const queryString = new URLSearchParams(activeParams as Record<string, string>).toString();
+                return `/providers${queryString ? `?${queryString}` : ''}`;
+            },
             providesTags: ['Provider'],
         }),
         getProviderById: builder.query<any, string>({
@@ -22,6 +27,25 @@ export const providerApiSlice = apiSlice.injectEndpoints({
             }),
             invalidatesTags: ['ProviderProfile', 'Provider']
         }),
+        getProviderReviews: builder.query<any, { providerId: string; page?: number; limit?: number; sort?: string }>({
+            query: ({ providerId, ...params }) => {
+                const activeParams = Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined));
+                const queryString = new URLSearchParams(activeParams as Record<string, string>).toString();
+                return `/providers/${providerId}/reviews${queryString ? `?${queryString}` : ''}`;
+            },
+            providesTags: (_result, _error, { providerId }) => [{ type: 'Review', id: providerId }],
+        }),
+        addProviderReview: builder.mutation<any, { providerId: string, rating: number, comment: string }>({
+            query: ({ providerId, ...data }) => ({
+                url: `/providers/${providerId}/reviews`,
+                method: 'POST',
+                body: data,
+            }),
+            invalidatesTags: (_result, _error, { providerId }) => [
+                { type: 'Review', id: providerId },
+                { type: 'Provider', id: providerId }
+            ],
+        }),
     })
 })
 
@@ -29,5 +53,7 @@ export const {
     useGetProvidersQuery,
     useGetProviderByIdQuery,
     useGetProviderProfileQuery,
-    useUpdateProviderProfileMutation
+    useUpdateProviderProfileMutation,
+    useGetProviderReviewsQuery,
+    useAddProviderReviewMutation
 } = providerApiSlice;

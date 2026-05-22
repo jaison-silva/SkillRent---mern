@@ -4,7 +4,7 @@ import { useGetProfileQuery, useUpdateProfileMutation } from '../userApiSlice';
 import { BasicInfoForm } from '../components/BasicInfoForm';
 import { AvatarUpload } from '../components/AvatarUpload';
 import { ChangePasswordModal } from '../components/ChangePasswordModal';
-import { User, ShieldCheck, Calendar } from 'lucide-react';
+import { User, ShieldCheck, Calendar, MapPin } from 'lucide-react';
 
 export default function UserProfilePage() {
   const { data, isLoading, isError } = useGetProfileQuery();
@@ -100,6 +100,7 @@ export default function UserProfilePage() {
                 <InfoItem label="Full Name" value={profile?.name} icon={<User className="w-4 h-4" />} />
                 <InfoItem label="Phone Number" value={profile?.phone || 'Not provided'} icon={<Calendar className="w-4 h-4" />} />
                 <InfoItem label="Email Address" value={profile?.email} isMuted />
+                <InfoItem label="Location" value={profile?.location ? `${profile.location.lat.toFixed(4)}, ${profile.location.lng.toFixed(4)}` : 'Not provided'} icon={<MapPin className="w-4 h-4" />} />
               </section>
               
               <div className="pt-8 border-t border-gray-50">

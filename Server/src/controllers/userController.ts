@@ -8,14 +8,14 @@ import { IUserService } from "../services/interfaces/IUserService";
 // const userService = new UserService(new UserRepository())
 
 export class UserController {
-    constructor(private userService: IUserService) { }
+    constructor(private _userService: IUserService) { }
 
     getDashboard = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const userId = req.jwtTokenVerified?.id;
             if (!userId) throw new Error("Unauthorized");
 
-            const homeData = await this.userService.getHomeData(userId);
+            const homeData = await this._userService.getHomeData(userId);
 
             const status = StatusCodes.OK;
             const message = API_RESPONSES.SUCCESS;
@@ -33,7 +33,7 @@ export class UserController {
                 throw new ApiError(StatusCodes.UNAUTHORIZED, API_RESPONSES.UNAUTHORIZED);
             }
 
-            const user = await this.userService.userProfileService(userId);
+            const user = await this._userService.userProfileService(userId);
 
             const status = StatusCodes.OK;
             const message = API_RESPONSES.SUCCESS;
@@ -53,7 +53,7 @@ export class UserController {
 
             const updateData = req.body;
 
-            const user = await this.userService.updateUserProfileService(userId, updateData)
+            const user = await this._userService.updateUserProfileService(userId, updateData)
 
             const status = StatusCodes.OK;
             const message = API_RESPONSES.SUCCESS;
@@ -68,7 +68,7 @@ export class UserController {
         try {
             const { id } = req.params;
 
-            const userDetails = await this.userService.getUserDetailsService(id);
+            const userDetails = await this._userService.getUserDetailsService(id);
 
             if (!userDetails) {
                 res.status(404).json({ message: "User details not found" });
@@ -89,7 +89,7 @@ export class UserController {
             const limit = parseInt(req.query.limit as string) || 10;
             const search = (req.query.search as string) || "";
 
-            const { users, total } = await this.userService.listAllUsersService(page, limit, search);
+            const { users, total } = await this._userService.listAllUsersService(page, limit, search);
 
             const status = StatusCodes.OK;
             const message = API_RESPONSES.SUCCESS;
