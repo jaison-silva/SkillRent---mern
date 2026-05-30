@@ -51,7 +51,7 @@ export default class AdminService implements IAdminService {
 
     async listUsersAndProviders(page: number = 1, limit: number = 10, search: string = "") {
         const { users, total } = await this._userRepo.findUsers(page, limit, search);
-        const { providers } = await this._providerRepo.listProviders()
+        const { providers } = await this._providerRepo.listProviders(undefined, page, limit, search);
 
         return { users, totalUsers: total, providers }
     }

@@ -3,7 +3,7 @@ import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolk
 import { setCredentials, logOut } from '../features/auth/authSlice';
 import type { RootState } from '../store/store';
 
-const baseQuery = fetchBaseQuery({ // ithu axios interceptor polle, header kettum
+const baseQuery = fetchBaseQuery({
     baseUrl: import.meta.env.VITE_API_URL,
     credentials: "include",
     prepareHeaders: (headers, { getState }) => {
@@ -22,13 +22,23 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
     const isAuthEndpoint = url?.startsWith('/auth/');
 
     if (result?.error?.status === 401 && !isAuthEndpoint) {
-        const refreshResult = await baseQuery('/auth/refresh', api, extraOptions);
+        const refreshResult = await baseQuery(
+            { url: '/auth/refresh', method: 'POST' },
+            api,
+            extraOptions
+        );
 
         if (refreshResult?.data) {
-            const refreshData = refreshResult.data as { user: any; token: string };
-            const user = refreshData.user ?? (api.getState() as RootState).auth.user;
-            api.dispatch(setCredentials({ user: user!, token: refreshData.token }));
-            result = await baseQuery(args, api, extraOptions);
+            const refreshData = refreshResult.data as { user: any; accessToken?: string; token?: string };
+            const newToken = refreshData.accessToken || refreshData.token;
+            
+            if (newToken) {
+                const user = refreshData.user ?? (api.getState() as RootState).auth.user;
+                api.dispatch(setCredentials({ user: user!, token: newToken }));
+                result = await baseQuery(args, api, extraOptions);
+            } else {
+                api.dispatch(logOut());
+            }
         } else {
             api.dispatch(logOut());
         }
@@ -38,7 +48,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 
 export const apiSlice = createApi({
     baseQuery: baseQueryWithReauth,
-    tagTypes: ['User', 'Service', 'Provider', 'ProviderProfile', 'AdminDashboard', 'Job', 'Review'], // ithu catching related ah, to refetch
+    tagTypes: ['User', 'Service', 'Provider', 'ProviderProfile', 'AdminDashboard', 'Job', 'Review'],
     endpoints: () => ({}),
 });
 

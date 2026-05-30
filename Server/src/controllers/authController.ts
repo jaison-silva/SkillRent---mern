@@ -86,7 +86,7 @@ export class AuthController {
 
             const status = StatusCodes.CREATED;
             const message = API_RESPONSES.CREATED;
-            res.status(status).json({ user: response.user, token: response.accessToken })
+            res.status(status).json({ user: response.user, accessToken: response.accessToken })
         } catch (err) {
             next(err)
         }

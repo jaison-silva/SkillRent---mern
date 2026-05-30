@@ -34,6 +34,7 @@ class UserService implements IUserService {
 
     async getUserDetailsService(id: string) {
         const userDetails = await this._userRepository.findUserById(id);
+        // VALIDATE USING RESPONSE DTO AND MAPPERS (EG: DO NOT SEND PASSWORD FIELD) 
         if (!userDetails) throw new ApiError(StatusCodes.NOT_FOUND, API_RESPONSES.NOT_FOUND);
         return userDetails;
     }

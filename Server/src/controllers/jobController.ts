@@ -13,7 +13,7 @@ export class JobController {
 
   createJob = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = (req as any).user?.id;
+      const userId = (req as any).jwtTokenVerified?.id;
       const data: CreateJobRequestDTO = req.body;
 
       if (!userId) {
@@ -39,7 +39,7 @@ export class JobController {
 
   getJobsByUserId = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = (req as any).user?.id;
+      const userId = (req as any).jwtTokenVerified?.id;
       if (!userId) {
         res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unauthorized" });
         return;
@@ -60,7 +60,7 @@ export class JobController {
 
   getDirectJobs = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = (req as any).user?.id;
+      const userId = (req as any).jwtTokenVerified?.id;
       if (!userId) {
         res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unauthorized" });
         return;

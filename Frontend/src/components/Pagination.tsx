@@ -5,7 +5,7 @@ interface PaginationProps {
   limit: number;
   total: number;
   onPageChange: (page: number) => void;
-  label?: string; // e.g. "users", "providers", "jobs"
+  label?: string; //  "users", "providers", "jobs" polle
 }
 
 export default function Pagination({ page, limit, total, onPageChange, label = "results" }: PaginationProps) {

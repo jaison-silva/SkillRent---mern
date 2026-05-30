@@ -35,7 +35,6 @@ export const GoogleLoginUser = ({ role }: { role?: string }) => {
             <GoogleAuthButtonComponent 
                 onSuccess={onSuccess} 
                 onError={() => toast.error("Google Login failed")} 
-                useOneTap
             />
         </div>
     );

@@ -51,7 +51,7 @@ export class UserController {
                 throw new ApiError(StatusCodes.UNAUTHORIZED, API_RESPONSES.UNAUTHORIZED);
             }
 
-            const updateData = req.body;
+            const updateData = req.body; // VALIDATE THIS !!!! 
 
             const user = await this._userService.updateUserProfileService(userId, updateData)
 

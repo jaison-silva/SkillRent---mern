@@ -3,6 +3,7 @@ import IProviderhRepository from "../../repositories/interfaces/IProviderReposit
 import { ProviderStatus } from "../../enum/providerStatusEnum";
 import { UpdateProviderProfileDTO } from "../../dto/provider/updateProviderProfileDTO";
 import { BaseRepository } from "./baseRepository";
+import User from "../../models/userModel";
 
 export default class MongoProviderRepository extends BaseRepository<IProvider> implements IProviderhRepository {
   constructor() {
@@ -26,7 +27,7 @@ export default class MongoProviderRepository extends BaseRepository<IProvider> i
       query['location.lng'] = { $gte: lng - radiusInDegrees, $lte: lng + radiusInDegrees };
     }
 
-    // Sort mapping
+ 
     let sortOption: Record<string, 1 | -1> = { createdAt: -1 };
     if (sort === "rating") sortOption = { rating: -1 };
     if (sort === "oldest") sortOption = { createdAt: 1 };
@@ -34,8 +35,7 @@ export default class MongoProviderRepository extends BaseRepository<IProvider> i
     const skip = (page - 1) * limit;
 
     if (search) {
-      // Need to find matching users first
-      const User = (await import("../../models/userModel")).default;
+     
       const matchingUsers = await User.find({
         $or: [
           { name: { $regex: search, $options: "i" } },
