@@ -25,11 +25,64 @@ const jobSchema = new mongoose.Schema<IJob>({
   budget: { type: Number, required: true },
   time: { type: String, required: true },
   location: {
-    lat: { type: Number },
-    lng: { type: Number },
+    type: { type: String, enum: ['Point'], default: 'Point' },
+    coordinates: { type: [Number] }, // [lng, lat]
     address: { type: String, required: true }
   },
   status: { type: String, enum: ['open', 'closed', 'in-progress'], default: 'open' }
 }, { timestamps: true });
+
+jobSchema.index({ location: "2dsphere" });
+
+// Middleware to convert {lat, lng, address} to GeoJSON on save
+jobSchema.pre("save", function (next) {
+  if (this.location && (this.location as any).lat !== undefined && (this.location as any).lng !== undefined) {
+    const loc = this.location as any;
+    this.location = {
+      type: "Point",
+      coordinates: [loc.lng, loc.lat],
+      address: loc.address
+    } as any;
+  }
+  next();
+});
+
+// Middleware to convert on update
+jobSchema.pre("findOneAndUpdate", function (next) {
+  const update = this.getUpdate() as any;
+  if (update) {
+    if (update.$set && update.$set.location && update.$set.location.lat !== undefined && update.$set.location.lng !== undefined) {
+      const loc = update.$set.location;
+      update.$set.location = {
+        type: "Point",
+        coordinates: [loc.lng, loc.lat],
+        address: loc.address
+      };
+    } else if (update.location && update.location.lat !== undefined && update.location.lng !== undefined) {
+      const loc = update.location;
+      update.location = {
+        type: "Point",
+        coordinates: [loc.lng, loc.lat],
+        address: loc.address
+      };
+    }
+  }
+  next();
+});
+
+// Transform to convert GeoJSON back to {lat, lng, address}
+const transformLocation = (doc: any, ret: any) => {
+  if (ret.location && ret.location.coordinates) {
+    ret.location = {
+      lat: ret.location.coordinates[1],
+      lng: ret.location.coordinates[0],
+      address: ret.location.address
+    };
+  }
+  return ret;
+};
+
+jobSchema.set("toJSON", { transform: transformLocation, virtuals: true });
+jobSchema.set("toObject", { transform: transformLocation, virtuals: true });
 
 export default mongoose.model<IJob>("Job", jobSchema);

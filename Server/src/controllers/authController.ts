@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express"
+import logger from "../../utils/logger";
 import jwt from "jsonwebtoken";
 import { API_RESPONSES } from "../constants/statusMessageConstant";
 import { StatusCodes } from 'http-status-codes';
@@ -131,7 +132,7 @@ export class AuthController {
                     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!) as { id: string };
                     await this._authService.revokeToken(decoded.id);
                 } catch (err) {
-                    console.error("Logout: Failed to revoke token in DB (likely expired or invalid):", (err as Error).message);
+                    logger.error("Logout: Failed to revoke token in DB (likely expired or invalid):", (err as Error).message);
                 }
             }
 

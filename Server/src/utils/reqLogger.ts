@@ -1,8 +1,12 @@
-import { Request, Response, NextFunction } from 'express'
+import { Request, Response, NextFunction } from 'express';
+import logger from './logger';
 
 const loggerMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  console.log(`@ ${new Date().toISOString()} Method: ${req.method} Path: ${req.path}`);
+  logger.http(`${req.method} ${req.path}`, {
+    ip: req.ip,
+    userAgent: req.headers['user-agent']
+  });
   next();
 };
 
-export default loggerMiddleware
+export default loggerMiddleware;

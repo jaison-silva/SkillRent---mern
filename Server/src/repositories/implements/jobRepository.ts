@@ -17,12 +17,65 @@ export class MongoJobRepository extends BaseRepository<IJob> implements IJobRepo
     return await job.save();
   }
 
-  async getAllOpenJobs(): Promise<IJob[]> {
-    return await Job.find({ status: 'open', providerId: { $exists: false } }).populate('userId', 'name profilePicture').sort({ createdAt: -1 });
+  async getAllOpenJobs(
+    page: number = 1,
+    limit: number = 10,
+    search: string = "",
+    sort: string = "newest"
+  ): Promise<{ jobs: IJob[], total: number }> {
+    const query: Record<string, unknown> = { status: 'open', providerId: { $exists: false } };
+
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } }
+      ];
+    }
+
+    let sortOption: Record<string, 1 | -1> = { createdAt: -1 };
+    if (sort === "oldest") sortOption = { createdAt: 1 };
+    if (sort === "budget_high") sortOption = { budget: -1 };
+    if (sort === "budget_low") sortOption = { budget: 1 };
+
+    const skip = (page - 1) * limit;
+
+    const [jobs, total] = await Promise.all([
+      Job.find(query).populate('userId', 'name profilePicture').sort(sortOption).skip(skip).limit(limit),
+      Job.countDocuments(query)
+    ]);
+
+    return { jobs, total };
   }
 
-  async getDirectJobsForProvider(providerId: string): Promise<IJob[]> {
-    return await Job.find({ providerId }).populate('userId', 'name profilePicture').sort({ createdAt: -1 });
+  async getDirectJobsForProvider(
+    providerId: string,
+    page: number = 1,
+    limit: number = 10,
+    search: string = "",
+    sort: string = "newest"
+  ): Promise<{ jobs: IJob[], total: number }> {
+    const query: Record<string, unknown> = { providerId };
+
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } }
+      ];
+    }
+
+    let sortOption: Record<string, 1 | -1> = { createdAt: -1 };
+    if (sort === "oldest") sortOption = { createdAt: 1 };
+    if (sort === "budget_high") sortOption = { budget: -1 };
+    if (sort === "budget_low") sortOption = { budget: 1 };
+
+    const skip = (page - 1) * limit;
+
+    const [jobs, total] = await Promise.all([
+      Job.find(query).populate('userId', 'name profilePicture').sort(sortOption).skip(skip).limit(limit),
+      Job.countDocuments(query)
+    ]);
+
+    return { jobs, total };
   }
 
   async getJobsByUserId(

@@ -1,6 +1,7 @@
 import User from "../../models/userModel";
 import { IUser } from "../../models/userModel";
 import IUserRepository from "../interfaces/IUserRepository";
+import logger from "../../utils/logger";
 import { BaseRepository } from "./baseRepository";
 
 export default class MongoUserRepository extends BaseRepository<IUser> implements IUserRepository {
@@ -31,9 +32,9 @@ export default class MongoUserRepository extends BaseRepository<IUser> implement
   }
 
   async updateUserById(id: string, updateData: Partial<IUser>) {
-    console.log(`[userRepo] Updating user ${id} with:`, updateData);
+    logger.info(`[userRepo] Updating user ${id} with: ${JSON.stringify(updateData)}`);
     const result = await this.model.findByIdAndUpdate(id, { $set: updateData }, { new: true, runValidators: true });
-    console.log(`[userRepo] Updated result name:`, result?.name);
+    logger.info(`[userRepo] Updated result name: ${result?.name}`);
     return result;
   }
 

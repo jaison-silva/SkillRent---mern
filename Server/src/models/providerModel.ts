@@ -42,8 +42,8 @@ const providerModel = new mongoose.Schema<IProvider>({
     default: 'offline' 
   },
   location: {
-    lat: Number,
-    lng: Number,
+    type: { type: String, enum: ['Point'], default: 'Point' },
+    coordinates: { type: [Number] }, // [lng, lat]
     address: String,
   },
   rating: { type: Number, default: 0 },
@@ -62,5 +62,58 @@ const providerModel = new mongoose.Schema<IProvider>({
 },
   { timestamps: true }
 )
+
+providerModel.index({ location: "2dsphere" });
+
+// Middleware to convert {lat, lng, address} to GeoJSON on save
+providerModel.pre("save", function (next) {
+  if (this.location && (this.location as any).lat !== undefined && (this.location as any).lng !== undefined) {
+    const loc = this.location as any;
+    this.location = {
+      type: "Point",
+      coordinates: [loc.lng, loc.lat],
+      address: loc.address
+    } as any;
+  }
+  next();
+});
+
+// Middleware to convert on update
+providerModel.pre("findOneAndUpdate", function (next) {
+  const update = this.getUpdate() as any;
+  if (update) {
+    if (update.$set && update.$set.location && update.$set.location.lat !== undefined && update.$set.location.lng !== undefined) {
+      const loc = update.$set.location;
+      update.$set.location = {
+        type: "Point",
+        coordinates: [loc.lng, loc.lat],
+        address: loc.address
+      };
+    } else if (update.location && update.location.lat !== undefined && update.location.lng !== undefined) {
+      const loc = update.location;
+      update.location = {
+        type: "Point",
+        coordinates: [loc.lng, loc.lat],
+        address: loc.address
+      };
+    }
+  }
+  next();
+});
+
+// Transform to convert GeoJSON back to {lat, lng, address}
+const transformLocation = (doc: any, ret: any) => {
+  if (ret.location && ret.location.coordinates) {
+    ret.location = {
+      lat: ret.location.coordinates[1],
+      lng: ret.location.coordinates[0],
+      address: ret.location.address
+    };
+  }
+  return ret;
+};
+
+providerModel.set("toJSON", { transform: transformLocation, virtuals: true });
+providerModel.set("toObject", { transform: transformLocation, virtuals: true });
 
 export default mongoose.model("Provider", providerModel)

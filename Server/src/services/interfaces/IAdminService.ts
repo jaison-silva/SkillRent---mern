@@ -10,7 +10,8 @@ export interface IAdminService {
   listUsersAndProviders(page?: number, limit?: number, search?: string): Promise<{
     users: IUser[] | null;
     totalUsers: number;
-    providers: IProvider[] | null;
+    providers: any[] | null;
+    totalProviders: number;
   }>;
 
   verifyProviderService(id: string, status: ProviderStatus): Promise<IProvider | null>;

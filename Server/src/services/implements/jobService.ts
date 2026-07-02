@@ -20,9 +20,9 @@ export class JobService implements IJobService {
     return newJob as unknown as JobResponseDTO;
   }
 
-  async getAllOpenJobs(): Promise<JobResponseDTO[]> {
-    const jobs = await this._jobRepo.getAllOpenJobs();
-    return jobs as unknown as JobResponseDTO[];
+  async getAllOpenJobs(page?: number, limit?: number, search?: string, sort?: string): Promise<{ jobs: JobResponseDTO[], total: number }> {
+    const result = await this._jobRepo.getAllOpenJobs(page, limit, search, sort);
+    return { jobs: result.jobs as unknown as JobResponseDTO[], total: result.total };
   }
 
   async getJobsByUserId(userId: string, page?: number, limit?: number, search?: string, sort?: string, status?: string): Promise<{ jobs: JobResponseDTO[], total: number }> {
@@ -30,8 +30,8 @@ export class JobService implements IJobService {
     return { jobs: result.jobs as unknown as JobResponseDTO[], total: result.total };
   }
 
-  async getDirectJobsForProvider(providerId: string): Promise<JobResponseDTO[]> {
-    const jobs = await this._jobRepo.getDirectJobsForProvider(providerId);
-    return jobs as unknown as JobResponseDTO[];
+  async getDirectJobsForProvider(providerId: string, page?: number, limit?: number, search?: string, sort?: string): Promise<{ jobs: JobResponseDTO[], total: number }> {
+    const result = await this._jobRepo.getDirectJobsForProvider(providerId, page, limit, search, sort);
+    return { jobs: result.jobs as unknown as JobResponseDTO[], total: result.total };
   }
 }

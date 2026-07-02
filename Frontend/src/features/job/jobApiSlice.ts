@@ -19,12 +19,22 @@ export const jobApiSlice = apiSlice.injectEndpoints({
       },
       providesTags: ['Job'],
     }),
-    getAvailableJobs: builder.query({
-      query: () => '/providers/jobs/all',
+    getAvailableJobs: builder.query<any, { page?: number; limit?: number; search?: string; sort?: string } | void>({
+      query: (params) => {
+        if (!params) return '/providers/jobs/all';
+        const activeParams = Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined));
+        const queryString = new URLSearchParams(activeParams as Record<string, string>).toString();
+        return `/providers/jobs/all${queryString ? `?${queryString}` : ''}`;
+      },
       providesTags: ['Job'],
     }),
-    getDirectJobs: builder.query({
-      query: () => '/providers/jobs/direct',
+    getDirectJobs: builder.query<any, { page?: number; limit?: number; search?: string; sort?: string } | void>({
+      query: (params) => {
+        if (!params) return '/providers/jobs/direct';
+        const activeParams = Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined));
+        const queryString = new URLSearchParams(activeParams as Record<string, string>).toString();
+        return `/providers/jobs/direct${queryString ? `?${queryString}` : ''}`;
+      },
       providesTags: ['Job'],
     }),
   }),

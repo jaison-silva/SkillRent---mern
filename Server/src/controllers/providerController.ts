@@ -75,8 +75,9 @@ class ProviderController {
             const sort = (req.query.sort as string) || "newest";
             const lat = req.query.lat ? parseFloat(req.query.lat as string) : undefined;
             const lng = req.query.lng ? parseFloat(req.query.lng as string) : undefined;
+            const maxDistance = req.query.maxDistance ? parseFloat(req.query.maxDistance as string) : undefined;
 
-            const { providers, total } = await this._providerService.listProviderService(filter, page, limit, search, sort, lat, lng);
+            const { providers, total } = await this._providerService.listProviderService(filter, page, limit, search, sort, lat, lng, maxDistance);
 
             const status = StatusCodes.OK;
             const message = API_RESPONSES.SUCCESS;

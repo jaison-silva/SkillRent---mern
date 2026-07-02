@@ -45,11 +45,60 @@ const userSchema = new mongoose.Schema<IUser>({
     refreshToken: { type: String, default: null },
     profilePicture: { type: String, default: "" },
     location: {
-        lat: Number,
-        lng: Number,
+        type: { type: String, enum: ['Point'], default: 'Point' },
+        coordinates: { type: [Number] }, // [lng, lat]
     }
 },
     { timestamps: true }
 )
+
+userSchema.index({ location: "2dsphere" });
+
+// Middleware to convert {lat, lng} to GeoJSON on save
+userSchema.pre("save", function (next) {
+  if (this.location && (this.location as any).lat !== undefined && (this.location as any).lng !== undefined) {
+    const loc = this.location as any;
+    this.location = {
+      type: "Point",
+      coordinates: [loc.lng, loc.lat]
+    } as any;
+  }
+  next();
+});
+
+// Middleware to convert on update
+userSchema.pre("findOneAndUpdate", function (next) {
+  const update = this.getUpdate() as any;
+  if (update) {
+    if (update.$set && update.$set.location && update.$set.location.lat !== undefined && update.$set.location.lng !== undefined) {
+      const loc = update.$set.location;
+      update.$set.location = {
+        type: "Point",
+        coordinates: [loc.lng, loc.lat]
+      };
+    } else if (update.location && update.location.lat !== undefined && update.location.lng !== undefined) {
+      const loc = update.location;
+      update.location = {
+        type: "Point",
+        coordinates: [loc.lng, loc.lat]
+      };
+    }
+  }
+  next();
+});
+
+// Transform to convert GeoJSON back to {lat, lng}
+const transformLocation = (doc: any, ret: any) => {
+  if (ret.location && ret.location.coordinates) {
+    ret.location = {
+      lat: ret.location.coordinates[1],
+      lng: ret.location.coordinates[0]
+    };
+  }
+  return ret;
+};
+
+userSchema.set("toJSON", { transform: transformLocation, virtuals: true });
+userSchema.set("toObject", { transform: transformLocation, virtuals: true });
 
 export default mongoose.model("User", userSchema) 

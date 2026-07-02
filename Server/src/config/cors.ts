@@ -1,4 +1,5 @@
 import { CorsOptions } from "cors"
+import logger from "../utils/logger";
 
 const allowedOrigins: string[] = (process.env.ALLOWED_ORIGINS || "")
     .split(',')
@@ -19,7 +20,7 @@ const corsOptions: CorsOptions = {
         if (allowedOrigins.includes(incomingOrigin)) {
             callback(null, true)
         } else {
-            console.warn(`[CORS REJECTED] Incoming Origin: "${incomingOrigin}" | Allowed: ${JSON.stringify(allowedOrigins)}`);
+            logger.warn(`[CORS REJECTED] Incoming Origin: "${incomingOrigin}" | Allowed: ${JSON.stringify(allowedOrigins)}`);
             callback(new Error("Not allowed by CORS"))
         }
     },

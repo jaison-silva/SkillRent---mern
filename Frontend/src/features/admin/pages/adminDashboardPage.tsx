@@ -10,10 +10,17 @@ import SearchInput from '../../../components/SearchInput';
 import Pagination from '../../../components/Pagination';
 
 export default function AdminDashboardPage() {
+  const [activeTab, setActiveTab] = useState<'pending' | 'users'>('pending');
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const limit = 10;
+
+  useEffect(() => {
+    setPage(1);
+    setSearch('');
+    setDebouncedSearch('');
+  }, [activeTab]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -32,14 +39,10 @@ export default function AdminDashboardPage() {
   const [verifyProvider] = useVerifyProviderMutation();
   const [changeUserStatus] = useChangeUserStatusMutation();
 
-  const [activeTab, setActiveTab] = useState<'pending' | 'users'>('pending');
-
   if (isLoading) return <div className="p-20 text-center animate-pulse text-gray-500">Loading admin data...</div>;
 
   const users = data?.users || [];
-  const providers = data?.providers || [];
-  
-  const pendingProviders = providers.filter((p: any) => p.validationStatus === 'pending');
+  const pendingProviders = data?.providers || [];
 
   const handleVerify = (id: string, status: 'approved' | 'denied') => {
     toast((t) => (
@@ -104,39 +107,49 @@ export default function AdminDashboardPage() {
           onClick={() => setActiveTab('pending')}
           className={`pb-4 px-2 font-semibold ${activeTab === 'pending' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
         >
-          Pending Verifications ({pendingProviders.length})
+          Pending Verifications ({data?.totalProviders || 0})
         </button>
         <button 
           onClick={() => setActiveTab('users')}
           className={`pb-4 px-2 font-semibold ${activeTab === 'users' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
         >
-          All Users ({users.length})
+          All Users ({data?.totalUsers || 0})
         </button>
       </div>
 
       {activeTab === 'pending' && (
         <div className="space-y-4">
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Search pending providers by name or skills..."
+          />
           {pendingProviders.length === 0 ? (
             <div className="text-center py-20 bg-gray-50 rounded-2xl border border-dashed border-gray-300 text-gray-500">
               No pending verifications.
             </div>
           ) : (
-            pendingProviders.map((provider: any) => (
-              <div key={provider._id} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-                <div>
-                  <h3 className="font-bold text-lg">{provider.userId?.name} <span className="text-sm font-normal text-gray-500">({provider.userId?.email})</span></h3>
-                  <p className="text-gray-600 mt-1">Skills: {provider.skills?.join(', ') || 'N/A'}</p>
-                </div>
-                <div className="flex space-x-3">
-                  <button onClick={() => handleVerify(provider._id, 'approved')} className="flex items-center px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition">
-                    <Check className="w-4 h-4 mr-2" /> Approve
-                  </button>
-                  <button onClick={() => handleVerify(provider._id, 'denied')} className="flex items-center px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition">
-                    <X className="w-4 h-4 mr-2" /> Deny
-                  </button>
-                </div>
+            <>
+              <div className="space-y-4">
+                {pendingProviders.map((provider: any) => (
+                  <div key={provider._id} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+                    <div>
+                      <h3 className="font-bold text-lg">{provider.userId?.name} <span className="text-sm font-normal text-gray-500">({provider.userId?.email})</span></h3>
+                      <p className="text-gray-600 mt-1">Skills: {provider.skills?.join(', ') || 'N/A'}</p>
+                    </div>
+                    <div className="flex space-x-3">
+                      <button onClick={() => handleVerify(provider._id, 'approved')} className="flex items-center px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition">
+                        <Check className="w-4 h-4 mr-2" /> Approve
+                      </button>
+                      <button onClick={() => handleVerify(provider._id, 'denied')} className="flex items-center px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition">
+                        <X className="w-4 h-4 mr-2" /> Deny
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))
+              <Pagination page={page} limit={limit} total={data?.totalProviders || 0} onPageChange={setPage} label="pending providers" />
+            </>
           )}
         </div>
       )}

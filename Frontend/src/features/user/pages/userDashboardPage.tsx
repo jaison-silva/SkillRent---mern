@@ -18,6 +18,7 @@ export default function UserDashboardPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sort, setSort] = useState('newest');
   const [location, setLocation] = useState<LocationData | null>(null);
+  const [maxDistance, setMaxDistance] = useState<string>('any');
   const limit = 9;
 
   useEffect(() => {
@@ -28,6 +29,12 @@ export default function UserDashboardPage() {
     return () => clearTimeout(handler);
   }, [search]);
 
+  useEffect(() => {
+    if (!location && sort === 'distance') {
+      setSort('newest');
+    }
+  }, [location, sort]);
+
   const { data, isLoading, isError } = useGetProvidersQuery({
     page,
     limit,
@@ -35,10 +42,15 @@ export default function UserDashboardPage() {
     sort,
     lat: location?.lat,
     lng: location?.lng,
+    maxDistance: maxDistance !== 'any' ? parseFloat(maxDistance) : undefined,
   });
 
   const providers = data?.providers || [];
   const total = data?.total || 0;
+
+  const sortOptions = location 
+    ? [...SORT_OPTIONS, { label: 'Closest First', value: 'distance' }]
+    : SORT_OPTIONS;
 
   if (isLoading) return <div className="p-20 text-center animate-pulse text-gray-500">Loading providers...</div>;
   if (isError) return <div className="p-20 text-center text-red-500">Failed to load providers.</div>;
@@ -61,7 +73,7 @@ export default function UserDashboardPage() {
         />
       </div>
 
-      {/* Search & Sort Controls */}
+      {/* Search, Distance & Sort Controls */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="flex-1">
           <SearchInput
@@ -70,8 +82,23 @@ export default function UserDashboardPage() {
             placeholder="Search providers by name or skill..."
           />
         </div>
+        {location && (
+          <div className="w-full sm:w-48">
+            <select
+              value={maxDistance}
+              onChange={(e) => { setMaxDistance(e.target.value); setPage(1); }}
+              className="w-full h-10 px-3 bg-white rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-700 transition-all font-medium"
+            >
+              <option value="any">Any distance</option>
+              <option value="5">Within 5 km</option>
+              <option value="10">Within 10 km</option>
+              <option value="25">Within 25 km</option>
+              <option value="50">Within 50 km</option>
+            </select>
+          </div>
+        )}
         <div className="w-full sm:w-48">
-          <SortSelect value={sort} onChange={(val) => { setSort(val); setPage(1); }} options={SORT_OPTIONS} />
+          <SortSelect value={sort} onChange={(val) => { setSort(val); setPage(1); }} options={sortOptions} />
         </div>
       </div>
 
@@ -112,11 +139,18 @@ export default function UserDashboardPage() {
                   >
                     View Profile &rarr;
                   </Link>
-                  {provider.location?.address && (
-                    <span className="text-xs font-medium text-gray-400 truncate max-w-[150px]" title={provider.location.address}>
-                      📍 {provider.location.address.split(',')[0]}
-                    </span>
-                  )}
+                  <div className="flex flex-col items-end text-right">
+                    {provider.location?.address && (
+                      <span className="text-xs font-medium text-gray-400 truncate max-w-[150px]" title={provider.location.address}>
+                        📍 {provider.location.address.split(',')[0]}
+                      </span>
+                    )}
+                    {provider.distance !== undefined && (
+                      <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full mt-0.5 whitespace-nowrap">
+                        {provider.distance.toFixed(1)} km away
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

@@ -68,7 +68,11 @@ async function seedData() {
             skills: ['Plumbing', 'Pipe Repair'],
             language: ['English'],
             hasTransport: true,
-            location: 'New York',
+            location: {
+                type: 'Point',
+                coordinates: [-74.0060, 40.7128],
+                address: 'New York'
+            },
             validationStatus: 'pending', // IMPORTANT: Keep it pending for testing
             availability: [],
             experience: 10,

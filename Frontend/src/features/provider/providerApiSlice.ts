@@ -2,7 +2,7 @@ import { apiSlice } from "../../api/apiSlice";
 
 export const providerApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
-        getProviders: builder.query<any, { page?: number; limit?: number; search?: string; sort?: string; lat?: number; lng?: number } | void>({
+        getProviders: builder.query<any, { page?: number; limit?: number; search?: string; sort?: string; lat?: number; lng?: number; maxDistance?: number } | void>({
             query: (params) => {
                 if (!params) return '/providers';
                 const activeParams = Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined));

@@ -4,6 +4,7 @@ import { API_RESPONSES } from '../constants/statusMessageConstant';
 import { StatusCodes } from 'http-status-codes';
 import ApiError from '../utils/apiError';
 import { number } from 'zod';
+import logger from '../utils/logger';
 
 const globalErrorHandler: ErrorRequestHandler = ((err: unknown, req: Request, res: Response, next: NextFunction) => {
   let statusCode: number = StatusCodes.INTERNAL_SERVER_ERROR
@@ -28,7 +29,7 @@ const globalErrorHandler: ErrorRequestHandler = ((err: unknown, req: Request, re
     message = "Unauthorized: " + err.message;
   }
 
-  console.log(`[${req.method}] ${req.path} >> Status: ${statusCode} | Message: ${message}`);
+  logger.error(`[${req.method}] ${req.path} >> Status: ${statusCode} | Message: ${message}`);
 
   res.status(statusCode).json({
     success: false,

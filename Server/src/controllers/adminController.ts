@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express"
+import logger from "../../utils/logger";
 import { API_RESPONSES } from "../constants/statusMessageConstant";
 import { StatusCodes } from 'http-status-codes';
 import { IAdminService } from "../services/interfaces/IAdminService"
@@ -37,7 +38,7 @@ export class AdminController {
 
             const status = StatusCodes.OK;
             const message = API_RESPONSES.SUCCESS;
-            res.status(status).json({ message, users: data.users, totalUsers: data.totalUsers, providers: data.providers })
+            res.status(status).json({ message, users: data.users, totalUsers: data.totalUsers, providers: data.providers, totalProviders: data.totalProviders })
         } catch (err) {
             next(err)
         }
@@ -77,13 +78,13 @@ export class AdminController {
         try {
             const { id } = req.params;
             const { status } = req.body;
-            console.log(`AdminController.verifyProvider: Received request for ID ${id} with status ${status}`);
+            logger.info(`AdminController.verifyProvider: Received request for ID ${id} with status ${status}`);
 
             const provider = await this._adminService.verifyProviderService(id, status);
 
             res.status(200).json({ message: "Provider verification updated", provider });
         } catch (err) {
-            console.error("AdminController.verifyProvider: FAILED", err);
+            logger.error("AdminController.verifyProvider: FAILED", err);
             next(err);
         }
     };

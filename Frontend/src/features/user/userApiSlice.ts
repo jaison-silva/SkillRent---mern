@@ -26,3 +26,5 @@ export const userApiSlice = apiSlice.injectEndpoints({
 })
 
 export const { useGetProfileQuery, useUpdateProfileMutation, useUpdateProviderProfileMutation } = userApiSlice
+
+// end opints shouold be constant. like here "/users/profile/"

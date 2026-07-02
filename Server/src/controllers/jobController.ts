@@ -30,8 +30,13 @@ export class JobController {
 
   getAllOpenJobs = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const jobs = await this._jobService.getAllOpenJobs();
-      res.status(StatusCodes.OK).json({ jobs });
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const search = (req.query.search as string) || "";
+      const sort = (req.query.sort as string) || "newest";
+
+      const { jobs, total } = await this._jobService.getAllOpenJobs(page, limit, search, sort);
+      res.status(StatusCodes.OK).json({ jobs, total });
     } catch (error) {
       next(error);
     }
@@ -73,8 +78,13 @@ export class JobController {
         return;
       }
 
-      const jobs = await this._jobService.getDirectJobsForProvider(provider._id as string);
-      res.status(StatusCodes.OK).json({ jobs });
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const search = (req.query.search as string) || "";
+      const sort = (req.query.sort as string) || "newest";
+
+      const { jobs, total } = await this._jobService.getDirectJobsForProvider(provider._id as string, page, limit, search, sort);
+      res.status(StatusCodes.OK).json({ jobs, total });
     } catch (error) {
       next(error);
     }
