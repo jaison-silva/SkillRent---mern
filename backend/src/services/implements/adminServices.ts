@@ -5,6 +5,7 @@ import ApiError from "../../utils/apiError";
 import { API_RESPONSES } from "../../constants/statusMessageConstant";
 import { StatusCodes } from 'http-status-codes';
 import { IAdminService } from "../interfaces/IAdminService";
+import logger from "../../utils/logger";
 
 
 import { IEmailService } from "../interfaces/IEmailService";
@@ -57,13 +58,13 @@ export default class AdminService implements IAdminService {
     }
 
     async verifyProviderService(id: string, status: ProviderStatus) {
-        console.log(`AdminService.verifyProviderService: Verifying provider ${id} with status ${status}`);
+        logger.info(`AdminService.verifyProviderService: Verifying provider ${id} with status ${status}`);
 
         try {
             const provider = await this._providerRepo.findProviderById(id)
 
             if (!provider) {
-                console.error(`AdminService.verifyProviderService: Provider ${id} not found`);
+                logger.error(`AdminService.verifyProviderService: Provider ${id} not found`);
                 throw new ApiError(StatusCodes.NOT_FOUND, API_RESPONSES.NOT_FOUND);
             }
 
@@ -73,11 +74,11 @@ export default class AdminService implements IAdminService {
                 (provider.userId as unknown as { isBanned: boolean }).isBanned;
 
             if (userIsBanned) {
-                console.error(`AdminService.verifyProviderService: Provider ${id}'s user is banned`);
+                logger.error(`AdminService.verifyProviderService: Provider ${id}'s user is banned`);
                 throw new ApiError(StatusCodes.FORBIDDEN, API_RESPONSES.ACCOUNT_DISABLED);
             }
 
-            console.log(`AdminService.verifyProviderService: Updating status in DB...`);
+            logger.info(`AdminService.verifyProviderService: Updating status in DB...`);
             const updatedProvider = await this._providerRepo.verifyProviderById(id, status);
 
             if (provider.userId && typeof provider.userId === 'object' && 'email' in provider.userId) {
@@ -87,19 +88,19 @@ export default class AdminService implements IAdminService {
                     ? "Congratulations! Your provider profile has been verified and you can now accept bookings."
                     : "We regret to inform you that your provider application has been denied at this time.";
 
-                console.log(`AdminService.verifyProviderService: Sending notification email to ${email}...`);
+                logger.info(`AdminService.verifyProviderService: Sending notification email to ${email}...`);
                 try {
                     await this._emailService.sendNotificationEmail(email, subject, message);
                 } catch (emailErr) {
-                    console.error("AdminService.verifyProviderService: Email notification failed, but DB was updated.", emailErr);
+                    logger.error("AdminService.verifyProviderService: Email notification failed, but DB was updated.", emailErr);
                 }
             } else {
-                console.warn(`AdminService.verifyProviderService: No email found for provider ${id}, skipping notification.`);
+                logger.warn(`AdminService.verifyProviderService: No email found for provider ${id}, skipping notification.`);
             }
 
             return updatedProvider;
         } catch (err) {
-            console.error("AdminService.verifyProviderService: FAILED", err);
+            logger.error("AdminService.verifyProviderService: FAILED", err);
             throw err;
         }
     }

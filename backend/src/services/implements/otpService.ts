@@ -7,6 +7,7 @@ import bcrypt from "bcryptjs"
 import { IOtpRepository } from "../../repositories/interfaces/IOtpRepository";
 import { IOtpService } from "../interfaces/IOtpService";
 import { IEmailService } from "../interfaces/IEmailService";
+import logger from "../../utils/logger";
 
 import { IAuthRepository } from "../../repositories/interfaces/IAuthRepository";
 
@@ -26,14 +27,14 @@ export class OtpService implements IOtpService {
         if (purpose === otpStatus.VERIFICATION) {
             const existingUser = await this._authRepo.findByEmail(email);
             if (existingUser) {
-                console.log(`[OtpService] 409 Conflict: Email ${email} already exists in DB.`);
+                logger.warn(`[OtpService] 409 Conflict: Email ${email} already exists in DB.`);
                 throw new ApiError(StatusCodes.CONFLICT, "User already registered. Please log in.");
             }
         }
 
         const otp = crypto.randomInt(100000, 999999).toString();
 
-        console.log("otp is " + otp)
+        logger.debug("OTP generated for: " + email)
 
         const hashedOtp = await bcrypt.hash(otp, 10);
 
@@ -41,10 +42,10 @@ export class OtpService implements IOtpService {
 
         await this._otpRepo.saveOtp(email, hashedOtp, purpose);
 
-        console.log(`Sending email to ${email} with OTP ${otp}...`);
+        logger.info(`Sending OTP email to ${email}...`);
         await this._emailService.sendOtpEmail(email, otp); // dp ot
 
-        console.log(`OTP for ${purpose} sent to ${email}: ${otp}`);
+        logger.info(`OTP for ${purpose} successfully sent to ${email}`);
 
         return { success: true };
     }
@@ -93,7 +94,7 @@ export class OtpService implements IOtpService {
         }
 
         if (otp === undefined || otp === null) {
-            console.error("ensureVerified: OTP is missing for email:", email);
+            logger.error("ensureVerified: OTP is missing for email:", email);
             throw new ApiError(StatusCodes.BAD_REQUEST, API_RESPONSES.VALIDATION_ERROR);
         }
 

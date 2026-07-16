@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express"
-import logger from "../../utils/logger";
+import logger from "../utils/logger";
 import { API_RESPONSES } from "../constants/statusMessageConstant";
 import { StatusCodes } from 'http-status-codes';
 import { IAdminService } from "../services/interfaces/IAdminService"

@@ -1,7 +1,7 @@
 import { Model, Document, FilterQuery, UpdateQuery, SaveOptions } from 'mongoose';
 import { IBaseRepository } from '../interfaces/IBaseRepository';
 
-export abstract class BaseRepository<T extends Document> implements IBaseRepository<T> {
+export abstract class BaseRepository<T extends Document> implements IBaseRepository<T> { 
     protected constructor(protected readonly model: Model<T>) { }
 
     async create(data: Partial<T>, options?: SaveOptions): Promise<T> {

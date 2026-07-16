@@ -18,6 +18,7 @@ import { IOtpService } from "../interfaces/IOtpService";
 import { UserRegisterRequestDTO } from "../../dto/register/userRegisterRequestDTO"
 import { LoginRequestDTO } from "../../dto/auth/loginRequestDTO";
 import { RefreshResponseDTO } from "../../dto/auth/refreshResponseDTO";
+import logger from "../../utils/logger";
 
 export default class AuthServices implements IAuthService {
     constructor(
@@ -123,7 +124,7 @@ export default class AuthServices implements IAuthService {
                 refreshToken
             };
         } catch (error) {
-            console.error("Google Auth Error:", error);
+            logger.error("Google Auth Error:", error);
             throw new ApiError(StatusCodes.UNAUTHORIZED, "Invalid Google Token");
         }
     }
@@ -170,7 +171,7 @@ export default class AuthServices implements IAuthService {
     async UserRegister(data: UserRegisterRequestDTO): Promise<RegisterResponseDTO> {
         const { name, email, otp, role, password, ...rest } = data
 
-        console.log("UserRegister backend data:", { name, email, otp, role });
+        logger.info("UserRegister backend data:", { name, email, otp, role });
 
         if (otp === undefined) {
             throw new ApiError(StatusCodes.BAD_REQUEST, "OTP is required");
@@ -192,7 +193,7 @@ export default class AuthServices implements IAuthService {
         })
 
         if (!newUser || !newUser._id) {
-            console.error("UserRegister: FAILED to create user doc or get _id", { newUser });
+            logger.error("UserRegister: FAILED to create user doc or get _id", { newUser });
             throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, API_RESPONSES.INTERNAL_SERVER_ERROR);
         }
 
@@ -230,7 +231,7 @@ export default class AuthServices implements IAuthService {
             workNature,
             location,
         } = data;
-        console.log("ProviderRegister backend data:", { name, email, otp });
+        logger.info("ProviderRegister backend data:", { name, email, otp });
 
         if (otp === undefined) {
             throw new ApiError(StatusCodes.BAD_REQUEST, "OTP is required");
@@ -240,7 +241,7 @@ export default class AuthServices implements IAuthService {
 
         const existingUser = await this._authRepo.findByEmail(email);
         if (existingUser) {
-            console.log(`[AuthService] ProviderRegister 409 Conflict: User found with email ${email}, role: ${existingUser.role}`);
+            logger.warn(`[AuthService] ProviderRegister 409 Conflict: User found with email ${email}, role: ${existingUser.role}`);
             throw new ApiError(StatusCodes.CONFLICT, "An account with this email already exists. Please log in or use a different email.");
         }
 
@@ -274,10 +275,10 @@ export default class AuthServices implements IAuthService {
             }, { session });
 
             await session.commitTransaction()
-            console.log("Provider registration transaction committed for:", email);
+            logger.info("Provider registration transaction committed for:", email);
 
             if (!newUser || !newUser._id) {
-                console.error("ProviderRegister: FAILED to create user doc or get _id", { newUser });
+                logger.error("ProviderRegister: FAILED to create user doc or get _id", { newUser });
                 throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, API_RESPONSES.INTERNAL_SERVER_ERROR);
             }
 
@@ -289,7 +290,7 @@ export default class AuthServices implements IAuthService {
 
             await this._otpService.deleteOtp(email, otpStatus.VERIFICATION);
 
-            console.log("ProviderRegister successful response prepared for:", email);
+            logger.info("ProviderRegister successful response prepared for:", email);
             return {
                 user: {
                     id: userIdStr,
@@ -322,7 +323,7 @@ export default class AuthServices implements IAuthService {
 
             // Verify if the token matches the one in the database
             if (user.refreshToken !== refreshToken) {
-                console.error("Token mismatch. Possible token reuse or breach.");
+                logger.error("Token mismatch. Possible token reuse or breach.");
                 throw new ApiError(StatusCodes.UNAUTHORIZED, API_RESPONSES.TOKEN_INVALID);
             }
 
@@ -359,7 +360,7 @@ export default class AuthServices implements IAuthService {
     }
 
     async resetPassword(email: string, otp: number, newPassword: string) {
-        console.log("resetPassword backend data:", { email, otp });
+        logger.info("resetPassword backend data:", { email, otp });
 
         await this._otpService.ensureVerified(email, otp, otpStatus.FORGOT_PASSWORD);
 

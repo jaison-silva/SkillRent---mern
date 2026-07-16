@@ -3,12 +3,13 @@ import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 
 dotenv.config({ path: '.env' });
+import logger from './utils/logger';
 
 const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/skillrent";
 
 async function seedData() {
     await mongoose.connect(MONGO_URI);
-    console.log("Connected to MongoDB");
+    logger.info("Connected to MongoDB");
 
     const db = mongoose.connection.db;
     if (!db) throw new Error("Database connection failed");
@@ -26,7 +27,7 @@ async function seedData() {
             createdAt: new Date(),
             updatedAt: new Date()
         });
-        console.log("Created Test User:", userResult.insertedId);
+        logger.info("Created Test User: " + userResult.insertedId);
 
         // 2. Create a dummy ADMIN
         const adminPassword = await bcrypt.hash('admin123', 10);
@@ -45,7 +46,7 @@ async function seedData() {
             },
             { upsert: true }
         );
-        console.log("Ensured Admin exists (admin@skillrent.com / admin123)");
+        logger.info("Ensured Admin exists (admin@skillrent.com / admin123)");
 
         // 3. Create a dummy pending PROVIDER
         const providerUserPassword = await bcrypt.hash('provider123', 10);
@@ -59,7 +60,7 @@ async function seedData() {
             createdAt: new Date(),
             updatedAt: new Date()
         });
-        console.log("Created Provider User:", providerUserResult.insertedId);
+        logger.info("Created Provider User: " + providerUserResult.insertedId);
 
         // Create the associated Provider profile
         await db.collection('providers').insertOne({
@@ -79,13 +80,13 @@ async function seedData() {
             createdAt: new Date(),
             updatedAt: new Date()
         });
-        console.log("Created Provider Profile (Pending state)");
+        logger.info("Created Provider Profile (Pending state)");
 
     } catch (error) {
-        console.error("Seed error:", error);
+        logger.error("Seed error:", error);
     } finally {
         await mongoose.disconnect();
-        console.log("Disconnected.");
+        logger.info("Disconnected.");
     }
 }
 

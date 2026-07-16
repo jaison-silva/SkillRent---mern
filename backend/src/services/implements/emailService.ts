@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 import ApiError from "../../utils/apiError";
 import { API_RESPONSES } from "../../constants/statusMessageConstant";
 import { StatusCodes } from 'http-status-codes';
+import logger from "../../utils/logger";
 // import ApiError from "../utils/apiError";
 // import { API_RESPONSES } from "../constants/status_messages";
 
@@ -22,7 +23,7 @@ class EmailService {
 
   async sendOtpEmail(email: string, otp: string) {
     try {
-      console.log("otp is " + otp + "From sendOtpEmail")
+      logger.info("Sending OTP email to: " + email)
       await this._transporter.sendMail({
         from: `"SkillRent" <${process.env.SMTP_USER}>`,
         to: email,
@@ -57,7 +58,7 @@ class EmailService {
         `
       });
     } catch (error) {
-      console.error("Email notification failed:", error);
+      logger.error("Email notification failed:", error);
     }
   }
 }

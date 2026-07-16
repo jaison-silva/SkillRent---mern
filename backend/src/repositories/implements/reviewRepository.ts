@@ -20,7 +20,7 @@ export class ReviewRepository extends BaseRepository<IReview> implements IReview
         let sortOption: Record<string, 1 | -1> = { createdAt: -1 };
         if (sort === "oldest") sortOption = { createdAt: 1 };
         if (sort === "rating_high") sortOption = { rating: -1 };
-        if (sort === "rating_low") sortOption = { rating: 1 };
+        if (sort === "rating_low") sortOption = { rating: 1 }; 
 
         const skip = (page - 1) * limit;
 
