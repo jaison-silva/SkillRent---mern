@@ -35,9 +35,11 @@ export class OtpService implements IOtpService {
         const otp = crypto.randomInt(100000, 999999).toString();
 
         logger.debug("OTP generated for: " + email)
-
+        
         const hashedOtp = await bcrypt.hash(otp, 10);
-
+        
+        console.log(otp)
+        
         await this._otpRepo.deleteOtps(email, purpose);
 
         await this._otpRepo.saveOtp(email, hashedOtp, purpose);

@@ -43,6 +43,22 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
             api.dispatch(logOut());
         }
     }
+
+    // Normalize error format if it matches the new ApiResponse
+    if (result?.error && result.error.data && typeof result.error.data === 'object') {
+        const errorData = result.error.data as any;
+        if (errorData.success === false && errorData.error) {
+            result.error = {
+                ...result.error,
+                data: {
+                    ...errorData,
+                    message: errorData.error.message,
+                    code: errorData.error.code
+                }
+            } as any;
+        }
+    }
+
     return result;
 };
 

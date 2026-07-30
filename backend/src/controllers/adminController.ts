@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express"
 import logger from "../utils/logger";
+import { ApiResponse } from "../utils/ApiResponse";
 import { API_RESPONSES } from "../constants/statusMessageConstant";
 import { StatusCodes } from 'http-status-codes';
 import { IAdminService } from "../services/interfaces/IAdminService"
@@ -38,7 +39,7 @@ export class AdminController {
 
             const status = StatusCodes.OK;
             const message = API_RESPONSES.SUCCESS;
-            res.status(status).json({ message, users: data.users, totalUsers: data.totalUsers, providers: data.providers, totalProviders: data.totalProviders })
+            ApiResponse.success(res, { users: data.users, providers: data.providers }, { totalUsers: data.totalUsers, totalProviders: data.totalProviders }, status);
         } catch (err) {
             next(err)
         }
@@ -53,7 +54,7 @@ export class AdminController {
 
             const status = StatusCodes.OK;
             const message = API_RESPONSES.SUCCESS;
-            res.status(status).json({ message, user })
+            return ApiResponse.success(res, { user }, { message }, status);
         } catch (err) {
             next(err);
         }
@@ -68,7 +69,7 @@ export class AdminController {
 
             const status = StatusCodes.OK;
             const message = API_RESPONSES.SUCCESS;
-            res.status(status).json({ message, provider })
+            ApiResponse.success(res, { provider }, { message }, status);
         } catch (err) {
             next(err);
         }
@@ -77,12 +78,17 @@ export class AdminController {
     verifyProvider = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { id } = req.params;
-            const { status } = req.body;
-            logger.info(`AdminController.verifyProvider: Received request for ID ${id} with status ${status}`);
+            const { status, reason } = req.body;
+            logger.info(`AdminController.verifyProvider: Received request for ID ${id} with status ${status}, reason: ${reason}`);
 
-            const provider = await this._adminService.verifyProviderService(id, status);
+            if (status === 'denied' && (!reason || reason.trim() === '')) {
+                ApiResponse.error(res, "A rejection reason is required when denying a provider.", "BAD_REQUEST", StatusCodes.BAD_REQUEST);
+                return;
+            }
 
-            res.status(200).json({ message: "Provider verification updated", provider });
+            const provider = await this._adminService.verifyProviderService(id, status, reason);
+
+            ApiResponse.success(res, { provider }, { message: "Provider verification updated" }, StatusCodes.OK);
         } catch (err) {
             logger.error("AdminController.verifyProvider: FAILED", err);
             next(err);

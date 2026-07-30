@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useGetProviderReviewsQuery, useAddProviderReviewMutation } from '../providerApiSlice';
+import { useGetProviderReviewsQuery, useAddProviderReviewMutation, useCheckCanReviewQuery } from '../providerApiSlice';
 import { selectCurrentUser } from '../../auth/authSlice';
 import { Star, User, MessageSquare } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -26,6 +26,10 @@ export default function ProviderReviews({ providerId }: ReviewProps) {
 
     const { data, isLoading, isError } = useGetProviderReviewsQuery({ providerId, page, limit, sort });
     const [addReview, { isLoading: isSubmitting }] = useAddProviderReviewMutation();
+
+    const { data: canReviewData, isLoading: isCheckingReview } = useCheckCanReviewQuery(providerId, {
+        skip: !currentUser || currentUser.role !== 'user'
+    });
 
     const [rating, setRating] = useState(5);
     const [comment, setComment] = useState('');
@@ -67,49 +71,58 @@ export default function ProviderReviews({ providerId }: ReviewProps) {
                 )}
             </div>
 
-            {/* Leave a review form - Only show if logged in and not the provider themselves */}
+            {/* Leave a review form - Only show if logged in and has completed a job */}
             {currentUser && currentUser.role === 'user' && (
                 <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 mb-8">
                     <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                         <MessageSquare className="w-5 h-5 mr-2 text-blue-600" />
                         Leave a Review
                     </h3>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
-                            <div className="flex space-x-1">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                    <button
-                                        key={star}
-                                        type="button"
-                                        onClick={() => setRating(star)}
-                                        className="focus:outline-none"
-                                    >
-                                        <Star 
-                                            className={`w-8 h-8 ${star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} 
-                                        />
-                                    </button>
-                                ))}
+                    
+                    {isCheckingReview ? (
+                        <div className="text-sm text-gray-500 animate-pulse">Checking eligibility...</div>
+                    ) : canReviewData?.canReview ? (
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
+                                <div className="flex space-x-1">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <button
+                                            key={star}
+                                            type="button"
+                                            onClick={() => setRating(star)}
+                                            className="focus:outline-none"
+                                        >
+                                            <Star 
+                                                className={`w-8 h-8 ${star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} 
+                                            />
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Comment (Optional)</label>
+                                <textarea
+                                    value={comment}
+                                    onChange={(e) => setComment(e.target.value)}
+                                    rows={3}
+                                    className="w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3"
+                                    placeholder="Share your experience..."
+                                ></textarea>
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow disabled:opacity-50 transition-colors"
+                            >
+                                {isSubmitting ? 'Submitting...' : 'Submit Review'}
+                            </button>
+                        </form>
+                    ) : (
+                        <div className="text-gray-600 italic">
+                            Only users who have completed a job with this provider can leave a review.
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Comment (Optional)</label>
-                            <textarea
-                                value={comment}
-                                onChange={(e) => setComment(e.target.value)}
-                                rows={3}
-                                className="w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3"
-                                placeholder="Share your experience..."
-                            ></textarea>
-                        </div>
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow disabled:opacity-50 transition-colors"
-                        >
-                            {isSubmitting ? 'Submitting...' : 'Submit Review'}
-                        </button>
-                    </form>
+                    )}
                 </div>
             )}
 

@@ -9,6 +9,7 @@ import { setAuthCookies } from "../utils/setAuthCookies";
 import { UserRegisterRequestDTO } from "../dto/register/userRegisterRequestDTO";
 import { ProviderRegisterRequestDTO } from "../dto/register/providerRegisterRequestDTO";
 import { LoginRequestDTO } from "../dto/auth/loginRequestDTO";
+import { ApiResponse } from "../utils/ApiResponse";
 
 export class AuthController {
     constructor(private _authService: IAuthService
@@ -22,8 +23,7 @@ export class AuthController {
 
             setAuthCookies(res, result.refreshToken, result.accessToken)
 
-            res.status(201).json({ user: result.user, accessToken: result.accessToken });
-            return
+            return ApiResponse.success(res, { user: result.user, accessToken: result.accessToken }, null, 201);
         } catch (err) {
             next(err)
         }
@@ -38,7 +38,7 @@ export class AuthController {
 
             setAuthCookies(res, result.refreshToken, result.accessToken)
 
-            res.status(201).json({ user: result.user, accessToken: result.accessToken });
+            return ApiResponse.success(res, { user: result.user, accessToken: result.accessToken }, null, 201);
         } catch (err) {
             next(err)
         }
@@ -55,7 +55,7 @@ export class AuthController {
 
             const status = StatusCodes.OK;
             const message = API_RESPONSES.SUCCESS;
-            res.status(status).json({ message, user, accessToken })
+            return ApiResponse.success(res, { user, accessToken }, { message }, status);
         } catch (err) {
             next(err)
         }
@@ -65,8 +65,7 @@ export class AuthController {
         try {
             const { credential, role } = req.body;
             if (!credential) {
-                res.status(StatusCodes.BAD_REQUEST).json({ message: "Credential is required" });
-                return;
+                return ApiResponse.error(res, "Credential is required", "BAD_REQUEST", StatusCodes.BAD_REQUEST);
             }
             const { user, accessToken, refreshToken } = await this._authService.googleLogin(credential, role);
 
@@ -74,7 +73,7 @@ export class AuthController {
 
             const status = StatusCodes.OK;
             const message = API_RESPONSES.SUCCESS;
-            res.status(status).json({ message, user, accessToken });
+            return ApiResponse.success(res, { user, accessToken }, { message }, status);
         } catch (err) {
             next(err);
         }
@@ -87,7 +86,7 @@ export class AuthController {
 
             const status = StatusCodes.CREATED;
             const message = API_RESPONSES.CREATED;
-            res.status(status).json({ user: response.user, accessToken: response.accessToken })
+            return ApiResponse.success(res, { user: response.user, accessToken: response.accessToken }, { message }, status);
         } catch (err) {
             next(err)
         }
@@ -99,10 +98,7 @@ export class AuthController {
 
             await this._authService.forgotPassword(email, otpStatus.FORGOT_PASSWORD);
 
-            res.status(StatusCodes.OK).json({
-                success: true,
-                message: API_RESPONSES.OTP_SENT,
-            });
+            return ApiResponse.success(res, null, { message: API_RESPONSES.OTP_SENT }, StatusCodes.OK);
         } catch (err) {
             next(err);
         }
@@ -114,10 +110,7 @@ export class AuthController {
 
             await this._authService.resetPassword(email, otp, newPassword);
 
-            res.status(StatusCodes.OK).json({
-                success: true,
-                message: API_RESPONSES.PASSWORD_UPDATED,
-            });
+            return ApiResponse.success(res, null, { message: API_RESPONSES.PASSWORD_UPDATED }, StatusCodes.OK);
         } catch (err) {
             next(err);
         }
@@ -138,10 +131,7 @@ export class AuthController {
 
             res.clearCookie("refreshToken");
             res.clearCookie("accessToken");
-            res.status(StatusCodes.OK).json({
-                success: true,
-                message: "Logged out successfully",
-            });
+            return ApiResponse.success(res, null, { message: "Logged out successfully" }, StatusCodes.OK);
         } catch (err) {
             next(err);
         }

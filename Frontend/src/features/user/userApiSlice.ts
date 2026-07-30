@@ -1,25 +1,29 @@
 import { apiSlice } from "../../api/apiSlice";
+import { API_ENDPOINTS } from "../../constants/apiEndpoints";
 
 export const userApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         getProfile: builder.query<any, void>({
-            query: () => '/users/profile',
+            query: () => API_ENDPOINTS.USERS.PROFILE,
+            transformResponse: (response: any) => response.meta ? { ...response.data, ...response.meta } : response.data,
             providesTags: ['User'],
         }),
         updateProfile: builder.mutation<any, any>({
             query: (data) => ({
-                url: '/users/profile',
+                url: API_ENDPOINTS.USERS.PROFILE,
                 method: 'PATCH',
                 body: data,
             }),
+            transformResponse: (response: any) => response.meta ? { ...response.data, ...response.meta } : response.data,
             invalidatesTags: ['User']
         }),
         updateProviderProfile: builder.mutation<any, any>({
             query: (payload) => ({
-                url: '/users/profile/provider',
+                url: API_ENDPOINTS.USERS.PROVIDER_PROFILE,
                 method: 'PATCH',
                 body: payload,
             }),
+            transformResponse: (response: any) => response.meta ? { ...response.data, ...response.meta } : response.data,
             invalidatesTags: ['User'],
         }),
     })
@@ -27,4 +31,4 @@ export const userApiSlice = apiSlice.injectEndpoints({
 
 export const { useGetProfileQuery, useUpdateProfileMutation, useUpdateProviderProfileMutation } = userApiSlice
 
-// end opints shouold be constant. like here "/users/profile/"
+// end opints should be constant. like here API_ENDPOINTS.USERS.PROFILE

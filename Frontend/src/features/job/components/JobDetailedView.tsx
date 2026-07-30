@@ -23,7 +23,7 @@ export const JobDetailedView = ({ job, onClose }: { job: any, onClose: () => voi
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100">
             <h3 className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-1">Budget</h3>
-            <p className="text-xl font-bold text-blue-700">${job.budget}</p>
+            <p className="text-xl font-bold text-blue-700">₹{job.budget}</p>
           </div>
           <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Time</h3>
@@ -51,12 +51,12 @@ export const JobDetailedView = ({ job, onClose }: { job: any, onClose: () => voi
           </button>
           <button 
             onClick={() => {
-              alert("Dummy Apply Button Clicked! (Logic to be implemented)");
+              alert("Pending");
               onClose();
             }}
             className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-95"
           >
-            Apply Now
+            Chat and Book
           </button>
         </div>
       </div>

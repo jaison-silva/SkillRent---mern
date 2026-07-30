@@ -3,12 +3,13 @@ import { ErrorRequestHandler } from 'express';
 import { API_RESPONSES } from '../constants/statusMessageConstant';
 import { StatusCodes } from 'http-status-codes';
 import ApiError from '../utils/apiError';
-import { number } from 'zod';
+import { ApiResponse } from '../utils/ApiResponse';
 import logger from '../utils/logger';
 
 const globalErrorHandler: ErrorRequestHandler = ((err: unknown, req: Request, res: Response, next: NextFunction) => {
   let statusCode: number = StatusCodes.INTERNAL_SERVER_ERROR
   let message : string = API_RESPONSES.INTERNAL_SERVER_ERROR
+  let code: string = 'ERROR';
 
   if (err instanceof ApiError) {
     statusCode = err.statusCode;
@@ -27,14 +28,16 @@ const globalErrorHandler: ErrorRequestHandler = ((err: unknown, req: Request, re
   ) {
     statusCode = 401;
     message = "Unauthorized: " + err.message;
+    code = "AUTH_ERROR";
   }
 
-  logger.error(`[${req.method}] ${req.path} >> Status: ${statusCode} | Message: ${message}`);
+  if (statusCode === 500) {
+    logger.error(`[${req.method}] ${req.path} >> Status: ${statusCode} | Message: ${message}`, err);
+  } else {
+    logger.error(`[${req.method}] ${req.path} >> Status: ${statusCode} | Message: ${message}`);
+  }
 
-  res.status(statusCode).json({
-    success: false,
-    message
-  });
+  ApiResponse.error(res, message, code, statusCode);
 });
 
 export default globalErrorHandler

@@ -13,12 +13,12 @@ export const PersistLogin = () => {
   useEffect(() => {
     const verifyRefreshToken = async () => {
       try {
-        const userData = await refresh().unwrap();
+        const userData: any = await refresh().unwrap();
 
         dispatch(
           setCredentials({
             user: userData.user,
-            token: userData.token,
+            token: userData.accessToken || userData.token,
           }),
         );
       } catch (err) {

@@ -1,6 +1,7 @@
 import { IReviewService } from "../interfaces/IReviewService";
 import { IReviewRepository } from "../../repositories/interfaces/IReviewRepository";
 import IProviderRepository from "../../repositories/interfaces/IProviderRepository";
+import { IJobRepository } from "../../repositories/interfaces/IJobRepository";
 import { IReview } from "../../models/reviewModel";
 import ApiError from "../../utils/apiError";
 import { StatusCodes } from "http-status-codes";
@@ -8,8 +9,17 @@ import { StatusCodes } from "http-status-codes";
 export class ReviewService implements IReviewService {
     constructor(
         private _reviewRepository: IReviewRepository,
-        private _providerRepository: IProviderRepository
+        private _providerRepository: IProviderRepository,
+        private _jobRepository: IJobRepository
     ) { }
+
+    async checkCanReview(userId: string, providerId: string): Promise<boolean> {
+        // Find if there is any closed job between the user and the provider
+        const jobsResult = await this._jobRepository.getJobsByUserId(userId, 1, 100, undefined, undefined, 'closed');
+        
+        const jobs = jobsResult.jobs as any[];
+        return jobs.some((job) => job.providerId?.toString() === providerId);
+    }
 
     async addReview(providerId: string, userId: string, rating: number, comment?: string): Promise<IReview> {
         // Create the review

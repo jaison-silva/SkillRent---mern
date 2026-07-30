@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express"
 // import UserRepository from "../repositories/userRepository";
+import { ApiResponse } from "../utils/ApiResponse";
 import { API_RESPONSES } from "../constants/statusMessageConstant";
 import { StatusCodes } from 'http-status-codes';
 import ApiError from "../utils/apiError";
@@ -19,7 +20,7 @@ export class UserController {
 
             const status = StatusCodes.OK;
             const message = API_RESPONSES.SUCCESS;
-            res.status(status).json({ message, data: homeData });
+            return ApiResponse.success(res, homeData, { message }, status);
         } catch (err) {
             next(err);
         }
@@ -37,7 +38,7 @@ export class UserController {
 
             const status = StatusCodes.OK;
             const message = API_RESPONSES.SUCCESS;
-            res.status(status).json({ message, user })
+            return ApiResponse.success(res, { user }, { message }, status);
         } catch (err) {
             next(err)
         }
@@ -57,7 +58,7 @@ export class UserController {
 
             const status = StatusCodes.OK;
             const message = API_RESPONSES.SUCCESS;
-            res.status(status).json({ message, user })
+            return ApiResponse.success(res, { user }, { message }, status);
 
         } catch (err) {
             next(err)
@@ -71,7 +72,7 @@ export class UserController {
             const userDetails = await this._userService.getUserDetailsService(id);
 
             if (!userDetails) {
-                res.status(404).json({ message: "User details not found" });
+                return ApiResponse.error(res, "User details not found", "ERROR", 404);
                 return;
             }
 
@@ -93,11 +94,7 @@ export class UserController {
 
             const status = StatusCodes.OK;
             const message = API_RESPONSES.SUCCESS;
-            res.status(status).json({
-                message,
-                count: total,
-                users
-            });
+            return ApiResponse.success(res, { users }, { message, total: total }, status);
         } catch (err) {
             next(err);
         }

@@ -9,6 +9,6 @@ export default interface IProviderRepository extends IBaseRepository<IProvider> 
     updateProviderByUserId(userId: string, data: UpdateProviderProfileDTO): Promise<IProvider | null>
     findProviderById(id: string): Promise<IProvider | null>
     findByUserId(userId: string): Promise<IProvider | null>
-    verifyProviderById(id: string, validationStatus: ProviderStatus): Promise<IProvider | null>
+    verifyProviderById(id: string, validationStatus: ProviderStatus, rejectionReason?: string): Promise<IProvider | null>
     // providerDetailedById(id:string):Promise<>
 }

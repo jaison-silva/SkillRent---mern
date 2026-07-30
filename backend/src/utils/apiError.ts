@@ -1,4 +1,4 @@
-import { ApiResponse } from "../types/apiTypes";
+// import { ApiResponse } from "../types/apiTypes";
 import logger from "./logger";
 
 export default class ApiError extends Error {
@@ -8,6 +8,6 @@ export default class ApiError extends Error {
         super(message);
         this.statusCode = statusCode;
         logger.debug(`ApiError thrown — status: ${statusCode} | message: ${message}`)
-        // Error.captureStackTrace(this,this.constructor)
+        Error.captureStackTrace(this,this.constructor) // ithu v8 stack trace optimization innu ahnu. 
     }
 }

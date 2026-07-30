@@ -8,9 +8,40 @@ import {
 import { ShieldAlert, Check, X, Ban, Undo2 } from 'lucide-react';
 import SearchInput from '../../../components/SearchInput';
 import Pagination from '../../../components/Pagination';
+import AdminMembershipsTab from '../components/AdminMembershipsTab';
+import AdminCouponsTab from '../components/AdminCouponsTab';
+import AdminOffersTab from '../components/AdminOffersTab';
+
+const DenyToast = ({ id, onConfirm, onCancel }: { id: string, onConfirm: (reason: string) => void, onCancel: () => void }) => {
+  const [reason, setReason] = useState('');
+  return (
+    <div className="flex flex-col gap-3 min-w-[300px]">
+      <p className="font-semibold text-gray-800">Are you sure you want to <span className="text-red-600 font-bold">deny</span> this provider?</p>
+      <textarea
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+        placeholder="Reason for rejection (required)..."
+        className="w-full text-sm border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+        rows={3}
+      />
+      <div className="flex gap-2 justify-end mt-1">
+        <button
+          disabled={!reason.trim()}
+          onClick={() => onConfirm(reason)}
+          className="px-3 py-1.5 bg-red-600 text-white rounded-md text-sm font-bold hover:bg-red-700 disabled:opacity-50"
+        >
+          Confirm Deny
+        </button>
+        <button onClick={onCancel} className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200">
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export default function AdminDashboardPage() {
-  const [activeTab, setActiveTab] = useState<'pending' | 'users'>('pending');
+  const [activeTab, setActiveTab] = useState<'pending' | 'users' | 'memberships' | 'coupons' | 'offers'>('pending');
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -45,23 +76,42 @@ export default function AdminDashboardPage() {
   const pendingProviders = data?.providers || [];
 
   const handleVerify = (id: string, status: 'approved' | 'denied') => {
+    if (status === 'denied') {
+      toast((t) => (
+        <DenyToast
+          id={id}
+          onConfirm={async (reason) => {
+            toast.dismiss(t.id);
+            try {
+              await verifyProvider({ id, status, reason }).unwrap();
+              toast.success(`Provider successfully denied!`);
+            } catch (err: any) {
+              toast.error(err?.data?.message || 'Verification failed');
+            }
+          }}
+          onCancel={() => toast.dismiss(t.id)}
+        />
+      ), { duration: Infinity });
+      return;
+    }
+
     toast((t) => (
       <div className="flex flex-col gap-2">
-        <p className="font-semibold text-gray-800">Are you sure you want to <span className="capitalize font-bold">{status}</span> this provider?</p>
-        <div className="flex gap-2">
+        <p className="font-semibold text-gray-800">Are you sure you want to <span className="capitalize font-bold text-green-600">approve</span> this provider?</p>
+        <div className="flex gap-2 mt-1">
           <button
             onClick={async () => {
               toast.dismiss(t.id);
               try {
                 await verifyProvider({ id, status }).unwrap();
-                toast.success(`Provider successfully ${status}!`);
+                toast.success(`Provider successfully approved!`);
               } catch (err: any) {
                 toast.error(err?.data?.message || 'Verification failed');
               }
             }}
-            className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm font-bold hover:bg-blue-700"
-          >Confirm</button>
-          <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200">Cancel</button>
+            className="px-3 py-1.5 bg-green-600 text-white rounded-md text-sm font-bold hover:bg-green-700"
+          >Confirm Approve</button>
+          <button onClick={() => toast.dismiss(t.id)} className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200">Cancel</button>
         </div>
       </div>
     ), { duration: 10000 });
@@ -114,6 +164,24 @@ export default function AdminDashboardPage() {
           className={`pb-4 px-2 font-semibold ${activeTab === 'users' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
         >
           All Users ({data?.totalUsers || 0})
+        </button>
+        <button 
+          onClick={() => setActiveTab('memberships')}
+          className={`pb-4 px-2 font-semibold ${activeTab === 'memberships' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
+        >
+          Memberships
+        </button>
+        <button 
+          onClick={() => setActiveTab('coupons')}
+          className={`pb-4 px-2 font-semibold ${activeTab === 'coupons' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
+        >
+          Coupons
+        </button>
+        <button 
+          onClick={() => setActiveTab('offers')}
+          className={`pb-4 px-2 font-semibold ${activeTab === 'offers' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
+        >
+          Offers
         </button>
       </div>
 
@@ -210,6 +278,10 @@ export default function AdminDashboardPage() {
         <Pagination page={page} limit={limit} total={data?.totalUsers || 0} onPageChange={setPage} label="users" />
         </div>
       )}
+
+      {activeTab === 'memberships' && <AdminMembershipsTab />}
+      {activeTab === 'coupons' && <AdminCouponsTab />}
+      {activeTab === 'offers' && <AdminOffersTab />}
     </div>
   );
 }

@@ -34,4 +34,38 @@ export class JobService implements IJobService {
     const result = await this._jobRepo.getDirectJobsForProvider(providerId, page, limit, search, sort);
     return { jobs: result.jobs as unknown as JobResponseDTO[], total: result.total };
   }
+
+  async updateJob(jobId: string, userId: string, data: Partial<CreateJobRequestDTO>): Promise<JobResponseDTO> {
+    const job = await this._jobRepo.findById(jobId);
+    if (!job) {
+      throw new ApiError(StatusCodes.NOT_FOUND, "Job not found");
+    }
+    if (job.userId.toString() !== userId) {
+      throw new ApiError(StatusCodes.FORBIDDEN, "Not authorized to update this job");
+    }
+    
+    // Convert location structure if provided
+    let updateData: any = { ...data };
+    if (data.location) {
+      updateData.location = {
+        type: "Point",
+        coordinates: [data.location.lng, data.location.lat],
+        address: data.location.address
+      };
+    }
+
+    const updatedJob = await this._jobRepo.updateById(jobId, updateData);
+    return updatedJob as unknown as JobResponseDTO;
+  }
+
+  async deleteJob(jobId: string, userId: string): Promise<void> {
+    const job = await this._jobRepo.findById(jobId);
+    if (!job) {
+      throw new ApiError(StatusCodes.NOT_FOUND, "Job not found");
+    }
+    if (job.userId.toString() !== userId) {
+      throw new ApiError(StatusCodes.FORBIDDEN, "Not authorized to delete this job");
+    }
+    await this._jobRepo.deleteById(jobId);
+  }
 }

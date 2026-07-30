@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { ApiResponse } from "../utils/ApiResponse";
 import { IJobService } from "../services/interfaces/IJobService";
 import { CreateJobRequestDTO } from "../dto/job/jobDTO";
 import { StatusCodes } from "http-status-codes";
@@ -17,12 +18,12 @@ export class JobController {
       const data: CreateJobRequestDTO = req.body;
 
       if (!userId) {
-        res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unauthorized" });
+        ApiResponse.error(res, "Unauthorized", "UNAUTHORIZED", StatusCodes.UNAUTHORIZED);
         return;
       }
 
       const job = await this._jobService.createJob(userId, data);
-      res.status(StatusCodes.CREATED).json({ message: "Job posted successfully", job });
+      ApiResponse.success(res, { job }, { message: "Job posted successfully" }, StatusCodes.CREATED);
     } catch (error) {
       next(error);
     }
@@ -36,7 +37,7 @@ export class JobController {
       const sort = (req.query.sort as string) || "newest";
 
       const { jobs, total } = await this._jobService.getAllOpenJobs(page, limit, search, sort);
-      res.status(StatusCodes.OK).json({ jobs, total });
+      ApiResponse.success(res, { jobs }, { total }, StatusCodes.OK);
     } catch (error) {
       next(error);
     }
@@ -46,7 +47,7 @@ export class JobController {
     try {
       const userId = (req as any).jwtTokenVerified?.id;
       if (!userId) {
-        res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unauthorized" });
+        ApiResponse.error(res, "Unauthorized", "UNAUTHORIZED", StatusCodes.UNAUTHORIZED);
         return;
       }
 
@@ -57,7 +58,7 @@ export class JobController {
       const status = (req.query.status as string) || undefined;
 
       const { jobs, total } = await this._jobService.getJobsByUserId(userId, page, limit, search, sort, status);
-      res.status(StatusCodes.OK).json({ jobs, total });
+      ApiResponse.success(res, { jobs }, { total }, StatusCodes.OK);
     } catch (error) {
       next(error);
     }
@@ -67,14 +68,14 @@ export class JobController {
     try {
       const userId = (req as any).jwtTokenVerified?.id;
       if (!userId) {
-        res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unauthorized" });
+        ApiResponse.error(res, "Unauthorized", "UNAUTHORIZED", StatusCodes.UNAUTHORIZED);
         return;
       }
       // We need to find the provider by userId first to get their Provider ID
       const Provider = (await import("../models/providerModel")).default;
       const provider = await Provider.findOne({ userId });
       if (!provider) {
-        res.status(StatusCodes.NOT_FOUND).json({ message: "Provider profile not found" });
+        ApiResponse.error(res, "Provider profile not found", "NOT_FOUND", StatusCodes.NOT_FOUND);
         return;
       }
 
@@ -84,7 +85,42 @@ export class JobController {
       const sort = (req.query.sort as string) || "newest";
 
       const { jobs, total } = await this._jobService.getDirectJobsForProvider(provider._id as string, page, limit, search, sort);
-      res.status(StatusCodes.OK).json({ jobs, total });
+      ApiResponse.success(res, { jobs }, { total }, StatusCodes.OK);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  updateJob = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = (req as any).jwtTokenVerified?.id;
+      const jobId = req.params.id;
+      const data = req.body;
+
+      if (!userId) {
+        ApiResponse.error(res, "Unauthorized", "UNAUTHORIZED", StatusCodes.UNAUTHORIZED);
+        return;
+      }
+
+      const job = await this._jobService.updateJob(jobId, userId, data);
+      ApiResponse.success(res, { job }, null, StatusCodes.OK);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  deleteJob = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = (req as any).jwtTokenVerified?.id;
+      const jobId = req.params.id;
+
+      if (!userId) {
+        ApiResponse.error(res, "Unauthorized", "UNAUTHORIZED", StatusCodes.UNAUTHORIZED);
+        return;
+      }
+
+      await this._jobService.deleteJob(jobId, userId);
+      ApiResponse.success(res, null, null, StatusCodes.OK);
     } catch (error) {
       next(error);
     }

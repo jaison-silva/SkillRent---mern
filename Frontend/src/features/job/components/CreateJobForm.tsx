@@ -225,7 +225,7 @@ export const CreateJobForm = ({ onSuccess, prefillProviderId }: { onSuccess: () 
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Budget ($)</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Budget (₹)</label>
         <input 
           type="number" 
           value={budget}

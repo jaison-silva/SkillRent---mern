@@ -14,6 +14,9 @@ import ProviderDetailsPage from "../features/user/pages/ProviderDetailsPage";
 import NotFoundPage from "../pages/NotFoundPage";
 import { UserJobsPage } from "../features/job/pages/UserJobsPage";
 import { JobBoardPage } from "../features/job/pages/JobBoardPage";
+import PricingPage from "../pages/PricingPage";
+import OffersPage from "../pages/OffersPage";
+import ChatPage from "../pages/ChatPage";
 
 export function AppRoutes() {
   return (
@@ -29,12 +32,17 @@ export function AppRoutes() {
             <Route path="/auth/signup/:role" element={<Signup />} />
           </Route>
 
+          {/*  // fully public routes (visible to logged-in and guests) */}
+          <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/offers" element={<OffersPage />} />
+
           {/*// protected routes */}
           <Route element={<PersistLogin />}>
             <Route element={<RequireAuth />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/my-jobs" element={<UserJobsPage />} />
               <Route path="/job-board" element={<JobBoardPage />} />
+              <Route path="/chat" element={<ChatPage />} />
               <Route path="/provider/:id" element={<ProviderDetailsPage />} />
             </Route>
           </Route>

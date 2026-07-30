@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import { ApiResponse } from "../utils/ApiResponse";
 import { API_RESPONSES } from "../constants/statusMessageConstant";
 import { StatusCodes } from 'http-status-codes';
 import { UpdateProviderProfileDTO } from "../dto/provider/updateProviderProfileDTO";
@@ -24,7 +25,7 @@ class ProviderController {
 
             const status = StatusCodes.OK;
             const message = API_RESPONSES.SUCCESS;
-            res.status(status).json({ message, provider });
+            ApiResponse.success(res, { provider }, { message }, StatusCodes.OK);
         } catch (err) {
             next(err);
         }
@@ -41,7 +42,7 @@ class ProviderController {
 
             const status = StatusCodes.OK;
             const message = API_RESPONSES.SUCCESS;
-            res.status(status).json({ message, provider });
+            ApiResponse.success(res, { provider }, { message }, StatusCodes.OK);
         } catch (err) {
             next(err);
         }
@@ -81,7 +82,7 @@ class ProviderController {
 
             const status = StatusCodes.OK;
             const message = API_RESPONSES.SUCCESS;
-            res.status(status).json({ message, providers, total })
+            ApiResponse.success(res, { providers }, { message, total }, StatusCodes.OK);
         } catch (err) {
             next(err)
         }
@@ -96,7 +97,7 @@ class ProviderController {
 
             const status = StatusCodes.OK;
             const message = API_RESPONSES.SUCCESS;
-            res.status(status).json({ message, provider })
+            ApiResponse.success(res, { provider }, { message }, StatusCodes.OK);
         } catch (err) {
             next(err)
         }

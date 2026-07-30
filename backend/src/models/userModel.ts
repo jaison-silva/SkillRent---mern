@@ -45,7 +45,7 @@ const userSchema = new mongoose.Schema<IUser>({
     refreshToken: { type: String, default: null },
     profilePicture: { type: String, default: "" },
     location: {
-        type: { type: String, enum: ['Point'], default: 'Point' },
+        type: { type: String, enum: ['Point'] },
         coordinates: { type: [Number] }, // [lng, lat]
     }
 },

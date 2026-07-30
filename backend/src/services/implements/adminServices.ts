@@ -57,7 +57,7 @@ export default class AdminService implements IAdminService {
         return { users, totalUsers: total, providers, totalProviders }
     }
 
-    async verifyProviderService(id: string, status: ProviderStatus) {
+    async verifyProviderService(id: string, status: ProviderStatus, reason?: string) {
         logger.info(`AdminService.verifyProviderService: Verifying provider ${id} with status ${status}`);
 
         try {
@@ -79,14 +79,14 @@ export default class AdminService implements IAdminService {
             }
 
             logger.info(`AdminService.verifyProviderService: Updating status in DB...`);
-            const updatedProvider = await this._providerRepo.verifyProviderById(id, status);
+            const updatedProvider = await this._providerRepo.verifyProviderById(id, status, reason);
 
             if (provider.userId && typeof provider.userId === 'object' && 'email' in provider.userId) {
                 const email = (provider.userId as unknown as { email: string }).email;
                 const subject = status === "approved" ? "Application Approved!" : "Application Update";
                 const message = status === "approved"
                     ? "Congratulations! Your provider profile has been verified and you can now accept bookings."
-                    : "We regret to inform you that your provider application has been denied at this time.";
+                    : `We regret to inform you that your provider application has been denied at this time.\n\nReason: ${reason || "No reason provided."}\n\nPlease update your profile and try again.`;
 
                 logger.info(`AdminService.verifyProviderService: Sending notification email to ${email}...`);
                 try {

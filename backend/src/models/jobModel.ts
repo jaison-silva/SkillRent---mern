@@ -28,14 +28,14 @@ const jobSchema = new mongoose.Schema<IJob>({
     type: { type: String, enum: ['Point'], default: 'Point' },
     coordinates: { type: [Number] }, // [lng, lat]
     address: { type: String, required: true }
-  },
+  } as any,
   status: { type: String, enum: ['open', 'closed', 'in-progress'], default: 'open' }
 }, { timestamps: true });
 
 jobSchema.index({ location: "2dsphere" });
 
 // Middleware to convert {lat, lng, address} to GeoJSON on save
-jobSchema.pre("save", function (next) {
+jobSchema.pre("save", function (this: any, next) {
   if (this.location && (this.location as any).lat !== undefined && (this.location as any).lng !== undefined) {
     const loc = this.location as any;
     this.location = {

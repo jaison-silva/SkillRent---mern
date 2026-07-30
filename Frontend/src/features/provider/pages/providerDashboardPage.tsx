@@ -5,6 +5,7 @@ import { AlertCircle, CheckCircle, Clock, MapPin, DollarSign, Calendar } from 'l
 import SearchInput from '../../../components/SearchInput';
 import SortSelect from '../../../components/SortSelect';
 import Pagination from '../../../components/Pagination';
+import { JobDetailedView } from '../../job/components/JobDetailedView';
 
 const SORT_OPTIONS = [
   { label: 'Newest First', value: 'newest' },
@@ -21,6 +22,7 @@ export default function ProviderDashboardPage() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sort, setSort] = useState('newest');
+  const [selectedJob, setSelectedJob] = useState<any>(null);
   const limit = 6;
 
   useEffect(() => {
@@ -72,24 +74,29 @@ export default function ProviderDashboardPage() {
       {/* Status Banner */}
       <div className={`mb-8 p-6 rounded-2xl flex items-center space-x-4 border ${
         status === 'approved' ? 'bg-green-50 border-green-200 text-green-800' : 
-        status === 'rejected' ? 'bg-red-50 border-red-200 text-red-800' : 
+        status === 'denied' ? 'bg-red-50 border-red-200 text-red-800' : 
         'bg-yellow-50 border-yellow-200 text-yellow-800'
       }`}>
         {status === 'approved' ? <CheckCircle className="w-8 h-8 text-green-600" /> : 
-         status === 'rejected' ? <AlertCircle className="w-8 h-8 text-red-600" /> : 
+         status === 'denied' ? <AlertCircle className="w-8 h-8 text-red-600" /> : 
          <Clock className="w-8 h-8 text-yellow-600" />}
         
         <div>
           <h2 className="text-xl font-bold">
             {status === 'approved' ? 'Active and Visible' : 
-             status === 'rejected' ? 'Application Rejected' : 
+             status === 'denied' ? 'Application Denied' : 
              'Pending Admin Approval'}
           </h2>
           <p className="opacity-90 mt-1">
             {status === 'approved' ? 'Your profile is approved and you can now accept requests.' : 
-             status === 'rejected' ? 'Please contact support for more details regarding your application.' : 
+             status === 'denied' ? 'Please contact support for more details regarding your application.' : 
              'Your profile is currently under review by our team. Please ensure your profile is fully filled out.'}
           </p>
+          {status === 'denied' && provider?.rejectionReason && (
+            <div className="mt-3 bg-red-100 border border-red-200 text-red-900 px-4 py-2 rounded-lg text-sm font-medium">
+              <span className="font-bold">Reason:</span> {provider.rejectionReason}
+            </div>
+          )}
         </div>
       </div>
 
@@ -159,7 +166,7 @@ export default function ProviderDashboardPage() {
                   </div>
                   <div className="flex items-center text-sm text-gray-500 font-medium">
                     <DollarSign className="w-4 h-4 mr-2 text-gray-400" />
-                    Budget: ${job.budget}
+                    Budget: ₹{job.budget}
                   </div>
                   <div className="flex items-center text-sm text-gray-500 font-medium">
                     <Calendar className="w-4 h-4 mr-2 text-gray-400" />
@@ -174,8 +181,11 @@ export default function ProviderDashboardPage() {
                     </div>
                     <span className="text-sm font-semibold text-gray-700">{job.userId?.name || 'Unknown Client'}</span>
                   </div>
-                  <button className="text-blue-600 text-sm font-bold hover:underline">
-                    Respond
+                  <button 
+                    onClick={() => setSelectedJob(job)}
+                    className="text-blue-600 text-sm font-bold hover:underline"
+                  >
+                    Details
                   </button>
                 </div>
               </div>
@@ -183,6 +193,13 @@ export default function ProviderDashboardPage() {
           </div>
           <Pagination page={page} limit={limit} total={totalJobs} onPageChange={setPage} label="jobs" />
         </>
+      )}
+
+      {selectedJob && (
+        <JobDetailedView 
+          job={selectedJob} 
+          onClose={() => setSelectedJob(null)} 
+        />
       )}
 
     </div>

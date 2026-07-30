@@ -83,7 +83,7 @@ export const JobBoardPage = () => {
                     <p className="text-xs text-gray-400 mt-1">Posted by {job.userId?.name || 'User'}</p>
                   </div>
                   <span className="bg-green-50 text-green-600 px-3 py-1 rounded-lg text-sm font-bold border border-green-100">
-                    ${job.budget}
+                    ₹{job.budget}
                   </span>
                 </div>
                 

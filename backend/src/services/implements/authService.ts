@@ -303,7 +303,7 @@ export default class AuthServices implements IAuthService {
             }
         } catch (error) {
             await session.abortTransaction();
-            // console.error("Transaction Error:", error);
+            logger.error("ProviderRegister transaction failed:", error);
             throw error;
         } finally {
             session.endSession();

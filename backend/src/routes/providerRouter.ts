@@ -32,6 +32,7 @@ const reviewService = reviewContainer();
 const reviewController = new ReviewController(reviewService);
 
 router.get('/:providerId/reviews', authorize(ROLES.USER, ROLES.ADMIN, ROLES.PROVIDER), reviewController.getProviderReviews);
+router.get('/:providerId/can-review', authorize(ROLES.USER), reviewController.checkCanReview);
 router.post('/:providerId/reviews', authorize(ROLES.USER), reviewController.addReview);
 
 // Job Board

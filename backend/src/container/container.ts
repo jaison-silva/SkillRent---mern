@@ -67,16 +67,18 @@ function userContainer() {
 
 import { ReviewRepository } from "../repositories/implements/reviewRepository"
 import { ReviewService } from "../services/implements/reviewService"
+import { MongoJobRepository } from "../repositories/implements/jobRepository"
 
 function reviewContainer() {
     const reviewRepo = new ReviewRepository()
     const providerRepo = new MongoProviderRepository()
-    const reviewService = new ReviewService(reviewRepo, providerRepo)
+    const jobRepo = new MongoJobRepository()
+    const reviewService = new ReviewService(reviewRepo, providerRepo, jobRepo)
 
     return reviewService
 }
 
-import { MongoJobRepository } from "../repositories/implements/jobRepository"
+
 import { JobService } from "../services/implements/jobService"
 
 function jobContainer() {
@@ -85,4 +87,13 @@ function jobContainer() {
     return jobService
 }
 
-export { authContainer, otpContainer, adminContainer, userContainer, ProviderContainer, reviewContainer, jobContainer }
+import { RevenueRepository } from "../repositories/implements/revenueRepository"
+import { RevenueService } from "../services/implements/revenueService"
+
+function revenueContainer() {
+    const revenueRepo = new RevenueRepository()
+    const revenueService = new RevenueService(revenueRepo)
+    return revenueService
+}
+
+export { authContainer, otpContainer, adminContainer, userContainer, ProviderContainer, reviewContainer, jobContainer, revenueContainer }

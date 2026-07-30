@@ -22,6 +22,7 @@ export interface IProvider extends Omit<Document, "location"> {
     slots: string[];
   }[]; // ithu means an array of obj of {day : asdasdf , slots: a;sdlkjfa}
   validationStatus: ProviderStatus;
+  rejectionReason?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -42,10 +43,10 @@ const providerModel = new mongoose.Schema<IProvider>({
     default: 'offline' 
   },
   location: {
-    type: { type: String, enum: ['Point'], default: 'Point' },
+    type: { type: String, enum: ['Point'] },
     coordinates: { type: [Number] }, // [lng, lat]
     address: String,
-  },
+  } as any,
   rating: { type: Number, default: 0 },
   jobCount: { type: Number, default: 0 },
   availability: [
@@ -59,6 +60,10 @@ const providerModel = new mongoose.Schema<IProvider>({
     enum: Object.values(ProviderStatus), // returns a n array os same as [vlaues,vale]
     default: ProviderStatus.PENDING
   },
+  rejectionReason: {
+    type: String,
+    default: ""
+  }
 },
   { timestamps: true }
 )
@@ -66,7 +71,7 @@ const providerModel = new mongoose.Schema<IProvider>({
 providerModel.index({ location: "2dsphere" });
 
 // Middleware to convert {lat, lng, address} to GeoJSON on save
-providerModel.pre("save", function (next) {
+providerModel.pre("save", function (this: any, next) {
   if (this.location && (this.location as any).lat !== undefined && (this.location as any).lng !== undefined) {
     const loc = this.location as any;
     this.location = {

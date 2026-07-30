@@ -29,5 +29,7 @@ router.get('/:id', authorize(ROLES.USER), userController.getUser);
 // Job Proposals
 router.post('/jobs', authorize(ROLES.USER), jobController.createJob);
 router.get('/jobs/my-jobs', authorize(ROLES.USER), jobController.getJobsByUserId);
+router.put('/jobs/:id', authorize(ROLES.USER), jobController.updateJob);
+router.delete('/jobs/:id', authorize(ROLES.USER), jobController.deleteJob);
 
 export default router;

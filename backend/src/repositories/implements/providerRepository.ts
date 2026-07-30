@@ -76,7 +76,7 @@ export default class MongoProviderRepository extends BaseRepository<IProvider> i
       const providers = result[0]?.data || [];
 
       // Map back GeoJSON to expected format and populate
-      const formattedProviders = providers.map(p => {
+      const formattedProviders = providers.map((p: any) => {
         if (p.location && p.location.coordinates) {
           p.location = {
             lat: p.location.coordinates[1],
@@ -125,9 +125,9 @@ export default class MongoProviderRepository extends BaseRepository<IProvider> i
     return Provider.findOneAndUpdate({ userId }, data, { new: true });
   }
 
-  verifyProviderById(id: string, validationStatus: ProviderStatus) {
+  verifyProviderById(id: string, validationStatus: ProviderStatus, rejectionReason?: string) {
     return Provider.findByIdAndUpdate(id,
-      { validationStatus },
+      { validationStatus, rejectionReason: rejectionReason || "" },
       { new: true }
     )
   }

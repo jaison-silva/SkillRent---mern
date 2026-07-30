@@ -14,5 +14,5 @@ export interface IAdminService {
     totalProviders: number;
   }>;
 
-  verifyProviderService(id: string, status: ProviderStatus): Promise<IProvider | null>;
+  verifyProviderService(id: string, status: ProviderStatus, reason?: string): Promise<IProvider | null>;
 }
