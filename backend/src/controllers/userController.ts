@@ -73,7 +73,7 @@ export class UserController {
 
             if (!userDetails) {
                 return ApiResponse.error(res, "User details not found", "ERROR", 404);
-                return;
+                // return;
             }
 
             const status = StatusCodes.OK;

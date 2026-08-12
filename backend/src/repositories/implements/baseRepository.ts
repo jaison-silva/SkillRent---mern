@@ -12,7 +12,7 @@ export abstract class BaseRepository<T extends Document> implements IBaseReposit
 
     async findById(id: string): Promise<T | null> {
         return this.model.findById(id);
-    }
+    } 
 
     async findOne(filter: FilterQuery<T>): Promise<T | null> {
         return this.model.findOne(filter);

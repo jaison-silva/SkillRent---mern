@@ -73,7 +73,11 @@ export default function AdminDashboardPage() {
   if (isLoading) return <div className="p-20 text-center animate-pulse text-gray-500">Loading admin data...</div>;
 
   const users = data?.users || [];
-  const pendingProviders = data?.providers || [];
+  const pendingProviders = data?.providers || []; // note
+
+  // function HandleSort(){
+    // done during review
+  // }
 
   const handleVerify = (id: string, status: 'approved' | 'denied') => {
     if (status === 'denied') {
@@ -229,6 +233,10 @@ export default function AdminDashboardPage() {
             onChange={setSearch}
             placeholder="Search users by name or email..."
           />
+
+           <button className='button' onClick={HandleSort}> // note
+            Name Sort
+            </button>
 
         <div className="overflow-hidden rounded-2xl border border-gray-200">
           <table className="min-w-full divide-y divide-gray-200 bg-white">

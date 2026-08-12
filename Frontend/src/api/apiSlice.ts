@@ -2,18 +2,19 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query/react';
 import { setCredentials, logOut } from '../features/auth/authSlice';
 import type { RootState } from '../store/store';
+import type {User} from "../types/index"
 
 const baseQuery = fetchBaseQuery({
     baseUrl: import.meta.env.VITE_API_URL,
     credentials: "include",
     prepareHeaders: (headers, { getState }) => {
-        const token = (getState() as RootState).auth.token;
+        const token = (getState() as RootState).auth.token; 
         if (token) {
             headers.set('authorization', `Bearer ${token}`);
         }
         return headers;
     }
-});
+}); 
 
 const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> = async (args, api, extraOptions) => {
     let result = await baseQuery(args, api, extraOptions);
@@ -29,7 +30,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
         );
 
         if (refreshResult?.data) {
-            const refreshData = refreshResult.data as { user: any; accessToken?: string; token?: string };
+            const refreshData = refreshResult.data as { user: User; accessToken?: string; token?: string };
             const newToken = refreshData.accessToken || refreshData.token;
             
             if (newToken) {
@@ -43,22 +44,6 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
             api.dispatch(logOut());
         }
     }
-
-    // Normalize error format if it matches the new ApiResponse
-    if (result?.error && result.error.data && typeof result.error.data === 'object') {
-        const errorData = result.error.data as any;
-        if (errorData.success === false && errorData.error) {
-            result.error = {
-                ...result.error,
-                data: {
-                    ...errorData,
-                    message: errorData.error.message,
-                    code: errorData.error.code
-                }
-            } as any;
-        }
-    }
-
     return result;
 };
 
