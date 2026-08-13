@@ -185,6 +185,7 @@ export const CreateJobForm = ({ onSuccess, prefillProviderId }: { onSuccess: () 
             <label className="block text-xs font-semibold text-gray-500 mb-1">Start Time</label>
             <input 
               type="time" 
+              step="1800"
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
               className="w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3 border text-sm text-gray-700 bg-white"

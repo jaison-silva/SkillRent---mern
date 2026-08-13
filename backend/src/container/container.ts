@@ -96,4 +96,17 @@ function revenueContainer() {
     return revenueService
 }
 
-export { authContainer, otpContainer, adminContainer, userContainer, ProviderContainer, reviewContainer, jobContainer, revenueContainer }
+import { ChatController } from "../controllers/chatController"
+import { ChatService } from "../services/implements/chatService"
+import { MongoChatConversationRepository } from "../repositories/implements/chatConversationRepository"
+import { MongoChatMessageRepository } from "../repositories/implements/chatMessageRepository"
+
+function chatContainer() {
+    const conversationRepo = new MongoChatConversationRepository()
+    const messageRepo = new MongoChatMessageRepository()
+    const chatService = new ChatService(conversationRepo, messageRepo)
+    const chatController = new ChatController(chatService)
+    return chatController
+}
+
+export { authContainer, otpContainer, adminContainer, userContainer, ProviderContainer, reviewContainer, jobContainer, revenueContainer, chatContainer }

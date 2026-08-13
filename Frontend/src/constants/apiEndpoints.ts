@@ -7,6 +7,7 @@ export const API_ENDPOINTS = {
         MEMBERSHIPS: "/admin/memberships",
         COUPONS: "/admin/coupons",
         OFFERS: "/admin/offers",
+        CATEGORIES: "/admin/categories",
     },
     AUTH: {
         LOGIN: "/auth/login",
@@ -41,5 +42,6 @@ export const API_ENDPOINTS = {
         MEMBERSHIPS: "/public/memberships",
         COUPONS: "/public/coupons",
         OFFERS: "/public/offers",
+        CATEGORIES: "/public/categories",
     }
 } as const;

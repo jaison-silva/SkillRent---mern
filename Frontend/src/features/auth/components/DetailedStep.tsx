@@ -3,12 +3,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { userDetailsSchema as schema } from '../zod';
 import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
+import { useGetPublicCategoriesQuery } from '../../public/publicApiSlice';
 
 export const DetailsStep = ({ onSubmit, role, isLoading }: any) => {
   const { register, handleSubmit, setValue, formState: { errors } } = useForm({ resolver: zodResolver(schema) });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [locationStatus, setLocationStatus] = useState<'idle' | 'fetching' | 'success' | 'error' | 'unsupported'>('idle');
+  
+  const { data: catData, isLoading: isLoadingCats } = useGetPublicCategoriesQuery(undefined, { skip: role !== 'provider' });
+  const categories = catData?.categories || [];
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -60,6 +64,24 @@ export const DetailsStep = ({ onSubmit, role, isLoading }: any) => {
             <option value="both">Both</option>
           </select>
           {errors.workNature && <p className="text-red-500 text-xs">{errors.workNature.message as string}</p>}
+        </div>
+      )}
+
+      {role === 'provider' && !isLoadingCats && categories.length > 0 && (
+        <div>
+          <label className="text-sm block mb-1">Categories (Select one or more)</label>
+          <select 
+            multiple
+            {...register('categories')}
+            className="input-field w-full p-2 border rounded min-h-[100px]"
+          >
+            {categories.map((cat: any) => (
+              <option key={cat._id} value={cat._id} className="p-1.5 hover:bg-blue-50 cursor-pointer">
+                {cat.name}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-gray-500 mt-1">Hold Ctrl (Windows) or Cmd (Mac) to select multiple categories.</p>
         </div>
       )}
 

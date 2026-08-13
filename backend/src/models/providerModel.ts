@@ -11,6 +11,7 @@ export interface IProvider extends Omit<Document, "location"> {
   userId: Types.ObjectId // | IUser;
   bio?: string;
   skills: string[];
+  categories: Types.ObjectId[]; // Referencing Category model
   language: string[];
   hasTransport: boolean;
   workNature: 'online' | 'offline' | 'both';
@@ -35,6 +36,10 @@ const providerModel = new mongoose.Schema<IProvider>({
   },
   bio: String,
   skills: [String],
+  categories: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category'
+  }],
   language: [String],
   hasTransport: Boolean,
   workNature: { 

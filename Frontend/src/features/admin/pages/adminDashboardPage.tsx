@@ -11,6 +11,7 @@ import Pagination from '../../../components/Pagination';
 import AdminMembershipsTab from '../components/AdminMembershipsTab';
 import AdminCouponsTab from '../components/AdminCouponsTab';
 import AdminOffersTab from '../components/AdminOffersTab';
+import AdminCategoriesTab from '../components/AdminCategoriesTab';
 
 const DenyToast = ({ id, onConfirm, onCancel }: { id: string, onConfirm: (reason: string) => void, onCancel: () => void }) => {
   const [reason, setReason] = useState('');
@@ -41,7 +42,7 @@ const DenyToast = ({ id, onConfirm, onCancel }: { id: string, onConfirm: (reason
 };
 
 export default function AdminDashboardPage() {
-  const [activeTab, setActiveTab] = useState<'pending' | 'users' | 'memberships' | 'coupons' | 'offers'>('pending');
+  const [activeTab, setActiveTab] = useState<'pending' | 'users' | 'memberships' | 'coupons' | 'offers' | 'categories'>('pending');
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -187,6 +188,12 @@ export default function AdminDashboardPage() {
         >
           Offers
         </button>
+        <button 
+          onClick={() => setActiveTab('categories')}
+          className={`pb-4 px-2 font-semibold ${activeTab === 'categories' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
+        >
+          Categories
+        </button>
       </div>
 
       {activeTab === 'pending' && (
@@ -290,6 +297,7 @@ export default function AdminDashboardPage() {
       {activeTab === 'memberships' && <AdminMembershipsTab />}
       {activeTab === 'coupons' && <AdminCouponsTab />}
       {activeTab === 'offers' && <AdminOffersTab />}
+      {activeTab === 'categories' && <AdminCategoriesTab />}
     </div>
   );
 }

@@ -11,6 +11,8 @@ export interface ICoupon extends Document {
   usageLimit: number;         // Total times this coupon can be used overall
   usedCount: number;
   excludeIfMembership: boolean; // Not applicable if user has an active membership
+  applicableCategories: string[]; // e.g., ['Plumbing', 'Electrical']
+  conditionDescription: string;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -28,6 +30,8 @@ const couponSchema = new Schema<ICoupon>(
     usageLimit: { type: Number, default: 100 },
     usedCount: { type: Number, default: 0 },
     excludeIfMembership: { type: Boolean, default: false },
+    applicableCategories: { type: [String], default: [] },
+    conditionDescription: { type: String, default: '' },
     isActive: { type: Boolean, default: true }
   },
   { timestamps: true }

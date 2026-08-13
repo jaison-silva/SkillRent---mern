@@ -45,6 +45,7 @@ export const userDetailsSchema = z.object({
     lat: z.number(),
     lng: z.number(),
   }).optional(),
+  categories: z.array(z.string()).optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"]

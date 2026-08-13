@@ -15,7 +15,9 @@ export default function AdminCouponsTab() {
     discountValue: 0, 
     startDate: '', 
     expiryDate: '',
-    excludeIfMembership: false 
+    excludeIfMembership: false,
+    applicableCategories: '', // Comma-separated string in UI for ease
+    conditionDescription: ''
   });
 
   const coupons = data?.coupons || [];
@@ -23,10 +25,14 @@ export default function AdminCouponsTab() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createCoupon(formData).unwrap();
+      const payload = {
+        ...formData,
+        applicableCategories: formData.applicableCategories ? formData.applicableCategories.split(',').map(s => s.trim()) : []
+      };
+      await createCoupon(payload).unwrap();
       toast.success('Coupon created successfully');
       setIsCreating(false);
-      setFormData({ code: '', discountType: 'percentage', discountValue: 0, startDate: '', expiryDate: '', excludeIfMembership: false });
+      setFormData({ code: '', discountType: 'percentage', discountValue: 0, startDate: '', expiryDate: '', excludeIfMembership: false, applicableCategories: '', conditionDescription: '' });
     } catch (err: any) {
       toast.error(err?.data?.message || 'Failed to create coupon');
     }
@@ -82,6 +88,14 @@ export default function AdminCouponsTab() {
             <div>
               <label className="block text-sm font-medium text-gray-700">Expiry Date</label>
               <input required type="date" value={formData.expiryDate} onChange={e => setFormData({ ...formData, expiryDate: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 p-2 shadow-sm" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Categories (comma-separated)</label>
+              <input type="text" placeholder="e.g. Plumbing, Electrical" value={formData.applicableCategories} onChange={e => setFormData({ ...formData, applicableCategories: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 p-2 shadow-sm" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Condition Description</label>
+              <input type="text" placeholder="e.g. First-time users only" value={formData.conditionDescription} onChange={e => setFormData({ ...formData, conditionDescription: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 p-2 shadow-sm" />
             </div>
           </div>
           <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded-lg">Save Coupon</button>

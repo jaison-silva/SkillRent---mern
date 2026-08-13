@@ -69,7 +69,10 @@ class ProviderController {
         try {
             // Only return approved providers for public listing
             // Note: Filtering banned users should be done in service layer after populating userId
-            const filter = { validationStatus: "approved" };
+            const filter: any = { validationStatus: "approved" };
+            if (req.query.categoryId) {
+                filter.categories = req.query.categoryId;
+            }
             const page = parseInt(req.query.page as string) || 1;
             const limit = parseInt(req.query.limit as string) || 10;
             const search = (req.query.search as string) || "";

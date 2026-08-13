@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useGetProvidersQuery } from '../../provider/providerApiSlice';
+import { useGetPublicCategoriesQuery } from '../../public/publicApiSlice';
 import { Link } from 'react-router-dom';
-import { Star } from 'lucide-react';
+import { Star, Tag } from 'lucide-react';
 import SearchInput from '../../../components/SearchInput';
 import SortSelect from '../../../components/SortSelect';
 import Pagination from '../../../components/Pagination';
@@ -17,9 +18,13 @@ export default function UserDashboardPage() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sort, setSort] = useState('newest');
+  const [categoryId, setCategoryId] = useState<string>('');
   const [location, setLocation] = useState<LocationData | null>(null);
   const [maxDistance, setMaxDistance] = useState<string>('any');
   const limit = 9;
+
+  const { data: catData } = useGetPublicCategoriesQuery();
+  const categories = catData?.categories || [];
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -39,6 +44,7 @@ export default function UserDashboardPage() {
     page,
     limit,
     search: debouncedSearch || undefined,
+    categoryId: categoryId || undefined,
     sort,
     lat: location?.lat,
     lng: location?.lng,
@@ -73,14 +79,29 @@ export default function UserDashboardPage() {
         />
       </div>
 
-      {/* Search, Distance & Sort Controls */}
+      {/* Search, Category, Distance & Sort Controls */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <div className="flex-1">
+        <div className="flex-[2]">
           <SearchInput
             value={search}
             onChange={setSearch}
             placeholder="Search providers by name or skill..."
           />
+        </div>
+        <div className="flex-1 min-w-[150px]">
+          <div className="relative">
+            <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <select
+              value={categoryId}
+              onChange={(e) => { setCategoryId(e.target.value); setPage(1); }}
+              className="w-full h-10 pl-9 pr-3 bg-white rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-700 transition-all font-medium appearance-none"
+            >
+              <option value="">All Categories</option>
+              {categories.map((cat: any) => (
+                <option key={cat._id} value={cat._id}>{cat.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
         {location && (
           <div className="w-full sm:w-48">

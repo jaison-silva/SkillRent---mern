@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useGetProviderProfileQuery, useUpdateProviderProfileMutation } from '../providerApiSlice';
 import { useGetProfileQuery } from '../../user/userApiSlice';
+import { useGetPublicCategoriesQuery } from '../../public/publicApiSlice';
 import { ChangePasswordModal } from '../../user/components/ChangePasswordModal';
 import ProviderReviews from '../components/ProviderReviews';
 import LocationPicker, { type LocationData } from '../../../components/LocationPicker';
@@ -13,9 +14,11 @@ export default function ProviderProfilePage() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [isPasswordModalOpen, setPasswordModalOpen] = useState(false);
 
+  const { data: catData, isLoading: isLoadingCats } = useGetPublicCategoriesQuery();
+
   // Form State
   const [bio, setBio] = useState('');
-  const [skills, setSkills] = useState('');
+  const [categories, setCategories] = useState<string[]>([]);
   const [location, setLocation] = useState<LocationData | null>(null);
   const [workNature, setWorkNature] = useState('offline');
 
@@ -25,7 +28,10 @@ export default function ProviderProfilePage() {
   useEffect(() => {
     if (provider) {
         setBio(provider.bio || '');
-        setSkills(provider.skills?.join(', ') || '');
+        if (provider.categories) {
+          const catIds = provider.categories.map((c: any) => typeof c === 'string' ? c : c._id);
+          setCategories(catIds);
+        }
         setLocation(provider.location || null);
         setWorkNature(provider.workNature || 'offline');
     }
@@ -38,7 +44,7 @@ export default function ProviderProfilePage() {
     try {
         await updateProfile({
             bio,
-            skills: skills.split(',').map(s => s.trim()).filter(s => s !== ''),
+            categories,
             location: location || undefined,
             workNature
         }).unwrap();
@@ -103,14 +109,26 @@ export default function ProviderProfilePage() {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Skills (comma separated)</label>
-                        <input 
-                            type="text" 
-                            value={skills}
-                            onChange={(e) => setSkills(e.target.value)}
-                            className="w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3 border"
-                            placeholder="e.g. Plumbing, Pipe Fitting, Water Heaters"
-                        />
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Categories (Hold Ctrl/Cmd to select multiple)</label>
+                        {isLoadingCats ? (
+                            <div className="text-gray-500 text-sm">Loading categories...</div>
+                        ) : (
+                            <select
+                                multiple
+                                value={categories}
+                                onChange={(e) => {
+                                    const selected = Array.from(e.target.selectedOptions, option => option.value);
+                                    setCategories(selected);
+                                }}
+                                className="w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3 border min-h-[120px]"
+                            >
+                                {catData?.categories?.map((cat: any) => (
+                                    <option key={cat._id} value={cat._id} className="p-1.5 hover:bg-blue-50 cursor-pointer">
+                                        {cat.name}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Location Coordinates</label>
@@ -157,16 +175,23 @@ export default function ProviderProfilePage() {
                     </section>
                     
                     <section>
-                        <h2 className="text-xs font-bold uppercase text-gray-400 tracking-wider mb-3">Service Skills</h2>
+                        <h2 className="text-xs font-bold uppercase text-gray-400 tracking-wider mb-3">Categories & Skills</h2>
+                        <div className="flex flex-wrap gap-2 mb-3">
+                            {provider?.categories && provider.categories.length > 0 && provider.categories.map((cat: any, idx: number) => (
+                                <span key={`cat-${idx}`} className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-sm font-medium border border-indigo-100">
+                                    {typeof cat === 'string' ? (catData?.categories?.find((c:any) => c._id === cat)?.name || 'Category') : cat.name}
+                                </span>
+                            ))}
+                        </div>
                         <div className="flex flex-wrap gap-2">
                             {provider?.skills && provider.skills.length > 0 ? (
                                 provider.skills.map((skill: string, idx: number) => (
-                                    <span key={idx} className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium border border-blue-100">
+                                    <span key={`skill-${idx}`} className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium border border-blue-100">
                                         {skill}
                                     </span>
                                 ))
                             ) : (
-                                <span className="text-gray-400 italic text-sm">No skills listed yet.</span>
+                                <span className="text-gray-400 italic text-sm">No specific skills listed yet.</span>
                             )}
                         </div>
                     </section>

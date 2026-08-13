@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectCurrentUser, logOut } from '../features/auth/authSlice';
 import { useLogoutMutation } from '../features/auth/authApiSlice';
-import { User, LogOut, MessageSquare, PlusCircle, Briefcase, ClipboardList } from 'lucide-react';
+import { User, LogOut, MessageSquare, PlusCircle, Briefcase, ClipboardList, Calendar } from 'lucide-react';
 
 import { useState } from 'react';
 
@@ -39,9 +39,15 @@ const Navbar = () => {
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/chat" className="text-gray-600 hover:text-blue-600 font-medium">Chat</Link>
-            <Link to="/pricing" className="text-gray-600 hover:text-blue-600 font-medium">Membership</Link>
-            <Link to="/offers" className="text-gray-600 hover:text-blue-600 font-medium">Coupons</Link>
+            {(!user || user.role === 'provider') && (
+              <Link to="/pricing" className="text-gray-600 hover:text-blue-600 font-medium">Membership</Link>
+            )}
+            {(!user || user.role === 'user') && (
+              <>
+                <Link to="/coupons" className="text-gray-600 hover:text-blue-600 font-medium">Coupons</Link>
+                <Link to="/offers" className="text-gray-600 hover:text-blue-600 font-medium">Offers</Link>
+              </>
+            )}
             
             {user ? (
               // Authenticated View
@@ -66,6 +72,9 @@ const Navbar = () => {
                 )}
                 <Link to="/chat" className="text-gray-600 hover:text-blue-600">
                   <MessageSquare className="w-5 h-5" />
+                </Link>
+                <Link to="/agreements" className="text-gray-600 hover:text-blue-600">
+                  <Calendar className="w-5 h-5" />
                 </Link>
                 <div className="flex items-center space-x-3 pl-4 border-l border-gray-200">
                   <Link to="/dashboard" className="flex items-center space-x-2">

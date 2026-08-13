@@ -16,7 +16,10 @@ import { UserJobsPage } from "../features/job/pages/UserJobsPage";
 import { JobBoardPage } from "../features/job/pages/JobBoardPage";
 import PricingPage from "../pages/PricingPage";
 import OffersPage from "../pages/OffersPage";
+import CouponsPage from "../pages/CouponsPage";
 import ChatPage from "../pages/ChatPage";
+import AgreementsPage from "../pages/AgreementsPage";
+import PostSkillPage from "../features/provider/pages/PostSkillPage";
 
 export function AppRoutes() {
   return (
@@ -35,6 +38,7 @@ export function AppRoutes() {
           {/*  // fully public routes (visible to logged-in and guests) */}
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/offers" element={<OffersPage />} />
+          <Route path="/coupons" element={<CouponsPage />} />
 
           {/*// protected routes */}
           <Route element={<PersistLogin />}>
@@ -43,6 +47,8 @@ export function AppRoutes() {
               <Route path="/my-jobs" element={<UserJobsPage />} />
               <Route path="/job-board" element={<JobBoardPage />} />
               <Route path="/chat" element={<ChatPage />} />
+              <Route path="/agreements" element={<AgreementsPage />} />
+              <Route path="/post-skill" element={<PostSkillPage />} />
               <Route path="/provider/:id" element={<ProviderDetailsPage />} />
             </Route>
           </Route>

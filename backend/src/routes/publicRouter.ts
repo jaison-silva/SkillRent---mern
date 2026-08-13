@@ -10,4 +10,7 @@ router.get('/memberships', revenueController.getMemberships);
 router.get('/offers', revenueController.getOffers);
 router.get('/coupons', revenueController.getCoupons);
 
+import categoryController from "../controllers/categoryController";
+router.get('/categories', categoryController.getAllCategories);
+
 export default router;

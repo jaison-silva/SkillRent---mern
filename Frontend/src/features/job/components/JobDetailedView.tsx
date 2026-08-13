@@ -1,5 +1,10 @@
+import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { selectCurrentUser } from '../../auth/authSlice';
 
 export const JobDetailedView = ({ job, onClose }: { job: any, onClose: () => void }) => {
+  const navigate = useNavigate();
+  const user = useSelector(selectCurrentUser);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
       <div className="bg-white rounded-3xl max-w-2xl w-full p-8 shadow-2xl relative">
@@ -51,7 +56,7 @@ export const JobDetailedView = ({ job, onClose }: { job: any, onClose: () => voi
           </button>
           <button 
             onClick={() => {
-              alert("Pending");
+              navigate(`/chat?jobId=${job._id}&clientId=${job.userId?._id || job.userId}`);
               onClose();
             }}
             className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-95"

@@ -88,6 +88,7 @@ export default class MongoProviderRepository extends BaseRepository<IProvider> i
       });
 
       await Provider.populate(formattedProviders, { path: "userId" });
+      await Provider.populate(formattedProviders, { path: "categories" });
 
       return { providers: formattedProviders, total };
     } else {
@@ -100,7 +101,8 @@ export default class MongoProviderRepository extends BaseRepository<IProvider> i
           .sort(sortOption)
           .skip(skip)
           .limit(limit)
-          .populate("userId"),
+          .populate("userId")
+          .populate("categories"),
         Provider.countDocuments(query)
       ]);
 
@@ -109,12 +111,12 @@ export default class MongoProviderRepository extends BaseRepository<IProvider> i
   }
 
   findProviderById(id: string): Promise<IProvider | null> {
-    return Provider.findById(id).populate("userId") as unknown as Promise<IProvider | null>;
+    return Provider.findById(id).populate("userId").populate("categories") as unknown as Promise<IProvider | null>;
   }
 
 
   findByUserId(userId: string) {
-    return Provider.findOne({ userId }).populate("userId");
+    return Provider.findOne({ userId }).populate("userId").populate("categories");
   }
 
   updateProviderById(id: string, data: UpdateProviderProfileDTO) {

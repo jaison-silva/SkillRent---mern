@@ -45,7 +45,7 @@ export class JobService implements IJobService {
     }
     
     // Convert location structure if provided
-    let updateData: any = { ...data };
+      const updateData: any = { ...data };
     if (data.location) {
       updateData.location = {
         type: "Point",

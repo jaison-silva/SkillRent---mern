@@ -40,4 +40,10 @@ router.get('/offers', revenueController.getOffers);
 router.put('/offers/:id', revenueController.updateOffer);
 router.delete('/offers/:id', revenueController.deleteOffer);
 
+import categoryController from "../controllers/categoryController";
+// Categories
+router.post('/categories', categoryController.createCategory);
+router.get('/categories', categoryController.getCategories);
+router.delete('/categories/:id', categoryController.deleteCategory);
+
 export default router;

@@ -15,7 +15,9 @@ export default function AdminOffersTab() {
     discountType: 'percentage', 
     discountValue: 0, 
     startDate: '', 
-    endDate: ''
+    endDate: '',
+    category: '',
+    location: ''
   });
 
   const offers = data?.offers || [];
@@ -26,7 +28,7 @@ export default function AdminOffersTab() {
       await createOffer(formData).unwrap();
       toast.success('Offer created successfully');
       setIsCreating(false);
-      setFormData({ title: '', description: '', discountType: 'percentage', discountValue: 0, startDate: '', endDate: '' });
+      setFormData({ title: '', description: '', discountType: 'percentage', discountValue: 0, startDate: '', endDate: '', category: '', location: '' });
     } catch (err: any) {
       toast.error(err?.data?.message || 'Failed to create offer');
     }
@@ -82,6 +84,14 @@ export default function AdminOffersTab() {
             <div>
               <label className="block text-sm font-medium text-gray-700">End Date</label>
               <input required type="date" value={formData.endDate} onChange={e => setFormData({ ...formData, endDate: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 p-2 shadow-sm" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Category</label>
+              <input type="text" placeholder="e.g. Plumbing, or leave blank for all" value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 p-2 shadow-sm" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Location</label>
+              <input type="text" placeholder="e.g. New York, or leave blank for all" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 p-2 shadow-sm" />
             </div>
           </div>
           <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded-lg">Save Offer</button>

@@ -161,6 +161,35 @@ export const adminApiSlice = apiSlice.injectEndpoints({
             transformResponse: (response: any) => response.meta ? { ...response.data, ...response.meta } : response.data,
             invalidatesTags: ['Offer'],
         }),
+
+        // --- Categories ---
+        getCategories: builder.query<any, { page?: number, limit?: number, search?: string } | void>({
+            query: (params) => {
+                if (!params) return API_ENDPOINTS.ADMIN.CATEGORIES;
+                const activeParams = Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined));
+                const queryString = new URLSearchParams(activeParams as Record<string, string>).toString();
+                return `${API_ENDPOINTS.ADMIN.CATEGORIES}${queryString ? `?${queryString}` : ''}`;
+            },
+            transformResponse: (response: any) => response.meta ? { ...response.data, ...response.meta } : response.data,
+            providesTags: ['Category'] as any,
+        }),
+        createCategory: builder.mutation<any, any>({
+            query: (data) => ({
+                url: API_ENDPOINTS.ADMIN.CATEGORIES,
+                method: 'POST',
+                body: data,
+            }),
+            transformResponse: (response: any) => response.meta ? { ...response.data, ...response.meta } : response.data,
+            invalidatesTags: ['Category'] as any,
+        }),
+        deleteCategory: builder.mutation<any, string>({
+            query: (id) => ({
+                url: `${API_ENDPOINTS.ADMIN.CATEGORIES}/${id}`,
+                method: 'DELETE',
+            }),
+            transformResponse: (response: any) => response.meta ? { ...response.data, ...response.meta } : response.data,
+            invalidatesTags: ['Category'] as any,
+        }),
     }),
 });
 
@@ -181,4 +210,7 @@ export const {
     useCreateOfferMutation,
     useUpdateOfferMutation,
     useDeleteOfferMutation,
+    useGetCategoriesQuery,
+    useCreateCategoryMutation,
+    useDeleteCategoryMutation,
 } = adminApiSlice;
